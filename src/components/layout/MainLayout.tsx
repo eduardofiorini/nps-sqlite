@@ -18,7 +18,8 @@ import {
   TrendingUp,
   Globe,
   CreditCard,
-  ChevronLeft
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -48,7 +49,7 @@ const MainLayout: React.FC = () => {
       icon: <LayoutGrid size={20} /> 
     },
     { 
-      path: '/', 
+      path: '/campaigns', 
       label: language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns', 
       icon: <TrendingUp size={20} /> 
     },
@@ -65,8 +66,8 @@ const MainLayout: React.FC = () => {
     if (path === '/overview') {
       return location.pathname === '/overview';
     }
-    if (path === '/') {
-      return location.pathname === '/' || location.pathname.startsWith('/campaigns');
+    if (path === '/campaigns') {
+      return location.pathname === '/campaigns' || location.pathname.startsWith('/campaigns');
     }
     return location.pathname === path;
   };
@@ -222,25 +223,34 @@ const MainLayout: React.FC = () => {
       <div className="flex flex-1">
         {/* Sidebar (desktop) */}
         <aside className={`hidden md:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-          isSidebarCollapsed ? 'w-16' : 'w-72'
+          isSidebarCollapsed ? 'w-20' : 'w-72'
         }`}>
-          {/* Sidebar Toggle */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <button
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="w-full flex items-center justify-center p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-            </button>
-          </div>
-
           <nav className="flex flex-col flex-1 pt-6 pb-4 overflow-y-auto">
-            <div className="px-6 space-y-2">
+            <div className={`${isSidebarCollapsed ? 'px-3' : 'px-6'} space-y-2`}>
+              {/* Sidebar Toggle Button */}
+              <div className="mb-4">
+                <button
+                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  className={`${
+                    isSidebarCollapsed 
+                      ? 'w-full flex items-center justify-center p-3' 
+                      : 'w-full flex items-center justify-end p-2'
+                  } rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors`}
+                  title={isSidebarCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+                >
+                  {isSidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+                </button>
+              </div>
+
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`${
+                    isSidebarCollapsed 
+                      ? 'flex items-center justify-center p-3 text-sm font-medium rounded-lg transition-all duration-200' 
+                      : 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200'
+                  } ${
                     isActive(item.path)
                       ? 'bg-[#073143] text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
@@ -256,22 +266,30 @@ const MainLayout: React.FC = () => {
               <div className="mt-6">
                 <button
                   onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
-                  className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`${
+                    isSidebarCollapsed 
+                      ? 'flex items-center justify-center p-3 text-sm font-medium rounded-lg transition-all duration-200 w-full' 
+                      : 'flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200'
+                  } ${
                     isSettingsActive()
                       ? 'bg-[#073143] text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                   }`}
                   title={isSidebarCollapsed ? t('nav.settings') : undefined}
                 >
-                  <div className="flex items-center">
-                    <Settings size={20} className={`${isSidebarCollapsed ? 'mr-0' : 'mr-3'}`} />
-                    {!isSidebarCollapsed && t('nav.settings')}
-                  </div>
-                  {!isSidebarCollapsed && (
-                    <ChevronRight 
-                      size={16} 
-                      className={`transform transition-transform duration-200 ${isSettingsExpanded ? 'rotate-90' : ''}`}
-                    />
+                  {isSidebarCollapsed ? (
+                    <Settings size={20} />
+                  ) : (
+                    <>
+                      <div className="flex items-center">
+                        <Settings size={20} className="mr-3" />
+                        {t('nav.settings')}
+                      </div>
+                      <ChevronRight 
+                        size={16} 
+                        className={`transform transition-transform duration-200 ${isSettingsExpanded ? 'rotate-90' : ''}`}
+                      />
+                    </>
                   )}
                 </button>
                 
@@ -306,13 +324,15 @@ const MainLayout: React.FC = () => {
               </div>
             </div>
             
-            <div className="mt-auto px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            <div className={`mt-auto ${isSidebarCollapsed ? 'px-3' : 'px-6'} py-4 border-t border-gray-200 dark:border-gray-700`}>
               <Button
                 variant="outline"
                 fullWidth={!isSidebarCollapsed}
                 icon={<LogOut size={16} />}
                 onClick={handleLogout}
-                className="border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white"
+                className={`border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white ${
+                  isSidebarCollapsed ? 'p-3 justify-center' : ''
+                }`}
                 title={isSidebarCollapsed ? t('nav.logout') : undefined}
               >
                 {!isSidebarCollapsed && t('nav.logout')}
