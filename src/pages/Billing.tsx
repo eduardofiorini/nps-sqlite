@@ -333,7 +333,7 @@ const Billing: React.FC = () => {
             <CardHeader 
               title="Histórico de Cobrança"
               action={
-                <Button variant="outline" size="sm" icon={<Download size={16} />}>
+                <Button variant="outline\" size="sm\" icon={<Download size={16} />}>
                   Exportar
                 </Button>
               }
