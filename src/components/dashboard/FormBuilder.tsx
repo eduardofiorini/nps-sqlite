@@ -208,8 +208,10 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     // Update the state with the new order
     setFields(fieldsWithUpdatedOrder);
     
-    // Auto-save the new order
-    saveFormWithFields(fieldsWithUpdatedOrder);
+    // Defer the save operation to allow react-beautiful-dnd to complete its internal updates
+    setTimeout(() => {
+      saveFormWithFields(fieldsWithUpdatedOrder);
+    }, 0);
   };
   
   const getDefaultLabel = (type: FormField['type']): string => {
