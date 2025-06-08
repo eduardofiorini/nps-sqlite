@@ -9,9 +9,9 @@ interface ConfigContextProps {
 
 const ConfigContext = createContext<ConfigContextProps>({
   config: {
-    themeColor: '#3B82F6',
+    themeColor: '#073143',
     logoUrl: '',
-    defaultEmail: 'nps@example.com',
+    defaultEmail: 'nps@meunps.com',
     language: 'en'
   },
   updateConfig: () => {},

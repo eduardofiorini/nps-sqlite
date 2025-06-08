@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { Lock, Mail, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const LoginForm: React.FC = () => {
@@ -43,7 +43,7 @@ const LoginForm: React.FC = () => {
     <div className="min-h-screen flex">
       {/* Left side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#073143] via-[#0a4a5c] to-[#0d5a75]">
           <img
             src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
             alt="Business analytics"
@@ -58,33 +58,36 @@ const LoginForm: React.FC = () => {
             transition={{ duration: 0.8 }}
           >
             <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4">
-                <BarChart3 size={28} className="text-white" />
+              <div className="w-16 h-16 mr-4 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="Meu NPS" 
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <h1 className="text-3xl font-bold">NPS Master</h1>
             </div>
             
             <h2 className="text-4xl font-bold mb-6 leading-tight">
-              Transform Customer Feedback into Business Growth
+              Transforme Feedback em Crescimento
             </h2>
             
             <p className="text-xl text-white/90 mb-8 leading-relaxed">
-              Collect, analyze, and act on customer feedback with our comprehensive NPS management platform. 
-              Drive customer satisfaction and business success.
+              Colete, analise e aja sobre o feedback dos clientes com nossa plataforma completa de gestão NPS. 
+              Impulsione a satisfação do cliente e o sucesso do negócio.
             </p>
             
             <div className="space-y-4">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                <span className="text-white/90">Real-time NPS tracking and analytics</span>
+                <span className="text-white/90">Acompanhamento de NPS em tempo real</span>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                <span className="text-white/90">Customizable survey forms</span>
+                <span className="text-white/90">Formulários de pesquisa personalizáveis</span>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                <span className="text-white/90">Advanced reporting and insights</span>
+                <span className="text-white/90">Relatórios avançados e insights</span>
               </div>
             </div>
           </motion.div>
@@ -101,19 +104,26 @@ const LoginForm: React.FC = () => {
         >
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center mb-8">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-3">
-              <BarChart3 size={28} className="text-white" />
+            <div className="w-12 h-12 mr-3 flex items-center justify-center">
+              <img 
+                src="/icone.png" 
+                alt="Meu NPS" 
+                className="w-full h-full object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">NPS Master</h1>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-bold text-[#073143] dark:text-white">Meu NPS</h1>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Plataforma de Gestão de NPS</span>
+            </div>
           </div>
           
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Welcome back
+                Bem-vindo de volta
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Sign in to your account to continue
+                Entre na sua conta para continuar
               </p>
             </div>
             
@@ -130,12 +140,12 @@ const LoginForm: React.FC = () => {
               
               <div className="relative">
                 <Input
-                  label="Email Address"
+                  label="Endereço de Email"
                   type="email"
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder="seu@email.com"
                   required
                   fullWidth
                   className="pl-12"
@@ -147,7 +157,7 @@ const LoginForm: React.FC = () => {
               
               <div className="relative">
                 <Input
-                  label="Password"
+                  label="Senha"
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   value={password}
@@ -173,12 +183,12 @@ const LoginForm: React.FC = () => {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143]"
                   />
-                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Lembrar de mim</span>
                 </label>
-                <a href="#" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">
-                  Forgot password?
+                <a href="#" className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff]">
+                  Esqueceu a senha?
                 </a>
               </div>
               
@@ -187,27 +197,27 @@ const LoginForm: React.FC = () => {
                 variant="primary"
                 fullWidth
                 isLoading={isLoading}
-                className="h-12 text-base font-medium"
+                className="h-12 text-base font-medium bg-[#073143] hover:bg-[#0a4a5c] focus:ring-[#073143]"
               >
-                Sign in
+                Entrar
               </Button>
               
               <div className="text-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Don't have an account?{' '}
+                  Não tem uma conta?{' '}
                 </span>
                 <Link 
                   to="/register" 
-                  className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium"
+                  className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium"
                 >
-                  Start free trial
+                  Iniciar teste gratuito
                 </Link>
               </div>
             </form>
             
             <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
               <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                For demo purposes, enter any email and password
+                Para demonstração, digite qualquer email e senha
               </p>
             </div>
           </div>

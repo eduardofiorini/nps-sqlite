@@ -37,8 +37,8 @@ const MainLayout: React.FC = () => {
   };
 
   const navItems = [
-    { path: '/overview', label: t('nav.dashboard'), icon: <LayoutGrid size={20} /> },
-    { path: '/', label: t('nav.dashboard'), icon: <TrendingUp size={20} /> },
+    { path: '/overview', label: 'Dashboard Geral', icon: <LayoutGrid size={20} /> },
+    { path: '/', label: 'Campanhas NPS', icon: <TrendingUp size={20} /> },
   ];
 
   const settingsItems = [
@@ -66,13 +66,17 @@ const MainLayout: React.FC = () => {
             <div className="flex items-center">
               {/* Logo */}
               <Link to="/" className="flex items-center">
-                <div
-                  className="w-8 h-8 rounded flex items-center justify-center mr-2"
-                  style={{ backgroundColor: config.themeColor }}
-                >
-                  <BarChart size={20} className="text-white" />
+                <div className="w-10 h-10 mr-3 flex items-center justify-center">
+                  <img 
+                    src="/icone.png" 
+                    alt="Meu NPS" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">{t('login.title')}</span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold text-[#073143] dark:text-white">Meu NPS</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Plataforma de Gestão de NPS</span>
+                </div>
               </Link>
             </div>
 
@@ -80,21 +84,26 @@ const MainLayout: React.FC = () => {
             <nav className="hidden md:flex items-center space-x-4">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
               
               {user && (
                 <div className="relative group">
-                  <button className="flex items-center text-gray-700 dark:text-gray-300 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <User size={18} className="mr-2" />
-                    <span className="mr-1">{user.name}</span>
-                    <ChevronDown size={16} />
+                  <button className="flex items-center text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600">
+                    <div className="w-8 h-8 rounded-full bg-[#073143] text-white flex items-center justify-center mr-3 text-sm font-medium">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium">{user.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+                    </div>
+                    <ChevronDown size={16} className="ml-2" />
                   </button>
                   
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block border border-gray-200 dark:border-gray-700">
-                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-10 hidden group-hover:block border border-gray-200 dark:border-gray-700">
+                    <div className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
                       <div className="font-medium">{user.name}</div>
                       <div className="text-gray-500 dark:text-gray-400">{user.email}</div>
                     </div>
@@ -114,12 +123,12 @@ const MainLayout: React.FC = () => {
             <div className="md:hidden flex items-center space-x-2">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
               <button
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -131,17 +140,17 @@ const MainLayout: React.FC = () => {
 
       <div className="flex flex-1">
         {/* Sidebar (desktop) */}
-        <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-colors">
-          <nav className="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
-            <div className="px-4 space-y-1">
+        <aside className="hidden md:flex flex-col w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-colors">
+          <nav className="flex flex-col flex-1 pt-6 pb-4 overflow-y-auto">
+            <div className="px-6 space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                     isActive(item.path)
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-[#073143] text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                   }`}
                 >
                   <span className="mr-3">{item.icon}</span>
@@ -150,13 +159,13 @@ const MainLayout: React.FC = () => {
               ))}
               
               {/* Settings Section */}
-              <div className="mt-4">
+              <div className="mt-6">
                 <button
                   onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
-                  className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                     isSettingsActive()
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-[#073143] text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                   }`}
                 >
                   <div className="flex items-center">
@@ -165,7 +174,7 @@ const MainLayout: React.FC = () => {
                   </div>
                   <ChevronRight 
                     size={16} 
-                    className={`transform transition-transform ${isSettingsExpanded ? 'rotate-90' : ''}`}
+                    className={`transform transition-transform duration-200 ${isSettingsExpanded ? 'rotate-90' : ''}`}
                   />
                 </button>
                 
@@ -178,15 +187,15 @@ const MainLayout: React.FC = () => {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="ml-4 mt-1 space-y-1">
+                      <div className="ml-4 mt-2 space-y-1">
                         {settingsItems.map((item) => (
                           <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center px-4 py-2 text-sm rounded-md transition-colors ${
+                            className={`flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200 ${
                               isActive(item.path)
-                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                                ? 'bg-[#073143]/10 text-[#073143] dark:bg-[#073143]/20 dark:text-white border-l-2 border-[#073143]'
+                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                             }`}
                           >
                             <span className="mr-3">{item.icon}</span>
@@ -200,12 +209,13 @@ const MainLayout: React.FC = () => {
               </div>
             </div>
             
-            <div className="mt-auto px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-auto px-6 py-4 border-t border-gray-200 dark:border-gray-700">
               <Button
                 variant="outline"
                 fullWidth
                 icon={<LogOut size={16} />}
                 onClick={handleLogout}
+                className="border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white"
               >
                 {t('nav.logout')}
               </Button>
@@ -220,38 +230,42 @@ const MainLayout: React.FC = () => {
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="fixed inset-0 z-40 flex md:hidden"
             >
               <div className="fixed inset-0 bg-black bg-opacity-25" onClick={() => setIsMobileMenuOpen(false)} />
-              <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-800">
-                <div className="px-4 pt-5 pb-4 flex-1 overflow-y-auto">
-                  <div className="flex items-center justify-between">
+              <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-800 shadow-xl">
+                <div className="px-6 pt-6 pb-4 flex-1 overflow-y-auto">
+                  <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
-                      <div
-                        className="w-8 h-8 rounded flex items-center justify-center mr-2"
-                        style={{ backgroundColor: config.themeColor }}
-                      >
-                        <BarChart size={20} className="text-white" />
+                      <div className="w-8 h-8 mr-2 flex items-center justify-center">
+                        <img 
+                          src="/icone.png" 
+                          alt="Meu NPS" 
+                          className="w-full h-full object-contain"
+                        />
                       </div>
-                      <span className="text-xl font-bold text-gray-900 dark:text-white">{t('login.title')}</span>
+                      <div className="flex flex-col">
+                        <span className="text-lg font-bold text-[#073143] dark:text-white">Meu NPS</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Gestão de NPS</span>
+                      </div>
                     </div>
                     <button
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <X size={24} />
                     </button>
                   </div>
-                  <nav className="mt-5 space-y-1">
+                  <nav className="space-y-2">
                     {navItems.map((item) => (
                       <Link
                         key={item.path}
                         to={item.path}
-                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                           isActive(item.path)
-                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                            ? 'bg-[#073143] text-white shadow-md'
+                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                         }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -261,7 +275,7 @@ const MainLayout: React.FC = () => {
                     ))}
                     
                     {/* Mobile Settings */}
-                    <div className="mt-4">
+                    <div className="mt-6">
                       <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         {t('nav.settings')}
                       </div>
@@ -269,10 +283,10 @@ const MainLayout: React.FC = () => {
                         <Link
                           key={item.path}
                           to={item.path}
-                          className={`flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                          className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                             isActive(item.path)
-                              ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                              ? 'bg-[#073143] text-white shadow-md'
+                              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                           }`}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
@@ -283,10 +297,10 @@ const MainLayout: React.FC = () => {
                     </div>
                   </nav>
                 </div>
-                <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                   {user && (
-                    <div className="flex items-center mb-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mr-2">
+                    <div className="flex items-center mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="w-10 h-10 rounded-full bg-[#073143] text-white flex items-center justify-center mr-3 text-sm font-medium">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -300,6 +314,7 @@ const MainLayout: React.FC = () => {
                     fullWidth
                     icon={<LogOut size={16} />}
                     onClick={handleLogout}
+                    className="border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white"
                   >
                     {t('nav.logout')}
                   </Button>

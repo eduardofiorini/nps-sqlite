@@ -15,9 +15,9 @@ export const STORAGE_KEYS = {
 
 // Default data
 const DEFAULT_CONFIG: AppConfig = {
-  themeColor: '#3B82F6',
+  themeColor: '#073143',
   logoUrl: '',
-  defaultEmail: 'nps@example.com',
+  defaultEmail: 'nps@meunps.com',
   language: 'en',
 };
 
@@ -300,7 +300,7 @@ export const initializeDefaultData = () => {
     const defaultSources: Source[] = [
       { id: uuidv4(), name: 'WhatsApp', color: '#25D366' },
       { id: uuidv4(), name: 'Email', color: '#4285F4' },
-      { id: uuidv4(), name: 'Phone', color: '#FF9800' },
+      { id: uuidv4(), name: 'Telefone', color: '#FF9800' },
       { id: uuidv4(), name: 'Website', color: '#673AB7' },
     ];
     localStorage.setItem(STORAGE_KEYS.SOURCES, JSON.stringify(defaultSources));
@@ -308,18 +308,18 @@ export const initializeDefaultData = () => {
 
   if (!localStorage.getItem(STORAGE_KEYS.SITUATIONS)) {
     const defaultSituations: Situation[] = [
-      { id: uuidv4(), name: 'Responded', color: '#4CAF50' },
-      { id: uuidv4(), name: 'Pending', color: '#FFC107' },
-      { id: uuidv4(), name: 'Ignored', color: '#F44336' },
+      { id: uuidv4(), name: 'Respondido', color: '#4CAF50' },
+      { id: uuidv4(), name: 'Pendente', color: '#FFC107' },
+      { id: uuidv4(), name: 'Ignorado', color: '#F44336' },
     ];
     localStorage.setItem(STORAGE_KEYS.SITUATIONS, JSON.stringify(defaultSituations));
   }
 
   if (!localStorage.getItem(STORAGE_KEYS.GROUPS)) {
     const defaultGroups: Group[] = [
-      { id: uuidv4(), name: 'Premium Customers' },
-      { id: uuidv4(), name: 'Regular Customers' },
-      { id: uuidv4(), name: 'Internal Tests' },
+      { id: uuidv4(), name: 'Clientes Premium' },
+      { id: uuidv4(), name: 'Clientes Regulares' },
+      { id: uuidv4(), name: 'Testes Internos' },
     ];
     localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(defaultGroups));
   }
