@@ -132,6 +132,11 @@ export const saveCampaignForm = (form: CampaignForm): CampaignForm => {
   const newForm = {
     ...form,
     id: form.id || uuidv4(),
+    // Ensure fields are properly ordered
+    fields: form.fields.map((field, index) => ({
+      ...field,
+      order: field.order !== undefined ? field.order : index
+    })).sort((a, b) => a.order - b.order)
   };
   
   localStorage.setItem(formKey, JSON.stringify(newForm));

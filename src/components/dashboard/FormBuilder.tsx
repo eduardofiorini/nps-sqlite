@@ -115,10 +115,16 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   };
   
   const handleSave = () => {
+    // Ensure all fields have correct order before saving
+    const fieldsWithCorrectOrder = fields.map((field, index) => ({
+      ...field,
+      order: index
+    }));
+    
     const form: CampaignForm = {
       id: initialForm?.id || crypto.randomUUID(),
       campaignId,
-      fields: fields.map((field, index) => ({ ...field, order: index })),
+      fields: fieldsWithCorrectOrder,
     };
     
     onSave(form);
@@ -132,16 +138,18 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     
     if (sourceIndex === destinationIndex) return;
     
+    // Create a new array with the reordered fields
     const reorderedFields = Array.from(fields);
     const [movedField] = reorderedFields.splice(sourceIndex, 1);
     reorderedFields.splice(destinationIndex, 0, movedField);
     
-    // Update order property for all fields
+    // Update order property for all fields to match their new positions
     const fieldsWithUpdatedOrder = reorderedFields.map((field, index) => ({
       ...field,
       order: index
     }));
     
+    // Update the state with the new order
     setFields(fieldsWithUpdatedOrder);
   };
   
