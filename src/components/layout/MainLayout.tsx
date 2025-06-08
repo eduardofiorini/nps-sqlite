@@ -34,7 +34,7 @@ const MainLayout: React.FC = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
-  };
+  };z
 
   const navItems = [
     { path: '/overview', label: t('nav.dashboard'), icon: <LayoutGrid size={20} /> },
