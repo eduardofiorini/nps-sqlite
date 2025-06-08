@@ -112,28 +112,28 @@ const CampaignDashboard: React.FC = () => {
       {/* Exit Button */}
       <button
         onClick={() => setIsTvMode(false)}
-        className="absolute top-6 right-6 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200"
+        className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200"
       >
-        <X size={24} className="text-white" />
+        <X size={20} className="text-white" />
       </button>
 
-      {/* Header */}
-      <div className="p-8 border-b border-gray-700">
+      {/* Header - Compact */}
+      <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">{campaign.name}</h1>
-            <div className="flex items-center space-x-4 text-gray-300">
-              <span className="text-lg">{startDate} até {endDate}</span>
+            <h1 className="text-2xl font-bold text-white mb-1">{campaign.name}</h1>
+            <div className="flex items-center space-x-3 text-gray-300">
+              <span className="text-sm">{startDate} até {endDate}</span>
               {campaign.active ? (
-                <Badge variant="success" className="text-lg px-4 py-2">Ativa</Badge>
+                <Badge variant="success" className="text-xs px-2 py-1">Ativa</Badge>
               ) : (
-                <Badge variant="danger" className="text-lg px-4 py-2">Inativa</Badge>
+                <Badge variant="danger" className="text-xs px-2 py-1">Inativa</Badge>
               )}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-400">Última atualização</div>
-            <div className="text-lg text-white">{new Date().toLocaleTimeString()}</div>
+            <div className="text-xs text-gray-400">Última atualização</div>
+            <div className="text-sm text-white">{new Date().toLocaleTimeString()}</div>
           </div>
         </div>
       </div>
@@ -141,78 +141,81 @@ const CampaignDashboard: React.FC = () => {
       {responses.length === 0 ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <PieChart size={64} className="text-gray-400 mx-auto mb-4" />
-            <h3 className="text-3xl font-semibold text-white mb-4">Nenhuma resposta ainda</h3>
-            <p className="text-xl text-gray-400">
+            <PieChart size={48} className="text-gray-400 mx-auto mb-3" />
+            <h3 className="text-2xl font-semibold text-white mb-3">Nenhuma resposta ainda</h3>
+            <p className="text-lg text-gray-400">
               Aguardando primeiras respostas da pesquisa NPS
             </p>
           </div>
         </div>
       ) : (
-        <div className="p-8 h-full overflow-y-auto">
-          <div className="grid grid-cols-12 gap-8 h-full">
-            {/* NPS Score - Large Display */}
-            <div className="col-span-4 flex flex-col">
-              <div className="bg-gray-800 rounded-2xl p-8 flex-1 flex flex-col items-center justify-center border border-gray-700">
-                <h2 className="text-2xl font-semibold text-gray-300 mb-6">Pontuação NPS</h2>
-                <div className="flex justify-center mb-6">
-                  <NpsDoughnut npsScore={npsScore} width={280} height={280} />
+        <div className="p-4 h-[calc(100vh-120px)] flex flex-col">
+          {/* Main Metrics Row */}
+          <div className="grid grid-cols-12 gap-4 mb-4 flex-shrink-0">
+            {/* NPS Score - Compact */}
+            <div className="col-span-3">
+              <div className="bg-gray-800 rounded-xl p-4 h-full flex flex-col items-center justify-center border border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-300 mb-3">Pontuação NPS</h2>
+                <div className="flex justify-center mb-3">
+                  <NpsDoughnut npsScore={npsScore} width={160} height={160} />
                 </div>
                 <div className="text-center">
-                  <div className="text-lg text-gray-400">Baseado em</div>
-                  <div className="text-3xl font-bold text-white">{responses.length} respostas</div>
+                  <div className="text-sm text-gray-400">Baseado em</div>
+                  <div className="text-xl font-bold text-white">{responses.length} respostas</div>
                 </div>
               </div>
             </div>
 
-            {/* Distribution */}
-            <div className="col-span-4 flex flex-col">
-              <div className="bg-gray-800 rounded-2xl p-8 flex-1 border border-gray-700">
-                <h2 className="text-2xl font-semibold text-gray-300 mb-6 text-center">Distribuição</h2>
-                <div className="h-64 mb-6">
+            {/* Distribution - Compact */}
+            <div className="col-span-4">
+              <div className="bg-gray-800 rounded-xl p-4 h-full border border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-300 mb-3 text-center">Distribuição</h2>
+                <div className="h-32 mb-3">
                   <NpsDistribution
                     promoters={promoters}
                     passives={passives}
                     detractors={detractors}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-red-900/30 p-4 rounded-xl text-center border border-red-800">
-                    <div className="text-3xl font-bold text-red-400">{detractors}</div>
-                    <div className="text-sm text-red-300">Detratores</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-red-900/30 p-2 rounded-lg text-center border border-red-800">
+                    <div className="text-xl font-bold text-red-400">{detractors}</div>
+                    <div className="text-xs text-red-300">Detratores</div>
                   </div>
-                  <div className="bg-yellow-900/30 p-4 rounded-xl text-center border border-yellow-800">
-                    <div className="text-3xl font-bold text-yellow-400">{passives}</div>
-                    <div className="text-sm text-yellow-300">Neutros</div>
+                  <div className="bg-yellow-900/30 p-2 rounded-lg text-center border border-yellow-800">
+                    <div className="text-xl font-bold text-yellow-400">{passives}</div>
+                    <div className="text-xs text-yellow-300">Neutros</div>
                   </div>
-                  <div className="bg-green-900/30 p-4 rounded-xl text-center border border-green-800">
-                    <div className="text-3xl font-bold text-green-400">{promoters}</div>
-                    <div className="text-sm text-green-300">Promotores</div>
+                  <div className="bg-green-900/30 p-2 rounded-lg text-center border border-green-800">
+                    <div className="text-xl font-bold text-green-400">{promoters}</div>
+                    <div className="text-xs text-green-300">Promotores</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Trend */}
-            <div className="col-span-4 flex flex-col">
-              <div className="bg-gray-800 rounded-2xl p-8 flex-1 border border-gray-700">
-                <h2 className="text-2xl font-semibold text-gray-300 mb-6 text-center">Tendência NPS</h2>
-                <div className="h-80">
+            {/* Trend - Compact */}
+            <div className="col-span-5">
+              <div className="bg-gray-800 rounded-xl p-4 h-full border border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-300 mb-3 text-center">Tendência NPS</h2>
+                <div className="h-40">
                   <NpsTrend data={trendData} />
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Recent Responses */}
-            <div className="col-span-12">
-              <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                <h2 className="text-2xl font-semibold text-gray-300 mb-6">Últimas Respostas</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {responses.slice(0, 6).map((response) => (
-                    <div key={response.id} className="bg-gray-700 rounded-xl p-6 border border-gray-600">
-                      <div className="flex items-center justify-between mb-4">
+          {/* Recent Responses - Flexible Height */}
+          <div className="flex-1 min-h-0">
+            <div className="bg-gray-800 rounded-xl p-4 h-full border border-gray-700 flex flex-col">
+              <h2 className="text-lg font-semibold text-gray-300 mb-3">Últimas Respostas</h2>
+              <div className="flex-1 overflow-y-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+                  {responses.slice(0, 8).map((response) => (
+                    <div key={response.id} className="bg-gray-700 rounded-lg p-3 border border-gray-600 flex-shrink-0">
+                      <div className="flex items-center justify-between mb-2">
                         <div 
-                          className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${
                             response.score >= 9 
                               ? 'bg-green-500 text-white' 
                               : response.score <= 6 
@@ -222,17 +225,17 @@ const CampaignDashboard: React.FC = () => {
                         >
                           {response.score}
                         </div>
-                        <div className="text-right">
-                          <div className="text-lg font-medium text-white">
+                        <div className="text-right flex-1 ml-2">
+                          <div className="text-sm font-medium text-white truncate">
                             {sources[response.sourceId] || 'Fonte Desconhecida'}
                           </div>
-                          <div className="text-sm text-gray-400">
+                          <div className="text-xs text-gray-400">
                             {new Date(response.createdAt).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
                       {response.feedback && (
-                        <div className="text-sm text-gray-300 bg-gray-600 p-3 rounded-lg">
+                        <div className="text-xs text-gray-300 bg-gray-600 p-2 rounded line-clamp-2">
                           "{response.feedback}"
                         </div>
                       )}
@@ -245,8 +248,8 @@ const CampaignDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Footer */}
-      <div className="absolute bottom-4 left-8 right-8 flex justify-between items-center text-gray-400 text-sm">
+      {/* Footer - Compact */}
+      <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center text-gray-400 text-xs">
         <div>Pressione ESC para sair do modo TV</div>
         <div>Atualização automática a cada 30 segundos</div>
       </div>
@@ -257,7 +260,7 @@ const CampaignDashboard: React.FC = () => {
     <>
       <div>
         <div className="mb-6">
-          <Link to="/">
+          <Link to="/campaigns">
             <Button variant="outline" size="sm" icon={<ChevronLeft size={16} />}>
               Voltar ao Dashboard
             </Button>
