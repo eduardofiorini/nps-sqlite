@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { NpsResponse, Campaign } from '../types';
-import { getResponses, getCampaigns, getSources, getSituations, getGroups } from '../utils/localStorage';
+import { NpsResponse, Campaign, CampaignForm } from '../types';
+import { getResponses, getCampaigns, getSources, getSituations, getGroups, getCampaignForm } from '../utils/localStorage';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -14,12 +14,14 @@ const CampaignResponses: React.FC = () => {
   const [responses, setResponses] = useState<NpsResponse[]>([]);
   const [filteredResponses, setFilteredResponses] = useState<NpsResponse[]>([]);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [campaignForm, setCampaignForm] = useState<CampaignForm | null>(null);
   const [sources, setSources] = useState<Record<string, string>>({});
   const [situations, setSituations] = useState<Record<string, string>>({});
   const [groups, setGroups] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [scoreFilter, setScoreFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [groupFilter, setGroupFilter] = useState<string>('all');
 
   useEffect(() => {
     if (!id) return;
@@ -28,6 +30,10 @@ const CampaignResponses: React.FC = () => {
     const campaigns = getCampaigns();
     const foundCampaign = campaigns.find(c => c.id === id);
     setCampaign(foundCampaign || null);
+
+    // Load campaign form
+    const form = getCampaignForm(id);
+    setCampaignForm(form);
 
     // Load responses
     const campaignResponses = getResponses(id);
@@ -61,12 +67,12 @@ const CampaignResponses: React.FC = () => {
   useEffect(() => {
     let filtered = [...responses];
 
-    // Search filter
+    // Search filter (only by source and situation, not feedback)
     if (searchTerm) {
       filtered = filtered.filter(response =>
-        response.feedback.toLowerCase().includes(searchTerm.toLowerCase()) ||
         sources[response.sourceId]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        situations[response.situationId]?.toLowerCase().includes(searchTerm.toLowerCase())
+        situations[response.situationId]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        groups[response.groupId]?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -86,28 +92,68 @@ const CampaignResponses: React.FC = () => {
       filtered = filtered.filter(response => response.sourceId === sourceFilter);
     }
 
+    // Group filter
+    if (groupFilter !== 'all') {
+      filtered = filtered.filter(response => response.groupId === groupFilter);
+    }
+
     setFilteredResponses(filtered);
-  }, [responses, searchTerm, scoreFilter, sourceFilter, sources, situations]);
+  }, [responses, searchTerm, scoreFilter, sourceFilter, groupFilter, sources, situations, groups]);
 
   const handleExportCSV = () => {
-    if (!filteredResponses.length) return;
+    if (!filteredResponses.length || !campaignForm) return;
 
-    const headers = ['Data', 'Hora', 'Pontuação', 'Categoria', 'Feedback', 'Fonte', 'Situação', 'Grupo'];
+    // Create headers based on form fields
+    const baseHeaders = ['Data', 'Hora', 'Fonte', 'Situação', 'Grupo'];
+    const formHeaders: string[] = [];
+    
+    // Add headers for each form field
+    campaignForm.fields
+      .sort((a, b) => a.order - b.order)
+      .forEach(field => {
+        if (field.type === 'nps') {
+          formHeaders.push('Pontuação NPS', 'Categoria NPS');
+        } else {
+          formHeaders.push(field.label);
+        }
+      });
+
+    const headers = [...baseHeaders, ...formHeaders];
+
     const csvContent = [
       headers.join(','),
       ...filteredResponses.map(response => {
         const date = new Date(response.createdAt);
         const category = response.score >= 9 ? 'Promotor' : response.score <= 6 ? 'Detrator' : 'Neutro';
-        return [
+        
+        const baseData = [
           date.toLocaleDateString('pt-BR'),
           date.toLocaleTimeString('pt-BR'),
-          response.score,
-          category,
-          `"${response.feedback.replace(/"/g, '""')}"`,
           sources[response.sourceId] || 'Desconhecido',
           situations[response.situationId] || 'Desconhecido',
           groups[response.groupId] || 'Desconhecido'
-        ].join(',');
+        ];
+
+        const formData: string[] = [];
+        
+        // Add data for each form field
+        campaignForm.fields
+          .sort((a, b) => a.order - b.order)
+          .forEach(field => {
+            if (field.type === 'nps') {
+              formData.push(response.score.toString(), category);
+            } else {
+              // For other field types, we would need to store the responses
+              // For now, we'll use the feedback field for text responses
+              if (field.type === 'text') {
+                formData.push(`"${(response.feedback || '').replace(/"/g, '""')}"`);
+              } else {
+                formData.push(''); // Placeholder for other field types
+              }
+            }
+          });
+
+        return [...baseData, ...formData].join(',');
       })
     ].join('\n');
 
@@ -154,7 +200,7 @@ const CampaignResponses: React.FC = () => {
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               {filteredResponses.length} de {responses.length} respostas
-              {searchTerm || scoreFilter !== 'all' || sourceFilter !== 'all' ? ' (filtradas)' : ''}
+              {searchTerm || scoreFilter !== 'all' || sourceFilter !== 'all' || groupFilter !== 'all' ? ' (filtradas)' : ''}
             </p>
           </div>
         </div>
@@ -171,16 +217,65 @@ const CampaignResponses: React.FC = () => {
         )}
       </div>
 
+      {/* Summary Stats - Moved to top */}
+      {responses.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {filteredResponses.length}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {filteredResponses.length !== responses.length ? 'Respostas Filtradas' : 'Total de Respostas'}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {filteredResponses.filter(r => r.score >= 9).length}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Promotores (9-10)
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-600">
+                {filteredResponses.filter(r => r.score >= 7 && r.score <= 8).length}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Neutros (7-8)
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {filteredResponses.filter(r => r.score <= 6).length}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Detratores (0-6)
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Filters */}
       {responses.length > 0 && (
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader title="Filtros" />
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* Search */}
               <div className="relative">
                 <Input
-                  placeholder="Buscar por feedback ou fonte..."
+                  placeholder="Buscar por fonte, situação ou grupo..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -212,6 +307,18 @@ const CampaignResponses: React.FC = () => {
                 ))}
               </select>
 
+              {/* Group Filter */}
+              <select
+                value={groupFilter}
+                onChange={(e) => setGroupFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                <option value="all">Todos os grupos</option>
+                {Object.entries(groups).map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
+
               {/* Clear Filters */}
               <Button
                 variant="outline"
@@ -220,8 +327,9 @@ const CampaignResponses: React.FC = () => {
                   setSearchTerm('');
                   setScoreFilter('all');
                   setSourceFilter('all');
+                  setGroupFilter('all');
                 }}
-                disabled={!searchTerm && scoreFilter === 'all' && sourceFilter === 'all'}
+                disabled={!searchTerm && scoreFilter === 'all' && sourceFilter === 'all' && groupFilter === 'all'}
               >
                 Limpar Filtros
               </Button>
@@ -241,7 +349,8 @@ const CampaignResponses: React.FC = () => {
                 <span>Filtros ativos: {[
                   searchTerm && 'Busca',
                   scoreFilter !== 'all' && 'Categoria',
-                  sourceFilter !== 'all' && 'Fonte'
+                  sourceFilter !== 'all' && 'Fonte',
+                  groupFilter !== 'all' && 'Grupo'
                 ].filter(Boolean).join(', ') || 'Nenhum'}</span>
               </div>
             )
@@ -303,17 +412,47 @@ const CampaignResponses: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Feedback */}
-                    {response.feedback && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Comentário:
-                        </h4>
-                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
-                          <p className="text-gray-900 dark:text-white italic">
-                            "{response.feedback}"
-                          </p>
-                        </div>
+                    {/* All Form Responses */}
+                    {campaignForm && (
+                      <div className="mb-4 space-y-3">
+                        {campaignForm.fields
+                          .sort((a, b) => a.order - b.order)
+                          .map((field) => {
+                            if (field.type === 'nps') {
+                              return (
+                                <div key={field.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    {field.label}
+                                  </h4>
+                                  <div className="flex items-center space-x-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${getScoreColor(response.score)}`}>
+                                      {response.score}
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {category.label}
+                                      </div>
+                                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        Pontuação: {response.score}/10
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            } else if (field.type === 'text' && response.feedback) {
+                              return (
+                                <div key={field.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    {field.label}
+                                  </h4>
+                                  <p className="text-gray-900 dark:text-white italic">
+                                    "{response.feedback}"
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
                       </div>
                     )}
 
@@ -362,55 +501,6 @@ const CampaignResponses: React.FC = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Summary Stats */}
-      {responses.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {responses.length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Total de Respostas
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {responses.filter(r => r.score >= 9).length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Promotores
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {responses.filter(r => r.score >= 7 && r.score <= 8).length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Neutros
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-red-600">
-                {responses.filter(r => r.score <= 6).length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Detratores
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 };
