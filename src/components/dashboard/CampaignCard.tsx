@@ -64,7 +64,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
   
   return (
     <>
-      <Card className="transition-all duration-200 hover:shadow-lg">
+      <Card className="transition-all duration-200 hover:shadow-lg h-full flex flex-col">
         <CardHeader
           title={
             <div className="flex items-center">
@@ -83,7 +83,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
             </div>
           }
         />
-        <CardContent>
+        <CardContent className="flex-1">
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
             {campaign.description || 'No description available'}
           </p>
@@ -108,29 +108,33 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <div className="flex space-x-2">
-            <Link to={`/campaigns/${campaign.id}`}>
-              <Button variant="primary" size="sm" icon={<BarChart3 size={14} />}>
-                {t('campaign.dashboard')}
-              </Button>
-            </Link>
-            <Link to={`/campaigns/${campaign.id}/form`}>
-              <Button variant="outline" size="sm" icon={<Edit size={14} />}>
-                {t('campaign.edit')}
-              </Button>
-            </Link>
+        <CardFooter className="flex flex-col space-y-3 mt-auto">
+          <div className="flex justify-between w-full">
+            <div className="flex space-x-2">
+              <Link to={`/campaigns/${campaign.id}`}>
+                <Button variant="primary" size="sm" icon={<BarChart3 size={14} />}>
+                  {t('campaign.dashboard')}
+                </Button>
+              </Link>
+              <Link to={`/campaigns/${campaign.id}/form`}>
+                <Button variant="outline" size="sm" icon={<Edit size={14} />}>
+                  {t('campaign.edit')}
+                </Button>
+              </Link>
+            </div>
           </div>
           
-          <Button
-            variant="danger"
-            size="sm"
-            icon={<Trash2 size={14} />}
-            onClick={() => setShowDeleteModal(true)}
-            className="ml-2"
-          >
-            {t('common.delete')}
-          </Button>
+          <div className="w-full">
+            <Button
+              variant="danger"
+              size="sm"
+              icon={<Trash2 size={14} />}
+              onClick={() => setShowDeleteModal(true)}
+              fullWidth
+            >
+              {t('common.delete')}
+            </Button>
+          </div>
         </CardFooter>
       </Card>
 
