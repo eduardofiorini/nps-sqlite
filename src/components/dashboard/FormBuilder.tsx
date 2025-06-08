@@ -30,17 +30,32 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   campaignId,
   onSave,
 }) => {
-  const [fields, setFields] = useState<FormField[]>(
-    initialForm?.fields?.sort((a, b) => a.order - b.order) || [
+  // Initialize fields with proper ordering
+  const initializeFields = () => {
+    if (initialForm?.fields) {
+      // Sort by order property and ensure all have correct order values
+      const sortedFields = [...initialForm.fields]
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((field, index) => ({
+          ...field,
+          order: index
+        }));
+      return sortedFields;
+    }
+    
+    // Default NPS field
+    return [
       {
         id: crypto.randomUUID(),
-        type: 'nps',
+        type: 'nps' as const,
         label: 'How likely are you to recommend our service to a friend or colleague?',
         required: true,
         order: 0,
       },
-    ]
-  );
+    ];
+  };
+
+  const [fields, setFields] = useState<FormField[]>(initializeFields());
   const [showFieldOptions, setShowFieldOptions] = useState(false);
   
   const handleAddField = (type: FormField['type']) => {
@@ -53,8 +68,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       order: fields.length,
     };
     
-    setFields([...fields, newField]);
+    const updatedFields = [...fields, newField];
+    setFields(updatedFields);
     setShowFieldOptions(false);
+    
+    // Auto-save after adding field
+    saveFormWithFields(updatedFields);
   };
   
   const handleRemoveField = (id: string) => {
@@ -65,58 +84,71 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       order: index
     }));
     setFields(reorderedFields);
+    
+    // Auto-save after removing field
+    saveFormWithFields(reorderedFields);
   };
   
   const handleFieldChange = (id: string, updates: Partial<FormField>) => {
-    setFields(
-      fields.map(field => (field.id === id ? { ...field, ...updates } : field))
+    const updatedFields = fields.map(field => 
+      field.id === id ? { ...field, ...updates } : field
     );
+    setFields(updatedFields);
+    
+    // Auto-save field changes
+    saveFormWithFields(updatedFields);
   };
   
   const handleOptionAdd = (fieldId: string) => {
-    setFields(
-      fields.map(field => {
-        if (field.id === fieldId && field.options) {
-          return {
-            ...field,
-            options: [...field.options, `Option ${field.options.length + 1}`],
-          };
-        }
-        return field;
-      })
-    );
+    const updatedFields = fields.map(field => {
+      if (field.id === fieldId && field.options) {
+        return {
+          ...field,
+          options: [...field.options, `Option ${field.options.length + 1}`],
+        };
+      }
+      return field;
+    });
+    setFields(updatedFields);
+    
+    // Auto-save after adding option
+    saveFormWithFields(updatedFields);
   };
   
   const handleOptionChange = (fieldId: string, optionIndex: number, value: string) => {
-    setFields(
-      fields.map(field => {
-        if (field.id === fieldId && field.options) {
-          const newOptions = [...field.options];
-          newOptions[optionIndex] = value;
-          return { ...field, options: newOptions };
-        }
-        return field;
-      })
-    );
+    const updatedFields = fields.map(field => {
+      if (field.id === fieldId && field.options) {
+        const newOptions = [...field.options];
+        newOptions[optionIndex] = value;
+        return { ...field, options: newOptions };
+      }
+      return field;
+    });
+    setFields(updatedFields);
+    
+    // Auto-save after changing option
+    saveFormWithFields(updatedFields);
   };
   
   const handleOptionRemove = (fieldId: string, optionIndex: number) => {
-    setFields(
-      fields.map(field => {
-        if (field.id === fieldId && field.options) {
-          return {
-            ...field,
-            options: field.options.filter((_, i) => i !== optionIndex),
-          };
-        }
-        return field;
-      })
-    );
+    const updatedFields = fields.map(field => {
+      if (field.id === fieldId && field.options) {
+        return {
+          ...field,
+          options: field.options.filter((_, i) => i !== optionIndex),
+        };
+      }
+      return field;
+    });
+    setFields(updatedFields);
+    
+    // Auto-save after removing option
+    saveFormWithFields(updatedFields);
   };
   
-  const handleSave = () => {
-    // Ensure all fields have correct order before saving
-    const fieldsWithCorrectOrder = fields.map((field, index) => ({
+  const saveFormWithFields = (fieldsToSave: FormField[]) => {
+    // Ensure all fields have correct sequential order
+    const fieldsWithCorrectOrder = fieldsToSave.map((field, index) => ({
       ...field,
       order: index
     }));
@@ -125,6 +157,26 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       id: initialForm?.id || crypto.randomUUID(),
       campaignId,
       fields: fieldsWithCorrectOrder,
+    };
+    
+    // Save to localStorage immediately
+    const formKey = `forms_${campaignId}`;
+    localStorage.setItem(formKey, JSON.stringify(form));
+    
+    console.log('Form saved with fields:', fieldsWithCorrectOrder.map(f => ({ id: f.id, label: f.label, order: f.order })));
+  };
+  
+  const handleSave = () => {
+    // Final save and navigate
+    saveFormWithFields(fields);
+    
+    const form: CampaignForm = {
+      id: initialForm?.id || crypto.randomUUID(),
+      campaignId,
+      fields: fields.map((field, index) => ({
+        ...field,
+        order: index
+      })),
     };
     
     onSave(form);
@@ -138,6 +190,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     
     if (sourceIndex === destinationIndex) return;
     
+    console.log(`Moving field from index ${sourceIndex} to ${destinationIndex}`);
+    
     // Create a new array with the reordered fields
     const reorderedFields = Array.from(fields);
     const [movedField] = reorderedFields.splice(sourceIndex, 1);
@@ -149,8 +203,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       order: index
     }));
     
+    console.log('New field order:', fieldsWithUpdatedOrder.map(f => ({ id: f.id, label: f.label, order: f.order })));
+    
     // Update the state with the new order
     setFields(fieldsWithUpdatedOrder);
+    
+    // Auto-save the new order
+    saveFormWithFields(fieldsWithUpdatedOrder);
   };
   
   const getDefaultLabel = (type: FormField['type']): string => {
@@ -239,7 +298,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                             </span>
                           </div>
                           <span className="ml-3 text-xs text-gray-400 dark:text-gray-500">
-                            #{index + 1}
+                            #{field.order + 1}
                           </span>
                         </div>
                         

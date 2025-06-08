@@ -81,7 +81,7 @@ export const deleteCampaign = (id: string): boolean => {
 // Helper function to delete all campaign-related data
 const deleteCampaignData = (campaignId: string): void => {
   // Delete campaign form
-  const formKey = `${STORAGE_KEYS.FORMS}_${campaignId}`;
+  const formKey = `forms_${campaignId}`;
   localStorage.removeItem(formKey);
   
   // Delete campaign responses
@@ -122,22 +122,50 @@ export const saveResponse = (response: NpsResponse): NpsResponse => {
 
 // Forms
 export const getCampaignForm = (campaignId: string): CampaignForm | null => {
-  const formKey = `${STORAGE_KEYS.FORMS}_${campaignId}`;
+  const formKey = `forms_${campaignId}`;
   const formData = localStorage.getItem(formKey);
-  return formData ? JSON.parse(formData) : null;
+  
+  if (!formData) {
+    console.log(`No form found for campaign ${campaignId}`);
+    return null;
+  }
+  
+  const form = JSON.parse(formData);
+  
+  // Ensure fields are properly ordered
+  if (form.fields) {
+    form.fields = form.fields
+      .map((field: FormField, index: number) => ({
+        ...field,
+        order: field.order !== undefined ? field.order : index
+      }))
+      .sort((a: FormField, b: FormField) => a.order - b.order);
+  }
+  
+  console.log(`Loaded form for campaign ${campaignId}:`, form.fields?.map((f: FormField) => ({ id: f.id, label: f.label, order: f.order })));
+  
+  return form;
 };
 
 export const saveCampaignForm = (form: CampaignForm): CampaignForm => {
-  const formKey = `${STORAGE_KEYS.FORMS}_${form.campaignId}`;
+  const formKey = `forms_${form.campaignId}`;
+  
+  // Ensure all fields have proper order values
+  const fieldsWithOrder = form.fields.map((field, index) => ({
+    ...field,
+    order: field.order !== undefined ? field.order : index
+  }));
+  
+  // Sort fields by order to maintain consistency
+  const sortedFields = fieldsWithOrder.sort((a, b) => a.order - b.order);
+  
   const newForm = {
     ...form,
     id: form.id || uuidv4(),
-    // Ensure fields are properly ordered
-    fields: form.fields.map((field, index) => ({
-      ...field,
-      order: field.order !== undefined ? field.order : index
-    })).sort((a, b) => a.order - b.order)
+    fields: sortedFields
   };
+  
+  console.log(`Saving form for campaign ${form.campaignId}:`, sortedFields.map(f => ({ id: f.id, label: f.label, order: f.order })));
   
   localStorage.setItem(formKey, JSON.stringify(newForm));
   return newForm;
