@@ -16,6 +16,17 @@ export type Campaign = {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  // Survey customization
+  surveyCustomization?: SurveyCustomization;
+};
+
+export type SurveyCustomization = {
+  backgroundType: 'color' | 'image';
+  backgroundColor?: string;
+  backgroundImage?: string;
+  logoImage?: string;
+  primaryColor?: string;
+  textColor?: string;
 };
 
 export type NpsResponse = {

@@ -68,128 +68,250 @@ const Survey: React.FC = () => {
     );
   }
 
+  const customization = campaign.surveyCustomization;
+
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
-        <Card className="max-w-lg w-full">
-          <CardContent className="text-center py-12">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 transition-colors relative"
+        style={{
+          backgroundColor: customization?.backgroundType === 'color' 
+            ? customization?.backgroundColor 
+            : '#f9fafb',
+          backgroundImage: customization?.backgroundType === 'image' && customization?.backgroundImage
+            ? `url(${customization.backgroundImage})`
+            : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {customization?.backgroundType === 'image' && customization?.backgroundImage && (
+          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+        )}
+        
+        <div className="relative z-10 max-w-lg w-full">
+          <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center border border-gray-200">
+            {customization?.logoImage && (
+              <img
+                src={customization.logoImage}
+                alt="Logo"
+                className="w-16 h-16 object-contain mx-auto mb-6"
+              />
+            )}
+            
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{t('survey.thankYou')}</h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">{t('survey.thankYou')}</h2>
+            <p className="text-gray-600">
               {t('survey.submitted')}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
-      <Card className="max-w-lg w-full">
-        <CardHeader title={campaign.name} />
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {form.fields.map((field) => {
-              if (field.type === 'nps') {
-                return (
-                  <div key={field.id} className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {field.label}
-                    </label>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{t('survey.notLikely')}</span>
-                      <div className="flex space-x-2">
-                        {Array.from({ length: 11 }, (_, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            className={`w-10 h-10 rounded-full border transition-colors ${
-                              formData[field.id] === i
-                                ? 'bg-blue-500 text-white border-blue-500'
-                                : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 text-gray-700 dark:text-gray-300'
-                            }`}
-                            onClick={() => setFormData({ ...formData, [field.id]: i })}
-                          >
-                            {i}
-                          </button>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 transition-colors relative"
+      style={{
+        backgroundColor: customization?.backgroundType === 'color' 
+          ? customization?.backgroundColor 
+          : '#f9fafb',
+        backgroundImage: customization?.backgroundType === 'image' && customization?.backgroundImage
+          ? `url(${customization.backgroundImage})`
+          : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {customization?.backgroundType === 'image' && customization?.backgroundImage && (
+        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      )}
+      
+      <div className="relative z-10 max-w-lg w-full">
+        <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+          <div className="p-8">
+            {customization?.logoImage && (
+              <div className="text-center mb-6">
+                <img
+                  src={customization.logoImage}
+                  alt="Logo"
+                  className="w-16 h-16 object-contain mx-auto"
+                />
+              </div>
+            )}
+            
+            <div className="text-center mb-8">
+              <h1 
+                className="text-2xl font-bold mb-2"
+                style={{ color: customization?.textColor || '#1f2937' }}
+              >
+                {campaign.name}
+              </h1>
+              {campaign.description && (
+                <p 
+                  className="text-sm opacity-80"
+                  style={{ color: customization?.textColor || '#6b7280' }}
+                >
+                  {campaign.description}
+                </p>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {form.fields.map((field) => {
+                if (field.type === 'nps') {
+                  return (
+                    <div key={field.id} className="space-y-4">
+                      <label 
+                        className="block text-sm font-medium text-center"
+                        style={{ color: customization?.textColor || '#374151' }}
+                      >
+                        {field.label}
+                      </label>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between text-xs" style={{ color: customization?.textColor || '#6b7280' }}>
+                          <span>{t('survey.notLikely')}</span>
+                          <span>{t('survey.extremelyLikely')}</span>
+                        </div>
+                        <div className="flex justify-between space-x-1">
+                          {Array.from({ length: 11 }, (_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-200 text-sm font-medium hover:scale-110 ${
+                                formData[field.id] === i
+                                  ? 'text-white shadow-lg'
+                                  : 'bg-white hover:shadow-md'
+                              }`}
+                              style={{
+                                borderColor: customization?.primaryColor || '#3b82f6',
+                                backgroundColor: formData[field.id] === i 
+                                  ? customization?.primaryColor || '#3b82f6'
+                                  : 'white',
+                                color: formData[field.id] === i 
+                                  ? 'white'
+                                  : customization?.primaryColor || '#3b82f6'
+                              }}
+                              onClick={() => setFormData({ ...formData, [field.id]: i })}
+                            >
+                              {i}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (field.type === 'text') {
+                  return (
+                    <div key={field.id}>
+                      <label 
+                        className="block text-sm font-medium mb-2"
+                        style={{ color: customization?.textColor || '#374151' }}
+                      >
+                        {field.label}
+                      </label>
+                      <textarea
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all"
+                        style={{
+                          focusRingColor: customization?.primaryColor || '#3b82f6'
+                        }}
+                        rows={4}
+                        value={formData[field.id] || ''}
+                        onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                        required={field.required}
+                        placeholder="Share your thoughts..."
+                      />
+                    </div>
+                  );
+                }
+
+                if (field.type === 'select') {
+                  return (
+                    <div key={field.id}>
+                      <label 
+                        className="block text-sm font-medium mb-2"
+                        style={{ color: customization?.textColor || '#374151' }}
+                      >
+                        {field.label}
+                      </label>
+                      <select
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent bg-white text-gray-900"
+                        value={formData[field.id] || ''}
+                        onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                        required={field.required}
+                      >
+                        <option value="">Select an option</option>
+                        {field.options?.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                }
+
+                if (field.type === 'radio') {
+                  return (
+                    <div key={field.id} className="space-y-3">
+                      <label 
+                        className="block text-sm font-medium"
+                        style={{ color: customization?.textColor || '#374151' }}
+                      >
+                        {field.label}
+                      </label>
+                      <div className="space-y-2">
+                        {field.options?.map((option) => (
+                          <label key={option} className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                            <input
+                              type="radio"
+                              name={field.id}
+                              value={option}
+                              checked={formData[field.id] === option}
+                              onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                              className="h-4 w-4 border-gray-300 focus:ring-2"
+                              style={{ 
+                                accentColor: customization?.primaryColor || '#3b82f6'
+                              }}
+                              required={field.required}
+                            />
+                            <span 
+                              className="text-sm"
+                              style={{ color: customization?.textColor || '#374151' }}
+                            >
+                              {option}
+                            </span>
+                          </label>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{t('survey.extremelyLikely')}</span>
                     </div>
-                  </div>
-                );
-              }
+                  );
+                }
 
-              if (field.type === 'text') {
-                return (
-                  <div key={field.id}>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {field.label}
-                    </label>
-                    <textarea
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      rows={4}
-                      value={formData[field.id] || ''}
-                      onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                      required={field.required}
-                    />
-                  </div>
-                );
-              }
+                return null;
+              })}
 
-              if (field.type === 'select') {
-                return (
-                  <Select
-                    key={field.id}
-                    label={field.label}
-                    value={formData[field.id] || ''}
-                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                    options={field.options?.map(opt => ({ value: opt, label: opt })) || []}
-                    required={field.required}
-                  />
-                );
-              }
-
-              if (field.type === 'radio') {
-                return (
-                  <div key={field.id} className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {field.label}
-                    </label>
-                    <div className="space-y-2">
-                      {field.options?.map((option) => (
-                        <label key={option} className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name={field.id}
-                            value={option}
-                            checked={formData[field.id] === option}
-                            onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                            className="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
-                            required={field.required}
-                          />
-                          <span className="text-gray-700 dark:text-gray-300">{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-
-              return null;
-            })}
-
-            <Button type="submit" variant="primary" fullWidth>
-              {t('survey.submitFeedback')}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <button
+                type="submit"
+                className="w-full py-3 px-6 rounded-lg text-white font-medium transition-all duration-200 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+                style={{
+                  backgroundColor: customization?.primaryColor || '#3b82f6',
+                  focusRingColor: customization?.primaryColor || '#3b82f6'
+                }}
+              >
+                {t('survey.submitFeedback')}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
