@@ -5,6 +5,12 @@ export type User = {
   email: string;
   name: string;
   role: 'admin' | 'user';
+  phone?: string;
+  company?: string;
+  position?: string;
+  avatar?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type Campaign = {
@@ -80,4 +86,55 @@ export type AppConfig = {
   logoUrl: string;
   defaultEmail: string;
   language: 'en' | 'pt-BR';
+};
+
+export type UserProfile = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  position?: string;
+  avatar?: string;
+  preferences: {
+    language: 'en' | 'pt-BR';
+    theme: 'light' | 'dark';
+    emailNotifications: {
+      newResponses: boolean;
+      weeklyReports: boolean;
+      productUpdates: boolean;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Subscription = {
+  id: string;
+  userId: string;
+  planId: string;
+  status: 'active' | 'canceled' | 'past_due' | 'trialing';
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  trialEnd?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Plan = {
+  id: string;
+  name: string;
+  price: number;
+  period: 'month' | 'year';
+  description: string;
+  features: string[];
+  limits: {
+    responses: number | 'unlimited';
+    campaigns: number | 'unlimited';
+    users: number | 'unlimited';
+  };
+  popular?: boolean;
+  icon: string;
+  color: string;
 };

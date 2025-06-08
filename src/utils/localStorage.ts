@@ -1,9 +1,11 @@
-import { AppConfig, Campaign, CampaignForm, Group, NpsResponse, Situation, Source, User } from '../types';
+import { AppConfig, Campaign, CampaignForm, Group, NpsResponse, Situation, Source, User, UserProfile, Subscription } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 // Storage keys
 export const STORAGE_KEYS = {
   AUTH_USER: 'auth_user',
+  USER_PROFILE: 'user_profile',
+  SUBSCRIPTION: 'subscription',
   CAMPAIGNS: 'campaigns',
   RESPONSES: 'responses',
   FORMS: 'forms',
@@ -33,6 +35,108 @@ export const setAuthUser = (user: User): void => {
 
 export const logout = (): void => {
   localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+};
+
+// User Profile Management
+export const getUserProfile = (): UserProfile | null => {
+  const profileData = localStorage.getItem(STORAGE_KEYS.USER_PROFILE);
+  if (profileData) {
+    return JSON.parse(profileData);
+  }
+  
+  // Create default profile from auth user if exists
+  const authUser = getAuthUser();
+  if (authUser) {
+    const defaultProfile: UserProfile = {
+      id: authUser.id,
+      name: authUser.name,
+      email: authUser.email,
+      phone: authUser.phone || '',
+      company: authUser.company || '',
+      position: authUser.position || '',
+      avatar: authUser.avatar || '',
+      preferences: {
+        language: 'pt-BR',
+        theme: 'light',
+        emailNotifications: {
+          newResponses: true,
+          weeklyReports: true,
+          productUpdates: false,
+        },
+      },
+      createdAt: authUser.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    saveUserProfile(defaultProfile);
+    return defaultProfile;
+  }
+  
+  return null;
+};
+
+export const saveUserProfile = (profile: UserProfile): UserProfile => {
+  const updatedProfile = {
+    ...profile,
+    updatedAt: new Date().toISOString(),
+  };
+  
+  localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(updatedProfile));
+  
+  // Also update auth user with basic info
+  const authUser = getAuthUser();
+  if (authUser) {
+    const updatedAuthUser: User = {
+      ...authUser,
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      company: profile.company,
+      position: profile.position,
+      avatar: profile.avatar,
+      updatedAt: new Date().toISOString(),
+    };
+    setAuthUser(updatedAuthUser);
+  }
+  
+  return updatedProfile;
+};
+
+// Subscription Management
+export const getSubscription = (): Subscription | null => {
+  const subscriptionData = localStorage.getItem(STORAGE_KEYS.SUBSCRIPTION);
+  if (subscriptionData) {
+    return JSON.parse(subscriptionData);
+  }
+  
+  // Create default subscription
+  const authUser = getAuthUser();
+  if (authUser) {
+    const defaultSubscription: Subscription = {
+      id: uuidv4(),
+      userId: authUser.id,
+      planId: 'pro',
+      status: 'active',
+      currentPeriodStart: new Date().toISOString(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+      cancelAtPeriodEnd: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    saveSubscription(defaultSubscription);
+    return defaultSubscription;
+  }
+  
+  return null;
+};
+
+export const saveSubscription = (subscription: Subscription): Subscription => {
+  const updatedSubscription = {
+    ...subscription,
+    updatedAt: new Date().toISOString(),
+  };
+  
+  localStorage.setItem(STORAGE_KEYS.SUBSCRIPTION, JSON.stringify(updatedSubscription));
+  return updatedSubscription;
 };
 
 // Campaign management

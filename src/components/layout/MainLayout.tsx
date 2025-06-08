@@ -16,7 +16,8 @@ import {
   Sun,
   ChevronRight,
   TrendingUp,
-  Globe
+  Globe,
+  CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -119,15 +120,6 @@ const MainLayout: React.FC = () => {
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
               
-              {/* Profile Link */}
-              <Link 
-                to="/profile"
-                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Perfil"
-              >
-                <User size={20} />
-              </Link>
-              
               {/* User Dropdown */}
               {user && (
                 <div className="relative user-dropdown">
@@ -164,8 +156,17 @@ const MainLayout: React.FC = () => {
                           onClick={() => setIsUserDropdownOpen(false)}
                         >
                           <User size={16} className="mr-2" />
-                          Perfil e Assinatura
+                          Perfil
                         </Link>
+                        <Link
+                          to="/billing"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <CreditCard size={16} className="mr-2" />
+                          Assinatura e Cobrança
+                        </Link>
+                        <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                         <button 
                           onClick={handleLogout}
                           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -390,7 +391,15 @@ const MainLayout: React.FC = () => {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <User size={16} className="mr-2" />
-                      Perfil e Assinatura
+                      Perfil
+                    </Link>
+                    <Link
+                      to="/billing"
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <CreditCard size={16} className="mr-2" />
+                      Assinatura e Cobrança
                     </Link>
                     <Button
                       variant="outline"

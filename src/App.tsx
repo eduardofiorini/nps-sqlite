@@ -18,6 +18,7 @@ import Survey from './pages/Survey';
 import EntityCrud from './pages/EntityCrud';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
+import Billing from './pages/Billing';
 import { initializeDefaultData } from './utils/localStorage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -68,6 +69,7 @@ function App() {
                     <Route path="overview" element={<Overview />} />
                     <Route index element={<Dashboard />} />
                     <Route path="profile" element={<Profile />} />
+                    <Route path="billing" element={<Billing />} />
                     
                     <Route path="campaigns">
                       <Route path="new" element={<CampaignCreate />} />
