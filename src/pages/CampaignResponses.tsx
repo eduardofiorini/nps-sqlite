@@ -5,9 +5,8 @@ import { getResponses, getCampaigns, getSources, getSituations, getGroups, getCa
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
-import { ChevronLeft, Download, MessageSquare, Calendar, User, Filter, Search } from 'lucide-react';
+import { ChevronLeft, Download, MessageSquare, Calendar, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Input from '../components/ui/Input';
 
 const CampaignResponses: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +17,6 @@ const CampaignResponses: React.FC = () => {
   const [sources, setSources] = useState<Record<string, string>>({});
   const [situations, setSituations] = useState<Record<string, string>>({});
   const [groups, setGroups] = useState<Record<string, string>>({});
-  const [searchTerm, setSearchTerm] = useState('');
   const [scoreFilter, setScoreFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [groupFilter, setGroupFilter] = useState<string>('all');
@@ -63,18 +61,9 @@ const CampaignResponses: React.FC = () => {
     setGroups(groupsMap);
   }, [id]);
 
-  // Filter responses based on search and filters
+  // Filter responses based on filters (removed search)
   useEffect(() => {
     let filtered = [...responses];
-
-    // Search filter (only by source and situation, not feedback)
-    if (searchTerm) {
-      filtered = filtered.filter(response =>
-        sources[response.sourceId]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        situations[response.situationId]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        groups[response.groupId]?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
 
     // Score filter
     if (scoreFilter !== 'all') {
@@ -98,7 +87,7 @@ const CampaignResponses: React.FC = () => {
     }
 
     setFilteredResponses(filtered);
-  }, [responses, searchTerm, scoreFilter, sourceFilter, groupFilter, sources, situations, groups]);
+  }, [responses, scoreFilter, sourceFilter, groupFilter]);
 
   const handleExportCSV = () => {
     if (!filteredResponses.length || !campaignForm) return;
@@ -107,51 +96,71 @@ const CampaignResponses: React.FC = () => {
     const baseHeaders = ['Data', 'Hora', 'Fonte', 'Situação', 'Grupo'];
     const formHeaders: string[] = [];
     
-    // Add headers for each form field
-    campaignForm.fields
-      .sort((a, b) => a.order - b.order)
-      .forEach(field => {
-        if (field.type === 'nps') {
-          formHeaders.push('Pontuação NPS', 'Categoria NPS');
-        } else {
-          formHeaders.push(field.label);
-        }
-      });
+    // Add headers for each form field in order
+    const sortedFields = campaignForm.fields.sort((a, b) => a.order - b.order);
+    
+    sortedFields.forEach(field => {
+      if (field.type === 'nps') {
+        formHeaders.push('Pontuação NPS', 'Categoria NPS');
+      } else {
+        formHeaders.push(field.label);
+      }
+    });
 
     const headers = [...baseHeaders, ...formHeaders];
+
+    // Create a map to store all form responses for each response
+    const responseDataMap = new Map();
+    
+    // For now, we'll use the existing response data structure
+    // In a real implementation, you'd store all form field responses
+    filteredResponses.forEach(response => {
+      const formData: any = {};
+      
+      sortedFields.forEach(field => {
+        if (field.type === 'nps') {
+          formData[field.id] = {
+            score: response.score,
+            category: response.score >= 9 ? 'Promotor' : response.score <= 6 ? 'Detrator' : 'Neutro'
+          };
+        } else if (field.type === 'text') {
+          // Use feedback field for text responses
+          formData[field.id] = response.feedback || '';
+        } else {
+          // For other field types, we'd need to store the actual responses
+          formData[field.id] = '';
+        }
+      });
+      
+      responseDataMap.set(response.id, formData);
+    });
 
     const csvContent = [
       headers.join(','),
       ...filteredResponses.map(response => {
         const date = new Date(response.createdAt);
-        const category = response.score >= 9 ? 'Promotor' : response.score <= 6 ? 'Detrator' : 'Neutro';
         
         const baseData = [
           date.toLocaleDateString('pt-BR'),
           date.toLocaleTimeString('pt-BR'),
-          sources[response.sourceId] || 'Desconhecido',
-          situations[response.situationId] || 'Desconhecido',
-          groups[response.groupId] || 'Desconhecido'
+          `"${sources[response.sourceId] || 'Desconhecido'}"`,
+          `"${situations[response.situationId] || 'Desconhecido'}"`,
+          `"${groups[response.groupId] || 'Desconhecido'}"`
         ];
 
         const formData: string[] = [];
+        const responseFormData = responseDataMap.get(response.id);
         
-        // Add data for each form field
-        campaignForm.fields
-          .sort((a, b) => a.order - b.order)
-          .forEach(field => {
-            if (field.type === 'nps') {
-              formData.push(response.score.toString(), category);
-            } else {
-              // For other field types, we would need to store the responses
-              // For now, we'll use the feedback field for text responses
-              if (field.type === 'text') {
-                formData.push(`"${(response.feedback || '').replace(/"/g, '""')}"`);
-              } else {
-                formData.push(''); // Placeholder for other field types
-              }
-            }
-          });
+        // Add data for each form field in order
+        sortedFields.forEach(field => {
+          if (field.type === 'nps') {
+            const npsData = responseFormData[field.id];
+            formData.push(npsData.score.toString(), `"${npsData.category}"`);
+          } else {
+            const fieldValue = responseFormData[field.id] || '';
+            formData.push(`"${fieldValue.toString().replace(/"/g, '""')}"`);
+          }
+        });
 
         return [...baseData, ...formData].join(',');
       })
@@ -200,7 +209,7 @@ const CampaignResponses: React.FC = () => {
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               {filteredResponses.length} de {responses.length} respostas
-              {searchTerm || scoreFilter !== 'all' || sourceFilter !== 'all' || groupFilter !== 'all' ? ' (filtradas)' : ''}
+              {scoreFilter !== 'all' || sourceFilter !== 'all' || groupFilter !== 'all' ? ' (filtradas)' : ''}
             </p>
           </div>
         </div>
@@ -266,23 +275,12 @@ const CampaignResponses: React.FC = () => {
         </div>
       )}
 
-      {/* Filters */}
+      {/* Filters - Removed search input */}
       {responses.length > 0 && (
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader title="Filtros" />
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Input
-                  placeholder="Buscar por fonte, situação ou grupo..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Score Filter */}
               <select
                 value={scoreFilter}
@@ -324,12 +322,11 @@ const CampaignResponses: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setSearchTerm('');
                   setScoreFilter('all');
                   setSourceFilter('all');
                   setGroupFilter('all');
                 }}
-                disabled={!searchTerm && scoreFilter === 'all' && sourceFilter === 'all' && groupFilter === 'all'}
+                disabled={scoreFilter === 'all' && sourceFilter === 'all' && groupFilter === 'all'}
               >
                 Limpar Filtros
               </Button>
@@ -347,7 +344,6 @@ const CampaignResponses: React.FC = () => {
               <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                 <Filter size={16} />
                 <span>Filtros ativos: {[
-                  searchTerm && 'Busca',
                   scoreFilter !== 'all' && 'Categoria',
                   sourceFilter !== 'all' && 'Fonte',
                   groupFilter !== 'all' && 'Grupo'

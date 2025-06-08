@@ -43,12 +43,12 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       return sortedFields;
     }
     
-    // Default NPS field
+    // Default NPS field with Portuguese text
     return [
       {
         id: crypto.randomUUID(),
         type: 'nps' as const,
-        label: 'How likely are you to recommend our service to a friend or colleague?',
+        label: 'O quanto você recomendaria nosso serviço para um amigo ou colega?',
         required: true,
         order: 0,
       },
@@ -64,7 +64,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       type,
       label: getDefaultLabel(type),
       required: false,
-      options: type === 'select' || type === 'radio' ? ['Option 1', 'Option 2'] : undefined,
+      options: type === 'select' || type === 'radio' ? ['Opção 1', 'Opção 2'] : undefined,
       order: fields.length,
     };
     
@@ -104,7 +104,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       if (field.id === fieldId && field.options) {
         return {
           ...field,
-          options: [...field.options, `Option ${field.options.length + 1}`],
+          options: [...field.options, `Opção ${field.options.length + 1}`],
         };
       }
       return field;
@@ -217,15 +217,15 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   const getDefaultLabel = (type: FormField['type']): string => {
     switch (type) {
       case 'nps':
-        return 'How likely are you to recommend our service to a friend or colleague?';
+        return 'O quanto você recomendaria nosso serviço para um amigo ou colega?';
       case 'text':
-        return 'Please provide your feedback';
+        return 'Por favor, compartilhe seu feedback';
       case 'select':
-        return 'Select an option';
+        return 'Selecione uma opção';
       case 'radio':
-        return 'Choose one option';
+        return 'Escolha uma opção';
       default:
-        return 'New Question';
+        return 'Nova Pergunta';
     }
   };
   
@@ -247,13 +247,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
   const getFieldTypeName = (type: FormField['type']): string => {
     switch (type) {
       case 'nps':
-        return 'NPS Question';
+        return 'Pergunta NPS';
       case 'text':
-        return 'Text Question';
+        return 'Pergunta de Texto';
       case 'select':
-        return 'Dropdown';
+        return 'Lista Suspensa';
       case 'radio':
-        return 'Multiple Choice';
+        return 'Múltipla Escolha';
       default:
         return type.charAt(0).toUpperCase() + type.slice(1);
     }
@@ -261,7 +261,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-      <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Form Builder</h2>
+      <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Construtor de Formulário</h2>
       
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="form-fields">
@@ -314,14 +314,14 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                               }
                               className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 mr-2"
                             />
-                            <span className="text-gray-700 dark:text-gray-300">Required</span>
+                            <span className="text-gray-700 dark:text-gray-300">Obrigatório</span>
                           </label>
                           
                           {fields.length > 1 && field.type !== 'nps' && (
                             <button
                               onClick={() => handleRemoveField(field.id)}
                               className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                              title="Remove field"
+                              title="Remover campo"
                             >
                               <X size={18} />
                             </button>
@@ -331,21 +331,21 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                       
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Question Text
+                          Texto da Pergunta
                         </label>
                         <Input
                           value={field.label}
                           onChange={(e) =>
                             handleFieldChange(field.id, { label: e.target.value })
                           }
-                          placeholder="Enter your question"
+                          placeholder="Digite sua pergunta"
                           fullWidth
                         />
                       </div>
                       
                       {(field.type === 'select' || field.type === 'radio') && field.options && (
                         <div className="mt-4">
-                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Options</h4>
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Opções</h4>
                           <div className="space-y-2">
                             {field.options.map((option, optionIndex) => (
                               <div key={optionIndex} className="flex items-center space-x-2">
@@ -355,7 +355,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                                     onChange={(e) =>
                                       handleOptionChange(field.id, optionIndex, e.target.value)
                                     }
-                                    placeholder={`Option ${optionIndex + 1}`}
+                                    placeholder={`Opção ${optionIndex + 1}`}
                                     fullWidth
                                   />
                                 </div>
@@ -363,7 +363,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                                   onClick={() => handleOptionRemove(field.id, optionIndex)}
                                   className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                   disabled={field.options?.length === 1}
-                                  title="Remove option"
+                                  title="Remover opção"
                                 >
                                   <X size={16} />
                                 </button>
@@ -377,14 +377,14 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                             onClick={() => handleOptionAdd(field.id)}
                             className="mt-3 text-sm"
                           >
-                            Add Option
+                            Adicionar Opção
                           </Button>
                         </div>
                       )}
                       
                       {field.type === 'nps' && (
                         <div className="mt-4 bg-gray-50 dark:bg-gray-600 p-4 rounded-lg">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-3 font-medium">Preview:</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-3 font-medium">Pré-visualização:</div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600 dark:text-gray-400">0</span>
                             <div className="flex-1 flex justify-between mx-4">
@@ -400,8 +400,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                             <span className="text-sm text-gray-600 dark:text-gray-400">10</span>
                           </div>
                           <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span>Not likely at all</span>
-                            <span>Extremely likely</span>
+                            <span>Nada provável</span>
+                            <span>Extremamente provável</span>
                           </div>
                         </div>
                       )}
@@ -422,7 +422,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
           onClick={() => setShowFieldOptions(!showFieldOptions)}
           className="w-full justify-center"
         >
-          Add Question
+          Adicionar Pergunta
           <ChevronDown size={16} className={`ml-2 transition-transform ${showFieldOptions ? 'rotate-180' : ''}`} />
         </Button>
         
@@ -434,8 +434,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             >
               <MessageSquare size={16} className="mr-3 text-gray-500 dark:text-gray-400" />
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">Text Question</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Open-ended text response</div>
+                <div className="font-medium text-gray-900 dark:text-white">Pergunta de Texto</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Resposta de texto livre</div>
               </div>
             </button>
             <button
@@ -444,8 +444,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             >
               <List size={16} className="mr-3 text-gray-500 dark:text-gray-400" />
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">Dropdown Selection</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Single choice from dropdown</div>
+                <div className="font-medium text-gray-900 dark:text-white">Lista Suspensa</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Escolha única em lista</div>
               </div>
             </button>
             <button
@@ -454,8 +454,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
             >
               <CheckSquare size={16} className="mr-3 text-gray-500 dark:text-gray-400" />
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">Multiple Choice</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Single choice with radio buttons</div>
+                <div className="font-medium text-gray-900 dark:text-white">Múltipla Escolha</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Escolha única com botões</div>
               </div>
             </button>
           </div>
@@ -464,7 +464,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       
       <div className="flex justify-end mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
         <Button variant="primary" onClick={handleSave} className="px-8">
-          Save Form
+          Salvar Formulário
         </Button>
       </div>
     </div>
