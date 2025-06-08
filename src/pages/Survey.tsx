@@ -171,17 +171,12 @@ const Survey: React.FC = () => {
               className="mb-6"
             >
               <div className="flex items-center justify-center space-x-2 mb-4">
-                <div className="w-16 h-16 rounded-full border-4 border-gray-200 flex items-center justify-center relative">
-                  <svg className="w-16 h-16 absolute top-0 left-0 transform -rotate-90">
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                      className="text-gray-200"
-                    />
+                <div className="relative w-16 h-16 flex items-center justify-center">
+                  {/* Background circle */}
+                  <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+                  
+                  {/* Progress circle */}
+                  <svg className="w-16 h-16 absolute inset-0 transform -rotate-90">
                     <circle
                       cx="32"
                       cy="32"
@@ -190,12 +185,14 @@ const Survey: React.FC = () => {
                       strokeWidth="4"
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 28}`}
-                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - (10 - countdown) / 10)}`}
-                      className="text-blue-500 transition-all duration-1000 ease-linear"
+                      strokeDashoffset={`${2 * Math.PI * 28 * (countdown / 10)}`}
+                      className="transition-all duration-1000 ease-linear"
                       style={{ color: customization?.primaryColor || '#3b82f6' }}
                     />
                   </svg>
-                  <span className="text-xl font-bold text-gray-900">{countdown}</span>
+                  
+                  {/* Countdown number */}
+                  <span className="text-xl font-bold text-gray-900 relative z-10">{countdown}</span>
                 </div>
               </div>
               
