@@ -312,7 +312,7 @@ const Overview: React.FC = () => {
             title="Campanhas Ativas" 
             action={
               <Link to="/">
-                <Button variant="outline" size="sm" icon={<ArrowRight size={16} />}>
+                <Button variant="outline\" size="sm\" icon={<ArrowRight size={16} />}>
                   Ver Todas
                 </Button>
               </Link>
