@@ -14,7 +14,8 @@ import {
   X,
   Moon,
   Sun,
-  ChevronRight
+  ChevronRight,
+  TrendingUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -36,6 +37,7 @@ const MainLayout: React.FC = () => {
   };
 
   const navItems = [
+    { path: '/overview', label: 'Dashboard Geral', icon: <TrendingUp size={20} /> },
     { path: '/', label: t('nav.dashboard'), icon: <LayoutGrid size={20} /> },
   ];
 

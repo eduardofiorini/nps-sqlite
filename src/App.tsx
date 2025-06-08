@@ -8,6 +8,7 @@ import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Overview from './pages/Overview';
 import CampaignCreate from './pages/CampaignCreate';
 import CampaignDashboard from './pages/CampaignDashboard';
 import CampaignResponses from './pages/CampaignResponses';
@@ -63,6 +64,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   >
+                    <Route path="overview" element={<Overview />} />
                     <Route index element={<Dashboard />} />
                     
                     <Route path="campaigns">
