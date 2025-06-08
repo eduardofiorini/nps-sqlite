@@ -37,8 +37,8 @@ const MainLayout: React.FC = () => {
   };
 
   const navItems = [
-    { path: '/overview', label: 'Dashboard Geral', icon: <TrendingUp size={20} /> },
-    { path: '/', label: t('nav.dashboard'), icon: <LayoutGrid size={20} /> },
+    { path: '/overview', label: t('nav.dashboard'), icon: <LayoutGrid size={20} /> },
+    { path: '/', label: t('nav.dashboard'), icon: <TrendingUpsize ={20} /> },
   ];
 
   const settingsItems = [
