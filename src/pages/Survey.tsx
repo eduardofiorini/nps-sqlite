@@ -9,6 +9,7 @@ import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import { getSources, getSituations, getGroups } from '../utils/localStorage';
 import { v4 as uuidv4 } from 'uuid';
+import { motion } from 'framer-motion';
 
 const Survey: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,7 @@ const Survey: React.FC = () => {
   const [sources] = useState(getSources());
   const [situations] = useState(getSituations());
   const [groups] = useState(getGroups());
+  const [countdown, setCountdown] = useState(10);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -33,6 +35,24 @@ const Survey: React.FC = () => {
     const formData = getCampaignForm(id);
     setForm(formData);
   }, [id]);
+
+  // Timer effect for countdown
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (submitted && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    } else if (submitted && countdown === 0) {
+      // Reset the form when countdown reaches 0
+      handleReturnToSurvey();
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [submitted, countdown]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +75,13 @@ const Survey: React.FC = () => {
 
     saveResponse(response);
     setSubmitted(true);
+    setCountdown(10); // Reset countdown
+  };
+
+  const handleReturnToSurvey = () => {
+    setSubmitted(false);
+    setFormData({});
+    setCountdown(10);
   };
 
   if (!campaign || !form) {
@@ -93,7 +120,12 @@ const Survey: React.FC = () => {
         )}
         
         <div className="relative z-10 max-w-lg w-full">
-          <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center border border-gray-200">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center border border-gray-200"
+          >
             {customization?.logoImage && (
               <img
                 src={customization.logoImage}
@@ -102,16 +134,98 @@ const Survey: React.FC = () => {
               />
             )}
             
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">{t('survey.thankYou')}</h2>
-            <p className="text-gray-600">
+            </motion.div>
+            
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-2xl font-semibold text-gray-900 mb-2"
+            >
+              {t('survey.thankYou')}
+            </motion.h2>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-gray-600 mb-6"
+            >
               {t('survey.submitted')}
-            </p>
-          </div>
+            </motion.p>
+
+            {/* Countdown Timer */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                <div className="w-16 h-16 rounded-full border-4 border-gray-200 flex items-center justify-center relative">
+                  <svg className="w-16 h-16 absolute top-0 left-0 transform -rotate-90">
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                      className="text-gray-200"
+                    />
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - (10 - countdown) / 10)}`}
+                      className="text-blue-500 transition-all duration-1000 ease-linear"
+                      style={{ color: customization?.primaryColor || '#3b82f6' }}
+                    />
+                  </svg>
+                  <span className="text-xl font-bold text-gray-900">{countdown}</span>
+                </div>
+              </div>
+              
+              <p className="text-sm text-gray-500 mb-4">
+                Retornando à pesquisa em {countdown} segundos...
+              </p>
+              
+              <Button
+                variant="outline"
+                onClick={handleReturnToSurvey}
+                className="mr-3"
+              >
+                Responder Novamente
+              </Button>
+              
+              <Button
+                variant="primary"
+                onClick={() => window.close()}
+                style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
+              >
+                Fechar
+              </Button>
+            </motion.div>
+
+            {/* Additional Info */}
+            <div className="text-xs text-gray-400 border-t border-gray-200 pt-4">
+              <p>Você pode responder quantas vezes quiser.</p>
+              <p>Suas respostas nos ajudam a melhorar nossos serviços.</p>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -136,7 +250,12 @@ const Survey: React.FC = () => {
       )}
       
       <div className="relative z-10 max-w-lg w-full">
-        <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-200"
+        >
           <div className="p-8">
             {customization?.logoImage && (
               <div className="text-center mb-6">
@@ -183,12 +302,14 @@ const Survey: React.FC = () => {
                         </div>
                         <div className="flex justify-between space-x-1">
                           {Array.from({ length: 11 }, (_, i) => (
-                            <button
+                            <motion.button
                               key={i}
                               type="button"
-                              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-200 text-sm font-medium hover:scale-110 ${
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-200 text-sm font-medium ${
                                 formData[field.id] === i
-                                  ? 'text-white shadow-lg'
+                                  ? 'text-white shadow-lg transform scale-110'
                                   : 'bg-white hover:shadow-md'
                               }`}
                               style={{
@@ -203,7 +324,7 @@ const Survey: React.FC = () => {
                               onClick={() => setFormData({ ...formData, [field.id]: i })}
                             >
                               {i}
-                            </button>
+                            </motion.button>
                           ))}
                         </div>
                       </div>
@@ -230,7 +351,7 @@ const Survey: React.FC = () => {
                         value={formData[field.id] || ''}
                         onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
                         required={field.required}
-                        placeholder="Share your thoughts..."
+                        placeholder="Compartilhe seus comentários..."
                       />
                     </div>
                   );
@@ -252,7 +373,7 @@ const Survey: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
                         required={field.required}
                       >
-                        <option value="">Select an option</option>
+                        <option value="">Selecione uma opção</option>
                         {field.options?.map((option) => (
                           <option key={option} value={option}>
                             {option}
@@ -304,16 +425,18 @@ const Survey: React.FC = () => {
                 return null;
               })}
 
-              <button
+              <motion.button
                 type="submit"
-                className="w-full py-3 px-6 rounded-lg text-white font-medium transition-all duration-200 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-3 px-6 rounded-lg text-white font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-opacity-50"
                 style={{
                   backgroundColor: customization?.primaryColor || '#3b82f6',
                   focusRingColor: customization?.primaryColor || '#3b82f6'
                 }}
               >
                 {t('survey.submitFeedback')}
-              </button>
+              </motion.button>
             </form>
           </div>
         </div>
