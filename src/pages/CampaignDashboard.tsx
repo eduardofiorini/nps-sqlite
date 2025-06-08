@@ -6,7 +6,7 @@ import { calculateNPS, categorizeResponses, responsesBySource, npsOverTime } fro
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { NpsDoughnut, NpsDistribution, NpsTrend } from '../components/dashboard/NpsChart';
-import { ChevronLeft, PieChart, Edit, MessageSquare, X } from 'lucide-react';
+import { ChevronLeft, PieChart, Edit, MessageSquare, Share } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 
 const CampaignDashboard: React.FC = () => {
@@ -62,7 +62,7 @@ const CampaignDashboard: React.FC = () => {
   if (isLoading || !campaign) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
       </div>
     );
   }
@@ -73,14 +73,14 @@ const CampaignDashboard: React.FC = () => {
   
   // Format dates
   const startDate = new Date(campaign.startDate).toLocaleDateString();
-  const endDate = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString() : 'Present';
+  const endDate = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString() : 'Presente';
   
   return (
     <div>
       <div className="mb-6">
         <Link to="/">
           <Button variant="outline" size="sm" icon={<ChevronLeft size={16} />}>
-            Back to Dashboard
+            Voltar ao Dashboard
           </Button>
         </Link>
       </div>
@@ -88,34 +88,39 @@ const CampaignDashboard: React.FC = () => {
       <header className="mb-8">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{campaign.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{campaign.name}</h1>
             <div className="flex items-center mt-2">
-              <span className="text-gray-500 text-sm">
-                {startDate} to {endDate}
+              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                {startDate} até {endDate}
               </span>
               {campaign.active ? (
                 <Badge variant="success" className="ml-2">
-                  Active
+                  Ativa
                 </Badge>
               ) : (
                 <Badge variant="danger" className="ml-2">
-                  Inactive
+                  Inativa
                 </Badge>
               )}
             </div>
             {campaign.description && (
-              <p className="text-gray-600 mt-2 max-w-2xl">{campaign.description}</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2 max-w-2xl">{campaign.description}</p>
             )}
           </div>
           <div className="flex space-x-2">
             <Link to={`/campaigns/${id}/form`}>
               <Button variant="outline" icon={<Edit size={16} />}>
-                Edit Form
+                Editar Formulário
               </Button>
             </Link>
             <Link to={`/campaigns/${id}/responses`}>
               <Button variant="outline" icon={<MessageSquare size={16} />}>
-                View Responses
+                Ver Respostas
+              </Button>
+            </Link>
+            <Link to={`/campaigns/${id}/share`}>
+              <Button variant="primary" icon={<Share size={16} />}>
+                Compartilhar
               </Button>
             </Link>
           </div>
@@ -123,39 +128,39 @@ const CampaignDashboard: React.FC = () => {
       </header>
       
       {responses.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <div className="mb-4 w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
-            <PieChart size={24} className="text-blue-600" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center border border-gray-200 dark:border-gray-700">
+          <div className="mb-4 w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+            <PieChart size={24} className="text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No responses yet</h3>
-          <p className="text-gray-600 mb-6">
-            Share your NPS survey with customers to start collecting feedback.
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Nenhuma resposta ainda</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Compartilhe sua pesquisa NPS com clientes para começar a coletar feedback.
           </p>
           <Link to={`/campaigns/${id}/share`}>
             <Button variant="primary">
-              Share Survey
+              Compartilhar Pesquisa
             </Button>
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4">
-            <Card>
-              <CardHeader title="Current NPS Score" />
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader title="Pontuação NPS Atual" />
               <CardContent>
                 <div className="flex justify-center py-4">
                   <NpsDoughnut npsScore={npsScore} width={200} height={200} />
                 </div>
-                <div className="text-center mt-2 text-sm text-gray-500">
-                  Based on {responses.length} responses
+                <div className="text-center mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Baseado em {responses.length} respostas
                 </div>
               </CardContent>
             </Card>
           </div>
           
           <div className="lg:col-span-8">
-            <Card className="h-full">
-              <CardHeader title="NPS Trend" />
+            <Card className="h-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader title="Tendência NPS" />
               <CardContent>
                 <div className="h-64">
                   <NpsTrend data={trendData} />
@@ -165,8 +170,8 @@ const CampaignDashboard: React.FC = () => {
           </div>
           
           <div className="lg:col-span-6">
-            <Card>
-              <CardHeader title="Response Distribution" />
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader title="Distribuição de Respostas" />
               <CardContent>
                 <div className="h-64">
                   <NpsDistribution
@@ -176,17 +181,17 @@ const CampaignDashboard: React.FC = () => {
                   />
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-red-50 p-3 rounded-md">
+                  <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
                     <div className="text-xl font-bold text-red-500">{detractors}</div>
-                    <div className="text-sm text-gray-600">Detractors</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Detratores</div>
                   </div>
-                  <div className="bg-yellow-50 p-3 rounded-md">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md">
                     <div className="text-xl font-bold text-yellow-500">{passives}</div>
-                    <div className="text-sm text-gray-600">Passives</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Neutros</div>
                   </div>
-                  <div className="bg-green-50 p-3 rounded-md">
+                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md">
                     <div className="text-xl font-bold text-green-500">{promoters}</div>
-                    <div className="text-sm text-gray-600">Promoters</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Promotores</div>
                   </div>
                 </div>
               </CardContent>
@@ -194,10 +199,10 @@ const CampaignDashboard: React.FC = () => {
           </div>
           
           <div className="lg:col-span-6">
-            <Card>
-              <CardHeader title="Latest Responses" />
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader title="Últimas Respostas" />
               <CardContent>
-                <div className="divide-y">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {responses.slice(0, 5).map((response) => (
                     <div key={response.id} className="py-3">
                       <div className="flex justify-between items-center">
@@ -205,29 +210,29 @@ const CampaignDashboard: React.FC = () => {
                           <div 
                             className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
                               response.score >= 9 
-                                ? 'bg-green-100 text-green-800' 
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
                                 : response.score <= 6 
-                                ? 'bg-red-100 text-red-800' 
-                                : 'bg-yellow-100 text-yellow-800'
+                                ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' 
+                                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
                             }`}
                           >
                             {response.score}
                           </div>
                           <div>
-                            <div className="font-medium">
-                              {sources[response.sourceId] || 'Unknown Source'}
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {sources[response.sourceId] || 'Fonte Desconhecida'}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               {new Date(response.createdAt).toLocaleDateString()}
                             </div>
                           </div>
                         </div>
                         <Badge>
-                          {situations[response.situationId] || 'Unknown'}
+                          {situations[response.situationId] || 'Desconhecido'}
                         </Badge>
                       </div>
                       {response.feedback && (
-                        <div className="mt-2 text-sm text-gray-600 pl-13 ml-10">
+                        <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 pl-13 ml-10">
                           "{response.feedback}"
                         </div>
                       )}
@@ -238,7 +243,7 @@ const CampaignDashboard: React.FC = () => {
                   <div className="mt-4 text-center">
                     <Link to={`/campaigns/${id}/responses`}>
                       <Button variant="outline" size="sm">
-                        View All ({responses.length})
+                        Ver Todas ({responses.length})
                       </Button>
                     </Link>
                   </div>

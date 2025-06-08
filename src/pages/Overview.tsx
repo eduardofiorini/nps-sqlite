@@ -123,7 +123,7 @@ const Overview: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
       </div>
     );
   }
@@ -152,7 +152,7 @@ const Overview: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -162,8 +162,8 @@ const Overview: React.FC = () => {
                     {totalStats.activeCampaigns} ativas
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <BarChart3 size={24} className="text-blue-600 dark:text-blue-400" />
+                <div className="w-12 h-12 bg-[#073143]/10 dark:bg-[#073143]/20 rounded-lg flex items-center justify-center">
+                  <BarChart3 size={24} className="text-[#073143] dark:text-[#4a9eff]" />
                 </div>
               </div>
             </CardContent>
@@ -175,7 +175,7 @@ const Overview: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -203,7 +203,7 @@ const Overview: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -226,7 +226,7 @@ const Overview: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -253,7 +253,7 @@ const Overview: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader title="NPS Geral" />
               <CardContent>
                 <div className="flex justify-center py-4">
@@ -271,7 +271,7 @@ const Overview: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader title="Distribuição Geral" />
               <CardContent>
                 <div className="h-64">
@@ -307,12 +307,12 @@ const Overview: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
       >
-        <Card>
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader 
             title="Campanhas Ativas" 
             action={
               <Link to="/">
-                <Button variant="outline\" size="sm\" icon={<ArrowRight size={16} />}>
+                <Button variant="outline" size="sm" icon={<ArrowRight size={16} />}>
                   Ver Todas
                 </Button>
               </Link>

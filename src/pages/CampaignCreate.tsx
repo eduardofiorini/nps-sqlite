@@ -32,7 +32,7 @@ const CampaignCreate: React.FC = () => {
     surveyCustomization: {
       backgroundType: 'color',
       backgroundColor: '#f8fafc',
-      primaryColor: '#3b82f6',
+      primaryColor: '#073143',
       textColor: '#1f2937'
     }
   });
@@ -110,7 +110,7 @@ const CampaignCreate: React.FC = () => {
   ];
 
   const presetPrimaryColors = [
-    { name: 'Blue', color: '#3b82f6' },
+    { name: 'Blue', color: '#073143' },
     { name: 'Green', color: '#10b981' },
     { name: 'Purple', color: '#8b5cf6' },
     { name: 'Red', color: '#ef4444' },
@@ -126,49 +126,49 @@ const CampaignCreate: React.FC = () => {
           icon={<ChevronLeft size={16} />}
           onClick={() => navigate('/')}
         >
-          Back to Dashboard
+          Voltar ao Dashboard
         </Button>
         
-        <h1 className="text-2xl font-bold mt-4">Create New NPS Campaign</h1>
+        <h1 className="text-2xl font-bold mt-4 text-gray-900 dark:text-white">Criar Nova Campanha NPS</h1>
         <div className="flex mt-6 mb-8">
           <div className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+              currentStep >= 1 ? 'bg-[#073143] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
             }`}>
               1
             </div>
-            <span className={`ml-2 ${currentStep === 1 ? 'font-medium' : ''}`}>
-              Campaign Details
+            <span className={`ml-2 text-gray-900 dark:text-white ${currentStep === 1 ? 'font-medium' : ''}`}>
+              Detalhes da Campanha
             </span>
           </div>
           
           <div className={`w-16 h-1 mt-5 mx-2 ${
-            currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'
+            currentStep >= 2 ? 'bg-[#073143]' : 'bg-gray-200 dark:bg-gray-700'
           }`} />
           
           <div className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+              currentStep >= 2 ? 'bg-[#073143] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
             }`}>
               2
             </div>
-            <span className={`ml-2 ${currentStep === 2 ? 'font-medium' : ''}`}>
-              Survey Design
+            <span className={`ml-2 text-gray-900 dark:text-white ${currentStep === 2 ? 'font-medium' : ''}`}>
+              Design da Pesquisa
             </span>
           </div>
 
           <div className={`w-16 h-1 mt-5 mx-2 ${
-            currentStep >= 3 ? 'bg-blue-600' : 'bg-gray-200'
+            currentStep >= 3 ? 'bg-[#073143]' : 'bg-gray-200 dark:bg-gray-700'
           }`} />
           
           <div className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              currentStep >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+              currentStep >= 3 ? 'bg-[#073143] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
             }`}>
               3
             </div>
-            <span className={`ml-2 ${currentStep === 3 ? 'font-medium' : ''}`}>
-              Form Builder
+            <span className={`ml-2 text-gray-900 dark:text-white ${currentStep === 3 ? 'font-medium' : ''}`}>
+              Construtor de Formulário
             </span>
           </div>
         </div>
@@ -184,17 +184,17 @@ const CampaignCreate: React.FC = () => {
         >
           <div className="space-y-6">
             <Input
-              label="Campaign Name"
+              label="Nome da Campanha"
               value={campaign.name}
               onChange={(e) => handleCampaignChange('name', e.target.value)}
-              placeholder="Enter campaign name"
+              placeholder="Digite o nome da campanha"
               fullWidth
               required
             />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Start Date"
+                label="Data de Início"
                 type="date"
                 value={campaign.startDate.toString().split('T')[0]}
                 onChange={(e) => handleCampaignChange('startDate', e.target.value)}
@@ -203,7 +203,7 @@ const CampaignCreate: React.FC = () => {
               />
               
               <Input
-                label="End Date (Optional)"
+                label="Data de Fim (Opcional)"
                 type="date"
                 value={campaign.endDate ? campaign.endDate.toString().split('T')[0] : ''}
                 onChange={(e) => handleCampaignChange('endDate', e.target.value || null)}
@@ -213,13 +213,13 @@ const CampaignCreate: React.FC = () => {
             
             <div>
               <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
-                Description (Optional)
+                Descrição (Opcional)
               </label>
               <textarea
                 value={campaign.description}
                 onChange={(e) => handleCampaignChange('description', e.target.value)}
-                placeholder="Describe the purpose of this campaign"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="Descreva o propósito desta campanha"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#073143] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 rows={4}
               />
             </div>
@@ -232,8 +232,8 @@ const CampaignCreate: React.FC = () => {
                   onChange={(e) => handleCampaignChange('active', e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                <span className="ms-3 text-sm font-medium text-gray-700 dark:text-gray-300">Activate Campaign</span>
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#073143]/30 dark:peer-focus:ring-[#073143]/50 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#073143]"></div>
+                <span className="ms-3 text-sm font-medium text-gray-700 dark:text-gray-300">Ativar Campanha</span>
               </label>
             </div>
           </div>
@@ -244,7 +244,7 @@ const CampaignCreate: React.FC = () => {
               onClick={handleNextStep}
               icon={<ChevronRight size={16} />}
             >
-              Next: Survey Design
+              Próximo: Design da Pesquisa
             </Button>
           </div>
         </motion.div>
@@ -262,14 +262,14 @@ const CampaignCreate: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white flex items-center">
               <Palette className="mr-2" size={20} />
-              Survey Customization
+              Personalização da Pesquisa
             </h2>
 
             <div className="space-y-6">
               {/* Background Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Background Type
+                  Tipo de Fundo
                 </label>
                 <div className="flex space-x-4">
                   <button
@@ -277,24 +277,24 @@ const CampaignCreate: React.FC = () => {
                     onClick={() => handleCustomizationChange('backgroundType', 'color')}
                     className={`flex items-center px-4 py-2 rounded-md border transition-colors ${
                       campaign.surveyCustomization?.backgroundType === 'color'
-                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+                        ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
                         : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
                     <Palette size={16} className="mr-2" />
-                    Color
+                    Cor
                   </button>
                   <button
                     type="button"
                     onClick={() => handleCustomizationChange('backgroundType', 'image')}
                     className={`flex items-center px-4 py-2 rounded-md border transition-colors ${
                       campaign.surveyCustomization?.backgroundType === 'image'
-                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+                        ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
                         : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
                     <ImageIcon size={16} className="mr-2" />
-                    Image
+                    Imagem
                   </button>
                 </div>
               </div>
@@ -303,7 +303,7 @@ const CampaignCreate: React.FC = () => {
               {campaign.surveyCustomization?.backgroundType === 'color' ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Background Color
+                    Cor de Fundo
                   </label>
                   <div className="flex items-center mb-3">
                     <input
@@ -339,7 +339,7 @@ const CampaignCreate: React.FC = () => {
               ) : (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Background Image
+                    Imagem de Fundo
                   </label>
                   {campaign.surveyCustomization?.backgroundImage ? (
                     <div className="relative">
@@ -361,7 +361,7 @@ const CampaignCreate: React.FC = () => {
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Upload className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">Click to upload</span> background image
+                          <span className="font-semibold">Clique para enviar</span> imagem de fundo
                         </p>
                       </div>
                       <input
@@ -378,7 +378,7 @@ const CampaignCreate: React.FC = () => {
               {/* Logo Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Logo (Optional)
+                  Logo (Opcional)
                 </label>
                 {campaign.surveyCustomization?.logoImage ? (
                   <div className="relative inline-block">
@@ -399,7 +399,7 @@ const CampaignCreate: React.FC = () => {
                   <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
                     <div className="flex flex-col items-center justify-center">
                       <Upload className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400" />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Upload logo</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Enviar logo</p>
                     </div>
                     <input
                       type="file"
@@ -414,19 +414,19 @@ const CampaignCreate: React.FC = () => {
               {/* Primary Color */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Primary Color
+                  Cor Primária
                 </label>
                 <div className="flex items-center mb-3">
                   <input
                     type="color"
-                    value={campaign.surveyCustomization?.primaryColor || '#3b82f6'}
+                    value={campaign.surveyCustomization?.primaryColor || '#073143'}
                     onChange={(e) => handleCustomizationChange('primaryColor', e.target.value)}
                     className="w-12 h-10 p-0 border-0 rounded mr-3"
                   />
                   <Input
-                    value={campaign.surveyCustomization?.primaryColor || '#3b82f6'}
+                    value={campaign.surveyCustomization?.primaryColor || '#073143'}
                     onChange={(e) => handleCustomizationChange('primaryColor', e.target.value)}
-                    placeholder="#3b82f6"
+                    placeholder="#073143"
                     className="flex-1"
                   />
                 </div>
@@ -451,7 +451,7 @@ const CampaignCreate: React.FC = () => {
               {/* Text Color */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Text Color
+                  Cor do Texto
                 </label>
                 <div className="flex items-center">
                   <input
@@ -475,7 +475,7 @@ const CampaignCreate: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white flex items-center">
               <Eye className="mr-2" size={20} />
-              Survey Preview
+              Pré-visualização da Pesquisa
             </h2>
 
             <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
@@ -507,17 +507,17 @@ const CampaignCreate: React.FC = () => {
                   )}
                   
                   <h3 className="text-2xl font-bold mb-2" style={{ color: campaign.surveyCustomization?.textColor }}>
-                    {campaign.name || 'Campaign Name'}
+                    {campaign.name || 'Nome da Campanha'}
                   </h3>
                   
                   <p className="mb-6 opacity-80" style={{ color: campaign.surveyCustomization?.textColor }}>
-                    How likely are you to recommend our service to a friend or colleague?
+                    O quanto você recomendaria nosso serviço para um amigo ou colega?
                   </p>
                   
                   <div className="bg-white bg-opacity-90 rounded-lg p-6 shadow-lg">
                     <div className="flex justify-between items-center mb-4">
-                      <span className="text-sm text-gray-600">Not likely</span>
-                      <span className="text-sm text-gray-600">Extremely likely</span>
+                      <span className="text-sm text-gray-600">Nada provável</span>
+                      <span className="text-sm text-gray-600">Extremamente provável</span>
                     </div>
                     <div className="flex justify-between space-x-1">
                       {Array.from({ length: 11 }, (_, i) => (
@@ -537,7 +537,7 @@ const CampaignCreate: React.FC = () => {
                       className="w-full mt-6 py-2 px-4 rounded-md text-white font-medium transition-colors"
                       style={{ backgroundColor: campaign.surveyCustomization?.primaryColor }}
                     >
-                      Submit Feedback
+                      Enviar Feedback
                     </button>
                   </div>
                 </div>
@@ -551,14 +551,14 @@ const CampaignCreate: React.FC = () => {
               onClick={handlePrevStep}
               icon={<ChevronLeft size={16} />}
             >
-              Previous
+              Anterior
             </Button>
             <Button
               variant="primary"
               onClick={handleNextStep}
               icon={<ChevronRight size={16} />}
             >
-              Next: Form Builder
+              Próximo: Construtor de Formulário
             </Button>
           </div>
         </motion.div>
@@ -582,7 +582,7 @@ const CampaignCreate: React.FC = () => {
               onClick={handlePrevStep}
               icon={<ChevronLeft size={16} />}
             >
-              Previous
+              Anterior
             </Button>
           </div>
         </motion.div>

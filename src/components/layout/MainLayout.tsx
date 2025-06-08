@@ -15,7 +15,8 @@ import {
   Moon,
   Sun,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -25,11 +26,12 @@ const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const { config } = useConfig();
   const { theme, toggleTheme, isDark } = useTheme();
-  const { t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = React.useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = React.useState(false);
 
   const handleLogout = () => {
     logout();
@@ -57,6 +59,19 @@ const MainLayout: React.FC = () => {
     }
   }, [location.pathname]);
 
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.user-dropdown')) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Header */}
@@ -82,16 +97,44 @@ const MainLayout: React.FC = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-4">
+              {/* Language Selector */}
+              <div className="relative">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR')}
+                  className="appearance-none bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pr-8 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#073143] transition-colors"
+                >
+                  <option value="en">🇺🇸 EN</option>
+                  <option value="pt-BR">🇧🇷 PT</option>
+                </select>
+                <Globe size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+
+              {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title={isDark ? 'Modo claro' : 'Modo escuro'}
               >
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
               
+              {/* Profile Link */}
+              <Link 
+                to="/profile"
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Perfil"
+              >
+                <User size={20} />
+              </Link>
+              
+              {/* User Dropdown */}
               {user && (
-                <div className="relative group">
-                  <button className="flex items-center text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600">
+                <div className="relative user-dropdown">
+                  <button 
+                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                    className="flex items-center text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
+                  >
                     <div className="w-8 h-8 rounded-full bg-[#073143] text-white flex items-center justify-center mr-3 text-sm font-medium">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
@@ -99,22 +142,40 @@ const MainLayout: React.FC = () => {
                       <div className="text-sm font-medium">{user.name}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
                     </div>
-                    <ChevronDown size={16} className="ml-2" />
+                    <ChevronDown size={16} className={`ml-2 transition-transform ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-10 hidden group-hover:block border border-gray-200 dark:border-gray-700">
-                    <div className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                      <div className="font-medium">{user.name}</div>
-                      <div className="text-gray-500 dark:text-gray-400">{user.email}</div>
-                    </div>
-                    <button 
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <LogOut size={16} className="mr-2" /> 
-                      {t('nav.logout')}
-                    </button>
-                  </div>
+                  <AnimatePresence>
+                    {isUserDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50 border border-gray-200 dark:border-gray-700"
+                      >
+                        <div className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-gray-500 dark:text-gray-400">{user.email}</div>
+                        </div>
+                        <Link
+                          to="/profile"
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <User size={16} className="mr-2" />
+                          Perfil e Assinatura
+                        </Link>
+                        <button 
+                          onClick={handleLogout}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                          <LogOut size={16} className="mr-2" /> 
+                          {t('nav.logout')}
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
             </nav>
@@ -257,6 +318,19 @@ const MainLayout: React.FC = () => {
                       <X size={24} />
                     </button>
                   </div>
+
+                  {/* Mobile Language Selector */}
+                  <div className="mb-4">
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR')}
+                      className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+                    >
+                      <option value="en">🇺🇸 English</option>
+                      <option value="pt-BR">🇧🇷 Português</option>
+                    </select>
+                  </div>
+
                   <nav className="space-y-2">
                     {navItems.map((item) => (
                       <Link
@@ -309,15 +383,25 @@ const MainLayout: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    icon={<LogOut size={16} />}
-                    onClick={handleLogout}
-                    className="border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white"
-                  >
-                    {t('nav.logout')}
-                  </Button>
+                  <div className="space-y-2">
+                    <Link
+                      to="/profile"
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <User size={16} className="mr-2" />
+                      Perfil e Assinatura
+                    </Link>
+                    <Button
+                      variant="outline"
+                      fullWidth
+                      icon={<LogOut size={16} />}
+                      onClick={handleLogout}
+                      className="border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white"
+                    >
+                      {t('nav.logout')}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </motion.div>
