@@ -66,8 +66,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   >
+                    {/* Redirect root to overview */}
+                    <Route index element={<Navigate to="/overview" replace />} />
                     <Route path="overview" element={<Overview />} />
-                    <Route index element={<Dashboard />} />
+                    <Route path="campaigns" element={<Dashboard />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="billing" element={<Billing />} />
                     
@@ -85,7 +87,7 @@ function App() {
                     <Route path="settings/groups" element={<EntityCrud entityType="groups" />} />
                   </Route>
                   
-                  <Route path="*" element={<Navigate to="/" />} />
+                  <Route path="*" element={<Navigate to="/overview" />} />
                 </Routes>
               </AppInitializer>
             </ConfigProvider>

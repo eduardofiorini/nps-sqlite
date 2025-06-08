@@ -192,7 +192,7 @@ interface LanguageContextProps {
 }
 
 const LanguageContext = createContext<LanguageContextProps>({
-  language: 'en',
+  language: 'pt-BR',
   setLanguage: () => {},
   t: (key: string) => key,
 });
@@ -206,7 +206,7 @@ interface LanguageProviderProps {
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('language');
-    return (saved as Language) || 'en';
+    return (saved as Language) || 'pt-BR';
   });
 
   useEffect(() => {

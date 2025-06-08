@@ -12,7 +12,7 @@ const Dashboard: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const loadCampaigns = () => {
     // Initialize default data if first time
@@ -60,13 +60,16 @@ const Dashboard: React.FC = () => {
     hidden: { y: 20, opacity: 0 },
     show: { y: 0, opacity: 1 },
   };
+
+  const pageTitle = language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns';
+  const pageSubtitle = language === 'pt-BR' ? 'Monitore e gerencie suas campanhas NPS' : 'Monitor and manage your NPS campaigns';
   
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{pageSubtitle}</p>
         </div>
         <div className="flex space-x-3">
           <Button 
@@ -75,11 +78,11 @@ const Dashboard: React.FC = () => {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            Refresh
+            {language === 'pt-BR' ? 'Atualizar' : 'Refresh'}
           </Button>
           <Link to="/campaigns/new">
             <Button variant="primary" icon={<Plus size={16} />}>
-              {t('dashboard.newCampaign')}
+              {language === 'pt-BR' ? 'Nova Campanha' : 'New Campaign'}
             </Button>
           </Link>
         </div>
@@ -111,13 +114,18 @@ const Dashboard: React.FC = () => {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('dashboard.noCampaigns')}</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            {language === 'pt-BR' ? 'Nenhuma campanha ainda' : 'No campaigns yet'}
+          </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t('dashboard.noCampaignsDesc')}
+            {language === 'pt-BR' 
+              ? 'Crie sua primeira campanha NPS para começar a coletar feedback dos clientes.'
+              : 'Create your first NPS campaign to start collecting customer feedback.'
+            }
           </p>
           <Link to="/campaigns/new">
             <Button variant="primary" icon={<Plus size={16} />}>
-              {t('dashboard.createCampaign')}
+              {language === 'pt-BR' ? 'Criar Campanha' : 'Create Campaign'}
             </Button>
           </Link>
         </motion.div>
@@ -142,7 +150,10 @@ const Dashboard: React.FC = () => {
       {campaigns.length > 0 && (
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {campaigns.length} {campaigns.length === 1 ? 'campaign' : 'campaigns'} total
+            {campaigns.length} {campaigns.length === 1 
+              ? (language === 'pt-BR' ? 'campanha' : 'campaign')
+              : (language === 'pt-BR' ? 'campanhas' : 'campaigns')
+            } {language === 'pt-BR' ? 'no total' : 'total'}
           </p>
         </div>
       )}

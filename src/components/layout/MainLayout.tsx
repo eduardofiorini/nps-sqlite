@@ -17,7 +17,8 @@ import {
   ChevronRight,
   TrendingUp,
   Globe,
-  CreditCard
+  CreditCard,
+  ChevronLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -33,6 +34,7 @@ const MainLayout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = React.useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 
   const handleLogout = () => {
     logout();
@@ -40,8 +42,16 @@ const MainLayout: React.FC = () => {
   };
 
   const navItems = [
-    { path: '/overview', label: 'Dashboard Geral', icon: <LayoutGrid size={20} /> },
-    { path: '/', label: 'Campanhas NPS', icon: <TrendingUp size={20} /> },
+    { 
+      path: '/overview', 
+      label: language === 'pt-BR' ? 'Dashboard Geral' : 'General Dashboard', 
+      icon: <LayoutGrid size={20} /> 
+    },
+    { 
+      path: '/', 
+      label: language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns', 
+      icon: <TrendingUp size={20} /> 
+    },
   ];
 
   const settingsItems = [
@@ -51,7 +61,16 @@ const MainLayout: React.FC = () => {
     { path: '/settings/groups', label: t('settings.groups'), icon: <BarChart size={18} /> },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === '/overview') {
+      return location.pathname === '/overview';
+    }
+    if (path === '/') {
+      return location.pathname === '/' || location.pathname.startsWith('/campaigns');
+    }
+    return location.pathname === path;
+  };
+  
   const isSettingsActive = () => location.pathname.startsWith('/settings');
 
   React.useEffect(() => {
@@ -81,7 +100,7 @@ const MainLayout: React.FC = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               {/* Logo */}
-              <Link to="/" className="flex items-center">
+              <Link to="/overview" className="flex items-center">
                 <div className="w-10 h-10 mr-3 flex items-center justify-center">
                   <img 
                     src="/icone.png" 
@@ -202,7 +221,19 @@ const MainLayout: React.FC = () => {
 
       <div className="flex flex-1">
         {/* Sidebar (desktop) */}
-        <aside className="hidden md:flex flex-col w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-colors">
+        <aside className={`hidden md:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
+          isSidebarCollapsed ? 'w-16' : 'w-72'
+        }`}>
+          {/* Sidebar Toggle */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="w-full flex items-center justify-center p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
+          </div>
+
           <nav className="flex flex-col flex-1 pt-6 pb-4 overflow-y-auto">
             <div className="px-6 space-y-2">
               {navItems.map((item) => (
@@ -214,9 +245,10 @@ const MainLayout: React.FC = () => {
                       ? 'bg-[#073143] text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                   }`}
+                  title={isSidebarCollapsed ? item.label : undefined}
                 >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.label}
+                  <span className={`${isSidebarCollapsed ? 'mr-0' : 'mr-3'}`}>{item.icon}</span>
+                  {!isSidebarCollapsed && item.label}
                 </Link>
               ))}
               
@@ -229,19 +261,22 @@ const MainLayout: React.FC = () => {
                       ? 'bg-[#073143] text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                   }`}
+                  title={isSidebarCollapsed ? t('nav.settings') : undefined}
                 >
                   <div className="flex items-center">
-                    <Settings size={20} className="mr-3" />
-                    {t('nav.settings')}
+                    <Settings size={20} className={`${isSidebarCollapsed ? 'mr-0' : 'mr-3'}`} />
+                    {!isSidebarCollapsed && t('nav.settings')}
                   </div>
-                  <ChevronRight 
-                    size={16} 
-                    className={`transform transition-transform duration-200 ${isSettingsExpanded ? 'rotate-90' : ''}`}
-                  />
+                  {!isSidebarCollapsed && (
+                    <ChevronRight 
+                      size={16} 
+                      className={`transform transition-transform duration-200 ${isSettingsExpanded ? 'rotate-90' : ''}`}
+                    />
+                  )}
                 </button>
                 
                 <AnimatePresence>
-                  {isSettingsExpanded && (
+                  {isSettingsExpanded && !isSidebarCollapsed && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
@@ -274,12 +309,13 @@ const MainLayout: React.FC = () => {
             <div className="mt-auto px-6 py-4 border-t border-gray-200 dark:border-gray-700">
               <Button
                 variant="outline"
-                fullWidth
+                fullWidth={!isSidebarCollapsed}
                 icon={<LogOut size={16} />}
                 onClick={handleLogout}
                 className="border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white"
+                title={isSidebarCollapsed ? t('nav.logout') : undefined}
               >
-                {t('nav.logout')}
+                {!isSidebarCollapsed && t('nav.logout')}
               </Button>
             </div>
           </nav>
