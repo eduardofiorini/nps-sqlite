@@ -67,7 +67,7 @@ function App() {
                     }
                   >
                     {/* Redirect root to overview */}
-                    <Route index element={<Navigate to="/overview" replace />} />
+                    <Route index element={<Navigate to="/overview\" replace />} />
                     <Route path="overview" element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="profile" element={<Profile />} />
