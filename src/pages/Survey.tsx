@@ -70,6 +70,9 @@ const Survey: React.FC = () => {
 
   const customization = campaign.surveyCustomization;
 
+  // Sort fields by order property to ensure correct display order
+  const sortedFields = [...form.fields].sort((a, b) => a.order - b.order);
+
   if (submitted) {
     return (
       <div 
@@ -163,7 +166,7 @@ const Survey: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {form.fields.map((field) => {
+              {sortedFields.map((field) => {
                 if (field.type === 'nps') {
                   return (
                     <div key={field.id} className="space-y-4">
@@ -216,6 +219,7 @@ const Survey: React.FC = () => {
                         style={{ color: customization?.textColor || '#374151' }}
                       >
                         {field.label}
+                        {field.required && <span className="text-red-500 ml-1">*</span>}
                       </label>
                       <textarea
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent bg-white text-gray-900 placeholder-gray-500 transition-all"
@@ -240,6 +244,7 @@ const Survey: React.FC = () => {
                         style={{ color: customization?.textColor || '#374151' }}
                       >
                         {field.label}
+                        {field.required && <span className="text-red-500 ml-1">*</span>}
                       </label>
                       <select
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent bg-white text-gray-900"
@@ -266,6 +271,7 @@ const Survey: React.FC = () => {
                         style={{ color: customization?.textColor || '#374151' }}
                       >
                         {field.label}
+                        {field.required && <span className="text-red-500 ml-1">*</span>}
                       </label>
                       <div className="space-y-2">
                         {field.options?.map((option) => (
