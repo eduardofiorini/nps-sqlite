@@ -6,22 +6,44 @@ import { Campaign } from '../types';
 import { getCampaigns, initializeDefaultData } from '../utils/localStorage';
 import { useLanguage } from '../contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { t } = useLanguage();
   
-  useEffect(() => {
+  const loadCampaigns = () => {
     // Initialize default data if first time
     initializeDefaultData();
     
     // Load campaigns
     const loadedCampaigns = getCampaigns();
     setCampaigns(loadedCampaigns);
+  };
+  
+  useEffect(() => {
+    loadCampaigns();
     setIsLoading(false);
   }, []);
+
+  const handleCampaignDeleted = () => {
+    setIsRefreshing(true);
+    // Reload campaigns after deletion
+    setTimeout(() => {
+      loadCampaigns();
+      setIsRefreshing(false);
+    }, 500);
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      loadCampaigns();
+      setIsRefreshing(false);
+    }, 500);
+  };
   
   // Animation variants for staggered animations
   const container = {
@@ -46,11 +68,21 @@ const Dashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>
         </div>
-        <Link to="/campaigns/new">
-          <Button variant="primary" icon={<Plus size={16} />}>
-            {t('dashboard.newCampaign')}
+        <div className="flex space-x-3">
+          <Button 
+            variant="outline" 
+            icon={<RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            Refresh
           </Button>
-        </Link>
+          <Link to="/campaigns/new">
+            <Button variant="primary" icon={<Plus size={16} />}>
+              {t('dashboard.newCampaign')}
+            </Button>
+          </Link>
+        </div>
       </div>
       
       {isLoading ? (
@@ -98,10 +130,21 @@ const Dashboard: React.FC = () => {
         >
           {campaigns.map((campaign) => (
             <motion.div key={campaign.id} variants={item}>
-              <CampaignCard campaign={campaign} />
+              <CampaignCard 
+                campaign={campaign} 
+                onDelete={handleCampaignDeleted}
+              />
             </motion.div>
           ))}
         </motion.div>
+      )}
+      
+      {campaigns.length > 0 && (
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {campaigns.length} {campaigns.length === 1 ? 'campaign' : 'campaigns'} total
+          </p>
+        </div>
       )}
     </div>
   );

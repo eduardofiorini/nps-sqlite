@@ -76,6 +76,8 @@ const translations: Translations = {
     'common.actions': 'Actions',
     'common.required': 'Required',
     'common.optional': 'Optional',
+    'common.confirm': 'Confirm',
+    'common.warning': 'Warning',
     
     // Login
     'login.title': 'NPS Master',
@@ -161,6 +163,8 @@ const translations: Translations = {
     'common.actions': 'Ações',
     'common.required': 'Obrigatório',
     'common.optional': 'Opcional',
+    'common.confirm': 'Confirmar',
+    'common.warning': 'Aviso',
     
     // Login
     'login.title': 'NPS Master',

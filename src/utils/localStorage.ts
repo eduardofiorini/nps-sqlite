@@ -68,10 +68,26 @@ export const deleteCampaign = (id: string): boolean => {
   
   if (filtered.length !== campaigns.length) {
     localStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(filtered));
+    
+    // Also clean up related data
+    deleteCampaignData(id);
+    
     return true;
   }
   
   return false;
+};
+
+// Helper function to delete all campaign-related data
+const deleteCampaignData = (campaignId: string): void => {
+  // Delete campaign form
+  const formKey = `${STORAGE_KEYS.FORMS}_${campaignId}`;
+  localStorage.removeItem(formKey);
+  
+  // Delete campaign responses
+  const allResponses = getResponses();
+  const filteredResponses = allResponses.filter(r => r.campaignId !== campaignId);
+  localStorage.setItem(STORAGE_KEYS.RESPONSES, JSON.stringify(filteredResponses));
 };
 
 // NPS Responses
