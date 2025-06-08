@@ -6,6 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/Login';
+import RegisterPage from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CampaignCreate from './pages/CampaignCreate';
 import CampaignDashboard from './pages/CampaignDashboard';
@@ -49,6 +50,7 @@ function App() {
               <AppInitializer>
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
                   
                   {/* Public survey route */}
                   <Route path="/survey/:id" element={<Survey />} />

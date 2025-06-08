@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -38,85 +40,178 @@ const LoginForm: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-        <div className="p-6">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-white"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
+    <div className="min-h-screen flex">
+      {/* Left side - Image */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800">
+          <img
+            src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+            alt="Business analytics"
+            className="w-full h-full object-cover opacity-20"
+          />
+        </div>
+        
+        <div className="relative z-10 flex flex-col justify-center px-12 text-white">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="flex items-center mb-8">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4">
+                <BarChart3 size={28} className="text-white" />
+              </div>
+              <h1 className="text-3xl font-bold">NPS Master</h1>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('login.title')}</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">{t('login.subtitle')}</p>
+            
+            <h2 className="text-4xl font-bold mb-6 leading-tight">
+              Transform Customer Feedback into Business Growth
+            </h2>
+            
+            <p className="text-xl text-white/90 mb-8 leading-relaxed">
+              Collect, analyze, and act on customer feedback with our comprehensive NPS management platform. 
+              Drive customer satisfaction and business success.
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
+                <span className="text-white/90">Real-time NPS tracking and analytics</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
+                <span className="text-white/90">Customizable survey forms</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
+                <span className="text-white/90">Advanced reporting and insights</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+      
+      {/* Right side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center justify-center mb-8">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-3">
+              <BarChart3 size={28} className="text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">NPS Master</h1>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 rounded-md text-sm">
-                {error}
-              </div>
-            )}
-            
-            <div>
-              <Input
-                label={t('login.email')}
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                fullWidth
-                className="pl-10"
-              />
-              <div className="absolute mt-10 ml-3 text-gray-400">
-                <Mail size={18} />
-              </div>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Welcome back
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Sign in to your account to continue
+              </p>
             </div>
             
-            <div>
-              <Input
-                label={t('login.password')}
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                fullWidth
-                className="pl-10"
-              />
-              <div className="absolute mt-10 ml-3 text-gray-400">
-                <Lock size={18} />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 rounded-lg text-sm"
+                >
+                  {error}
+                </motion.div>
+              )}
+              
+              <div className="relative">
+                <Input
+                  label="Email Address"
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  fullWidth
+                  className="pl-12"
+                />
+                <div className="absolute top-9 left-4 text-gray-400">
+                  <Mail size={18} />
+                </div>
               </div>
-            </div>
-            
-            <div>
+              
+              <div className="relative">
+                <Input
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  fullWidth
+                  className="pl-12 pr-12"
+                />
+                <div className="absolute top-9 left-4 text-gray-400">
+                  <Lock size={18} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-9 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
+                </label>
+                <a href="#" className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">
+                  Forgot password?
+                </a>
+              </div>
+              
               <Button
                 type="submit"
                 variant="primary"
                 fullWidth
                 isLoading={isLoading}
+                className="h-12 text-base font-medium"
               >
-                {t('login.signIn')}
+                Sign in
               </Button>
-            </div>
+              
+              <div className="text-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Don't have an account?{' '}
+                </span>
+                <Link 
+                  to="/register" 
+                  className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium"
+                >
+                  Start free trial
+                </Link>
+              </div>
+            </form>
             
-            <p className="text-sm text-center text-gray-600 dark:text-gray-400 mt-4">
-              {t('login.demo')}
-            </p>
-          </form>
-        </div>
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                For demo purposes, enter any email and password
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
