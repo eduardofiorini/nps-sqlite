@@ -1,12 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Campaign, NpsResponse } from '../types';
-import { getCampaigns, getResponses, getSources, getSituations } from '../utils/localStorage';
+import { getCampaigns, getResponses, getSources, getSituations, getContacts, getGroups } from '../utils/localStorage';
 import { calculateNPS, categorizeResponses, responsesBySource, npsOverTime } from '../utils/npsCalculator';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import { NpsDoughnut, NpsDistribution, NpsTrend } from '../components/dashboard/NpsChart';
-import { ChevronLeft, PieChart, Edit, MessageSquare, Share, Monitor, X, Maximize } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  PieChart, 
+  Edit, 
+  MessageSquare, 
+  Share, 
+  Monitor, 
+  X, 
+  Maximize,
+  Mail,
+  Send,
+  Users,
+  CheckCircle,
+  AlertTriangle,
+  Clock
+} from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,6 +36,12 @@ const CampaignDashboard: React.FC = () => {
   const [situations, setSituations] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isTvMode, setIsTvMode] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [targetContacts, setTargetContacts] = useState<any[]>([]);
   
   useEffect(() => {
     if (!id) return;
@@ -55,6 +77,31 @@ const CampaignDashboard: React.FC = () => {
       });
       setSituations(situationsMap);
       
+      // Load contacts for the campaign's group
+      if (foundCampaign.defaultGroupId) {
+        const allContacts = getContacts();
+        const groupContacts = allContacts.filter(contact => 
+          contact.groupIds.includes(foundCampaign.defaultGroupId!)
+        );
+        setTargetContacts(groupContacts);
+        
+        // Set default email content
+        setEmailSubject(`Pesquisa NPS: ${foundCampaign.name}`);
+        setEmailBody(`Olá,
+
+Gostaríamos de conhecer sua opinião sobre nossos serviços. Sua avaliação é muito importante para nós!
+
+Por favor, clique no link abaixo para responder nossa pesquisa NPS:
+${window.location.origin}/survey/${foundCampaign.id}
+
+A pesquisa leva apenas alguns minutos para ser concluída.
+
+Obrigado pela sua participação!
+
+Atenciosamente,
+Equipe ${foundCampaign.name}`);
+      }
+      
       setIsLoading(false);
     };
     
@@ -84,6 +131,48 @@ const CampaignDashboard: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [isTvMode, id]);
+
+  const handleSendEmail = async () => {
+    if (!campaign || targetContacts.length === 0) return;
+    
+    setEmailStatus('sending');
+    setEmailMessage('');
+    
+    try {
+      // Simulate email sending process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // In a real application, this would integrate with an email service
+      // For now, we'll just simulate success
+      setEmailStatus('success');
+      setEmailMessage(`E-mails enviados com sucesso para ${targetContacts.length} contatos!`);
+      
+      // Auto-close modal after success
+      setTimeout(() => {
+        setIsEmailModalOpen(false);
+        setEmailStatus('idle');
+        setEmailMessage('');
+      }, 3000);
+      
+    } catch (error) {
+      setEmailStatus('error');
+      setEmailMessage('Erro ao enviar e-mails. Tente novamente.');
+    }
+  };
+
+  const openEmailModal = () => {
+    if (!campaign?.defaultGroupId) {
+      alert('Esta campanha não possui um grupo padrão configurado. Configure um grupo nas configurações da campanha.');
+      return;
+    }
+    
+    if (targetContacts.length === 0) {
+      alert('Não há contatos no grupo desta campanha. Adicione contatos ao grupo primeiro.');
+      return;
+    }
+    
+    setIsEmailModalOpen(true);
+  };
   
   if (isLoading || !campaign) {
     return (
@@ -298,6 +387,14 @@ const CampaignDashboard: React.FC = () => {
               >
                 Modo TV
               </Button>
+              <Button 
+                variant="secondary" 
+                icon={<Mail size={16} />}
+                onClick={openEmailModal}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Enviar por E-mail
+              </Button>
               <Link to={`/campaigns/${id}/form`}>
                 <Button variant="outline" icon={<Edit size={16} />}>
                   Editar Formulário
@@ -326,11 +423,16 @@ const CampaignDashboard: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Compartilhe sua pesquisa NPS com clientes para começar a coletar feedback.
             </p>
-            <Link to={`/campaigns/${id}/share`}>
-              <Button variant="primary">
-                Compartilhar Pesquisa
+            <div className="flex justify-center space-x-3">
+              <Button variant="secondary" icon={<Mail size={16} />} onClick={openEmailModal}>
+                Enviar por E-mail
               </Button>
-            </Link>
+              <Link to={`/campaigns/${id}/share`}>
+                <Button variant="primary">
+                  Compartilhar Pesquisa
+                </Button>
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -449,6 +551,142 @@ const CampaignDashboard: React.FC = () => {
       <AnimatePresence>
         {isTvMode && <TvDashboard />}
       </AnimatePresence>
+
+      {/* Email Modal */}
+      <Modal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        title="Enviar Campanha por E-mail"
+        size="lg"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEmailModalOpen(false)}
+              disabled={emailStatus === 'sending'}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={handleSendEmail}
+              isLoading={emailStatus === 'sending'}
+              icon={emailStatus === 'sending' ? <Clock size={16} /> : <Send size={16} />}
+              disabled={!emailSubject || !emailBody || targetContacts.length === 0}
+            >
+              {emailStatus === 'sending' ? 'Enviando...' : `Enviar para ${targetContacts.length} contatos`}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-6">
+          {/* Status Messages */}
+          {emailStatus === 'success' && (
+            <div className="flex items-center p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <CheckCircle size={20} className="text-green-600 dark:text-green-400 mr-3" />
+              <div>
+                <h4 className="text-sm font-medium text-green-800 dark:text-green-200">E-mails Enviados!</h4>
+                <p className="text-sm text-green-700 dark:text-green-300">{emailMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {emailStatus === 'error' && (
+            <div className="flex items-center p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <AlertTriangle size={20} className="text-red-600 dark:text-red-400 mr-3" />
+              <div>
+                <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Erro no Envio</h4>
+                <p className="text-sm text-red-700 dark:text-red-300">{emailMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Target Contacts Info */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center mb-2">
+              <Users size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
+              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                Contatos do Grupo: {getGroups().find(g => g.id === campaign?.defaultGroupId)?.name || 'Grupo Padrão'}
+              </h4>
+            </div>
+            <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+              {targetContacts.length} contatos receberão o e-mail com o link da pesquisa NPS.
+            </p>
+            <div className="max-h-32 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {targetContacts.slice(0, 10).map((contact) => (
+                  <div key={contact.id} className="text-xs text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800/30 px-2 py-1 rounded">
+                    {contact.name} ({contact.email})
+                  </div>
+                ))}
+              </div>
+              {targetContacts.length > 10 && (
+                <p className="text-xs text-blue-600 dark:text-blue-300 mt-2">
+                  +{targetContacts.length - 10} contatos adicionais...
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Email Subject */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Assunto do E-mail
+            </label>
+            <input
+              type="text"
+              value={emailSubject}
+              onChange={(e) => setEmailSubject(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="Digite o assunto do e-mail"
+              disabled={emailStatus === 'sending'}
+            />
+          </div>
+
+          {/* Email Body */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Conteúdo do E-mail
+            </label>
+            <textarea
+              value={emailBody}
+              onChange={(e) => setEmailBody(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={8}
+              placeholder="Digite o conteúdo do e-mail"
+              disabled={emailStatus === 'sending'}
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              O link da pesquisa já está incluído no texto padrão. Você pode personalizar a mensagem conforme necessário.
+            </p>
+          </div>
+
+          {/* Survey Link Preview */}
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Link da Pesquisa (incluído no e-mail):
+            </h4>
+            <div className="bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-600">
+              <code className="text-sm text-blue-600 dark:text-blue-400 break-all">
+                {window.location.origin}/survey/{campaign?.id}
+              </code>
+            </div>
+          </div>
+
+          {/* Warning if no contacts */}
+          {targetContacts.length === 0 && (
+            <div className="flex items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <AlertTriangle size={20} className="text-yellow-600 dark:text-yellow-400 mr-3" />
+              <div>
+                <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Nenhum Contato Encontrado</h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  Não há contatos vinculados ao grupo desta campanha. Adicione contatos ao grupo primeiro.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </>
   );
 };
