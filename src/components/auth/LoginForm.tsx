@@ -58,9 +58,9 @@ const LoginForm: React.FC = () => {
             transition={{ duration: 0.8 }}
           >
             <div className="flex items-center mb-8">
-              <div className="w-32 h-32 mr-4 flex items-center justify-center">
+              <div className="w-24 h-24 mr-4 flex items-center justify-center">
                 <img 
-                  src="/logo-white.png" 
+                  src="/logo.png" 
                   alt="Meu NPS" 
                   className="w-full h-full object-contain"
                 />
@@ -104,9 +104,9 @@ const LoginForm: React.FC = () => {
         >
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center mb-8">
-            <div className="w-24 h-24 mr-3 flex items-center justify-center">
+            <div className="w-20 h-20 mr-3 flex items-center justify-center">
               <img 
-                src="/logo-white.png" 
+                src="/icone.png" 
                 alt="Meu NPS" 
                 className="w-full h-full object-contain"
               />
