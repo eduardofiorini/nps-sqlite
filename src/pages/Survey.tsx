@@ -18,6 +18,8 @@ const Survey: React.FC = () => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [situations] = useState(getSituations());
   const [countdown, setCountdown] = useState(10);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [automationError, setAutomationError] = useState<string>('');
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -37,22 +39,120 @@ const Survey: React.FC = () => {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     
-    if (submitted && countdown > 0) {
+    if (submitted && countdown > 0 && !isProcessing) {
       timer = setTimeout(() => {
         setCountdown(countdown - 1);
       }, 1000);
-    } else if (submitted && countdown === 0) {
-      // Reset the form when countdown reaches 0
-      handleReturnToSurvey();
+    } else if (submitted && countdown === 0 && !isProcessing) {
+      // Handle automation action
+      handleAutomationAction();
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [submitted, countdown]);
+  }, [submitted, countdown, isProcessing]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAutomationAction = () => {
+    if (!campaign?.automation?.enabled) {
+      // No automation, just reset
+      handleReturnToSurvey();
+      return;
+    }
+
+    const { action, webhookUrl, redirectUrl } = campaign.automation;
+
+    switch (action) {
+      case 'return_only':
+        handleReturnToSurvey();
+        break;
+      case 'redirect_only':
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        } else {
+          handleReturnToSurvey();
+        }
+        break;
+      case 'webhook_return':
+        // Webhook was already called, just return
+        handleReturnToSurvey();
+        break;
+      case 'webhook_redirect':
+        // Webhook was already called, now redirect
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        } else {
+          handleReturnToSurvey();
+        }
+        break;
+      default:
+        handleReturnToSurvey();
+    }
+  };
+
+  const executeWebhook = async (responseData: NpsResponse) => {
+    if (!campaign?.automation?.webhookUrl) return;
+
+    try {
+      const { webhookUrl, webhookHeaders, webhookPayload } = campaign.automation;
+      
+      // Prepare payload
+      let payload = {
+        campaign_id: responseData.campaignId,
+        response_id: responseData.id,
+        nps_score: responseData.score,
+        feedback: responseData.feedback,
+        source_id: responseData.sourceId,
+        situation_id: responseData.situationId,
+        group_id: responseData.groupId,
+        created_at: responseData.createdAt,
+        form_responses: responseData.formResponses
+      };
+
+      // Apply custom payload if provided
+      if (webhookPayload) {
+        try {
+          let customPayload = webhookPayload;
+          // Replace variables
+          customPayload = customPayload.replace(/\{\{nps_score\}\}/g, responseData.score.toString());
+          customPayload = customPayload.replace(/\{\{feedback\}\}/g, responseData.feedback);
+          customPayload = customPayload.replace(/\{\{campaign_id\}\}/g, responseData.campaignId);
+          customPayload = customPayload.replace(/\{\{response_id\}\}/g, responseData.id);
+          
+          const parsedCustomPayload = JSON.parse(customPayload);
+          payload = { ...payload, ...parsedCustomPayload };
+        } catch (error) {
+          console.error('Error parsing custom webhook payload:', error);
+        }
+      }
+
+      // Prepare headers
+      const headers = {
+        'Content-Type': 'application/json',
+        ...webhookHeaders
+      };
+
+      // Send webhook
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook failed with status: ${response.status}`);
+      }
+
+      console.log('Webhook sent successfully');
+    } catch (error) {
+      console.error('Webhook error:', error);
+      setAutomationError('Erro ao enviar webhook. A resposta foi salva, mas a automação falhou.');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsProcessing(true);
 
     if (!campaign || !form) return;
 
@@ -74,7 +174,15 @@ const Survey: React.FC = () => {
 
     console.log('Saving response with form data:', response);
     saveResponse(response);
+
+    // Execute webhook if configured
+    if (campaign.automation?.enabled && 
+        (campaign.automation.action === 'webhook_return' || campaign.automation.action === 'webhook_redirect')) {
+      await executeWebhook(response);
+    }
+
     setSubmitted(true);
+    setIsProcessing(false);
     setCountdown(10); // Reset countdown
   };
 
@@ -82,6 +190,7 @@ const Survey: React.FC = () => {
     setSubmitted(false);
     setFormData({});
     setCountdown(10);
+    setAutomationError('');
   };
 
   if (!campaign || !form) {
@@ -101,6 +210,8 @@ const Survey: React.FC = () => {
   const sortedFields = [...form.fields].sort((a, b) => a.order - b.order);
 
   if (submitted) {
+    const successMessage = campaign.automation?.successMessage || 'Obrigado pelo seu feedback!';
+    
     return (
       <div 
         className="min-h-screen flex items-center justify-center p-4 transition-colors relative"
@@ -160,62 +271,175 @@ const Survey: React.FC = () => {
               transition={{ delay: 0.4 }}
               className="text-gray-600 mb-6"
             >
-              {t('survey.submitted')}
+              {successMessage}
             </motion.p>
 
-            {/* Countdown Timer */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mb-6"
-            >
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <div className="relative w-16 h-16 flex items-center justify-center">
-                  {/* Background circle */}
-                  <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
-                  
-                  {/* Progress circle */}
-                  <svg className="w-16 h-16 absolute inset-0 transform -rotate-90">
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 28}`}
-                      strokeDashoffset={`${2 * Math.PI * 28 * (countdown / 10)}`}
-                      className="transition-all duration-1000 ease-linear"
-                      style={{ color: customization?.primaryColor || '#3b82f6' }}
-                    />
-                  </svg>
-                  
-                  {/* Countdown number */}
-                  <span className="text-xl font-bold text-gray-900 relative z-10">{countdown}</span>
+            {/* Show automation error if any */}
+            {automationError && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+              >
+                <p className="text-sm text-yellow-800">{automationError}</p>
+              </motion.div>
+            )}
+
+            {/* Processing indicator */}
+            {isProcessing && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-6"
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-600"></div>
+                  <span className="text-sm text-gray-600">Processando automação...</span>
                 </div>
-              </div>
-              
-              <p className="text-sm text-gray-500 mb-4">
-                Retornando à pesquisa em {countdown} segundos...
-              </p>
-              
-              <Button
-                variant="outline"
-                onClick={handleReturnToSurvey}
-                className="mr-3"
+              </motion.div>
+            )}
+
+            {/* Countdown Timer - only show if not processing and automation is return_only or webhook_return */}
+            {!isProcessing && campaign.automation?.enabled && 
+             (campaign.automation.action === 'return_only' || campaign.automation.action === 'webhook_return') && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-6"
               >
-                Responder Novamente
-              </Button>
-              
-              <Button
-                variant="primary"
-                onClick={() => window.close()}
-                style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
+                <div className="flex items-center justify-center space-x-2 mb-4">
+                  <div className="relative w-16 h-16 flex items-center justify-center">
+                    {/* Background circle */}
+                    <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+                    
+                    {/* Progress circle */}
+                    <svg className="w-16 h-16 absolute inset-0 transform -rotate-90">
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 28}`}
+                        strokeDashoffset={`${2 * Math.PI * 28 * (countdown / 10)}`}
+                        className="transition-all duration-1000 ease-linear"
+                        style={{ color: customization?.primaryColor || '#3b82f6' }}
+                      />
+                    </svg>
+                    
+                    {/* Countdown number */}
+                    <span className="text-xl font-bold text-gray-900 relative z-10">{countdown}</span>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-gray-500 mb-4">
+                  Retornando à pesquisa em {countdown} segundos...
+                </p>
+                
+                <Button
+                  variant="outline"
+                  onClick={handleReturnToSurvey}
+                  className="mr-3"
+                >
+                  Responder Novamente
+                </Button>
+                
+                <Button
+                  variant="primary"
+                  onClick={() => window.close()}
+                  style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
+                >
+                  Fechar
+                </Button>
+              </motion.div>
+            )}
+
+            {/* Show different actions based on automation settings */}
+            {!isProcessing && campaign.automation?.enabled && 
+             (campaign.automation.action === 'redirect_only' || campaign.automation.action === 'webhook_redirect') && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-6"
               >
-                Fechar
-              </Button>
-            </motion.div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Redirecionando em {countdown} segundos...
+                </p>
+                
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    if (campaign.automation?.redirectUrl) {
+                      window.location.href = campaign.automation.redirectUrl;
+                    }
+                  }}
+                  style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
+                >
+                  Continuar
+                </Button>
+              </motion.div>
+            )}
+
+            {/* Default actions if no automation */}
+            {!isProcessing && !campaign.automation?.enabled && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-6"
+              >
+                <div className="flex items-center justify-center space-x-2 mb-4">
+                  <div className="relative w-16 h-16 flex items-center justify-center">
+                    {/* Background circle */}
+                    <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+                    
+                    {/* Progress circle */}
+                    <svg className="w-16 h-16 absolute inset-0 transform -rotate-90">
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 28}`}
+                        strokeDashoffset={`${2 * Math.PI * 28 * (countdown / 10)}`}
+                        className="transition-all duration-1000 ease-linear"
+                        style={{ color: customization?.primaryColor || '#3b82f6' }}
+                      />
+                    </svg>
+                    
+                    {/* Countdown number */}
+                    <span className="text-xl font-bold text-gray-900 relative z-10">{countdown}</span>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-gray-500 mb-4">
+                  Retornando à pesquisa em {countdown} segundos...
+                </p>
+                
+                <Button
+                  variant="outline"
+                  onClick={handleReturnToSurvey}
+                  className="mr-3"
+                >
+                  Responder Novamente
+                </Button>
+                
+                <Button
+                  variant="primary"
+                  onClick={() => window.close()}
+                  style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
+                >
+                  Fechar
+                </Button>
+              </motion.div>
+            )}
 
             {/* Additional Info */}
             <div className="text-xs text-gray-400 border-t border-gray-200 pt-4">
@@ -426,13 +650,14 @@ const Survey: React.FC = () => {
                 type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-3 px-6 rounded-lg text-white font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-opacity-50"
+                disabled={isProcessing}
+                className="w-full py-3 px-6 rounded-lg text-white font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: customization?.primaryColor || '#3b82f6',
                   focusRingColor: customization?.primaryColor || '#3b82f6'
                 }}
               >
-                Enviar Feedback
+                {isProcessing ? 'Enviando...' : 'Enviar Feedback'}
               </motion.button>
             </form>
           </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveCampaign, saveCampaignForm, getSources, getGroups } from '../utils/localStorage';
-import { Campaign, CampaignForm, SurveyCustomization, Source, Group } from '../types';
+import { Campaign, CampaignForm, SurveyCustomization, CampaignAutomation, Source, Group } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
@@ -16,7 +16,16 @@ import {
   Eye,
   X,
   Database,
-  Users
+  Users,
+  Zap,
+  Globe,
+  ArrowRight,
+  Settings,
+  Webhook,
+  ExternalLink,
+  RotateCcw,
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -41,6 +50,12 @@ const CampaignCreate: React.FC = () => {
       backgroundColor: '#f8fafc',
       primaryColor: '#073143',
       textColor: '#1f2937'
+    },
+    automation: {
+      enabled: false,
+      action: 'return_only',
+      successMessage: 'Obrigado pelo seu feedback!',
+      errorMessage: 'Ocorreu um erro. Tente novamente.'
     }
   });
 
@@ -70,6 +85,16 @@ const CampaignCreate: React.FC = () => {
       ...campaign,
       surveyCustomization: {
         ...campaign.surveyCustomization!,
+        [field]: value
+      }
+    });
+  };
+
+  const handleAutomationChange = (field: keyof CampaignAutomation, value: string | boolean) => {
+    setCampaign({
+      ...campaign,
+      automation: {
+        ...campaign.automation!,
         [field]: value
       }
     });
@@ -109,6 +134,11 @@ const CampaignCreate: React.FC = () => {
     
     if (currentStep === 2) {
       // Save campaign with customization
+      saveCampaign(campaign);
+    }
+
+    if (currentStep === 3) {
+      // Save campaign with automation
       saveCampaign(campaign);
     }
     
@@ -160,6 +190,37 @@ const CampaignCreate: React.FC = () => {
     value: group.id,
     label: group.name
   }));
+
+  const automationActions = [
+    {
+      value: 'return_only',
+      label: 'Apenas voltar para campanha',
+      description: 'Após enviar, mostra mensagem de sucesso e retorna à pesquisa',
+      icon: <RotateCcw size={20} />,
+      color: 'from-gray-400 to-gray-600'
+    },
+    {
+      value: 'redirect_only',
+      label: 'Apenas direcionar para outra página',
+      description: 'Redireciona para uma URL específica após o envio',
+      icon: <ExternalLink size={20} />,
+      color: 'from-blue-400 to-blue-600'
+    },
+    {
+      value: 'webhook_return',
+      label: 'Disparar webhook e voltar para campanha',
+      description: 'Envia dados para webhook e retorna à pesquisa',
+      icon: <Webhook size={20} />,
+      color: 'from-green-400 to-green-600'
+    },
+    {
+      value: 'webhook_redirect',
+      label: 'Disparar webhook e direcionar para outra página',
+      description: 'Envia dados para webhook e redireciona para URL',
+      icon: <Zap size={20} />,
+      color: 'from-purple-400 to-purple-600'
+    }
+  ];
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -212,6 +273,21 @@ const CampaignCreate: React.FC = () => {
             </div>
             <span className={`ml-2 text-gray-900 dark:text-white ${currentStep === 3 ? 'font-medium' : ''}`}>
               Construtor de Formulário
+            </span>
+          </div>
+
+          <div className={`w-16 h-1 mt-5 mx-2 ${
+            currentStep >= 4 ? 'bg-[#073143]' : 'bg-gray-200 dark:bg-gray-700'
+          }`} />
+          
+          <div className="flex items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              currentStep >= 4 ? 'bg-[#073143] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+            }`}>
+              4
+            </div>
+            <span className={`ml-2 text-gray-900 dark:text-white ${currentStep === 4 ? 'font-medium' : ''}`}>
+              Automação
             </span>
           </div>
         </div>
@@ -708,7 +784,11 @@ const CampaignCreate: React.FC = () => {
         >
           <FormBuilder
             campaignId={campaign.id}
-            onSave={handleFormSave}
+            onSave={() => {
+              // Save campaign and move to automation step
+              saveCampaign(campaign);
+              setCurrentStep(4);
+            }}
           />
           
           <div className="mt-6 flex justify-between">
@@ -718,6 +798,252 @@ const CampaignCreate: React.FC = () => {
               icon={<ChevronLeft size={16} />}
             >
               Anterior
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {currentStep === 4 && (
+        <motion.div
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={variants}
+          className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <Settings className="mr-2" size={20} />
+              Configuração de Automação
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Configure o que acontece após o envio das respostas da pesquisa
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {/* Enable Automation Toggle */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">Ativar Automação</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Habilite para configurar ações automáticas após o envio
+                </p>
+              </div>
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={campaign.automation?.enabled || false}
+                  onChange={(e) => handleAutomationChange('enabled', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#073143]/30 dark:peer-focus:ring-[#073143]/50 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#073143]"></div>
+              </label>
+            </div>
+
+            {campaign.automation?.enabled && (
+              <>
+                {/* Action Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                    Selecione a Ação
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {automationActions.map((action) => (
+                      <motion.div
+                        key={action.value}
+                        whileHover={{ scale: 1.02 }}
+                        className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                          campaign.automation?.action === action.value
+                            ? 'border-[#073143] bg-[#073143]/5 dark:bg-[#073143]/10'
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                        }`}
+                        onClick={() => handleAutomationChange('action', action.value)}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${action.color} flex items-center justify-center text-white flex-shrink-0`}>
+                            {action.icon}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                              {action.label}
+                            </h4>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              {action.description}
+                            </p>
+                          </div>
+                        </div>
+                        {campaign.automation?.action === action.value && (
+                          <div className="absolute top-2 right-2">
+                            <CheckCircle size={20} className="text-[#073143]" />
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Webhook Configuration */}
+                {(campaign.automation?.action === 'webhook_return' || campaign.automation?.action === 'webhook_redirect') && (
+                  <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 flex items-center">
+                      <Webhook size={16} className="mr-2" />
+                      Configuração do Webhook
+                    </h4>
+                    
+                    <Input
+                      label="URL do Webhook"
+                      value={campaign.automation?.webhookUrl || ''}
+                      onChange={(e) => handleAutomationChange('webhookUrl', e.target.value)}
+                      placeholder="https://api.exemplo.com/webhook"
+                      fullWidth
+                      required
+                    />
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Headers Personalizados (JSON)
+                      </label>
+                      <textarea
+                        value={campaign.automation?.webhookHeaders ? JSON.stringify(campaign.automation.webhookHeaders, null, 2) : '{\n  "Content-Type": "application/json",\n  "Authorization": "Bearer seu-token"\n}'}
+                        onChange={(e) => {
+                          try {
+                            const headers = JSON.parse(e.target.value);
+                            handleAutomationChange('webhookHeaders', headers);
+                          } catch (error) {
+                            // Invalid JSON, keep the text for editing
+                          }
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#073143] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+                        rows={4}
+                        placeholder='{"Content-Type": "application/json"}'
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Payload Personalizado (Opcional)
+                      </label>
+                      <textarea
+                        value={campaign.automation?.webhookPayload || ''}
+                        onChange={(e) => handleAutomationChange('webhookPayload', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#073143] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+                        rows={3}
+                        placeholder='{"custom_field": "valor", "outro_campo": "{{nps_score}}"}'
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Use variáveis como: {`{{nps_score}}, {{feedback}}, {{campaign_id}}, {{response_id}}`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Redirect Configuration */}
+                {(campaign.automation?.action === 'redirect_only' || campaign.automation?.action === 'webhook_redirect') && (
+                  <div className="space-y-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <h4 className="text-sm font-medium text-green-800 dark:text-green-200 flex items-center">
+                      <ExternalLink size={16} className="mr-2" />
+                      Configuração de Redirecionamento
+                    </h4>
+                    
+                    <Input
+                      label="URL de Redirecionamento"
+                      value={campaign.automation?.redirectUrl || ''}
+                      onChange={(e) => handleAutomationChange('redirectUrl', e.target.value)}
+                      placeholder="https://www.exemplo.com/obrigado"
+                      fullWidth
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Messages Configuration */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Mensagens Personalizadas
+                  </h4>
+                  
+                  <Input
+                    label="Mensagem de Sucesso"
+                    value={campaign.automation?.successMessage || ''}
+                    onChange={(e) => handleAutomationChange('successMessage', e.target.value)}
+                    placeholder="Obrigado pelo seu feedback!"
+                    fullWidth
+                  />
+
+                  <Input
+                    label="Mensagem de Erro"
+                    value={campaign.automation?.errorMessage || ''}
+                    onChange={(e) => handleAutomationChange('errorMessage', e.target.value)}
+                    placeholder="Ocorreu um erro. Tente novamente."
+                    fullWidth
+                  />
+                </div>
+
+                {/* Preview */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Resumo da Automação
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <CheckCircle size={16} className="text-green-500 mr-2" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Ação: {automationActions.find(a => a.value === campaign.automation?.action)?.label}
+                      </span>
+                    </div>
+                    {campaign.automation?.webhookUrl && (
+                      <div className="flex items-center">
+                        <Webhook size={16} className="text-blue-500 mr-2" />
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Webhook: {campaign.automation.webhookUrl}
+                        </span>
+                      </div>
+                    )}
+                    {campaign.automation?.redirectUrl && (
+                      <div className="flex items-center">
+                        <ExternalLink size={16} className="text-purple-500 mr-2" />
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Redirecionamento: {campaign.automation.redirectUrl}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="mt-8 flex justify-between">
+            <Button 
+              variant="outline" 
+              onClick={handlePrevStep}
+              icon={<ChevronLeft size={16} />}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                // Save final campaign and navigate to form builder
+                saveCampaign(campaign);
+                handleFormSave({
+                  id: uuidv4(),
+                  campaignId: campaign.id,
+                  fields: [
+                    {
+                      id: uuidv4(),
+                      type: 'nps',
+                      label: 'O quanto você recomendaria nosso serviço para um amigo ou colega?',
+                      required: true,
+                      order: 0,
+                    },
+                  ],
+                });
+              }}
+              icon={<CheckCircle size={16} />}
+            >
+              Finalizar Campanha
             </Button>
           </div>
         </motion.div>

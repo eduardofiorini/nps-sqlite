@@ -27,6 +27,8 @@ export type Campaign = {
   // Default source and group for responses
   defaultSourceId?: string;
   defaultGroupId?: string;
+  // Automation settings
+  automation?: CampaignAutomation;
 };
 
 export type SurveyCustomization = {
@@ -36,6 +38,17 @@ export type SurveyCustomization = {
   logoImage?: string;
   primaryColor?: string;
   textColor?: string;
+};
+
+export type CampaignAutomation = {
+  enabled: boolean;
+  action: 'webhook_return' | 'webhook_redirect' | 'redirect_only' | 'return_only';
+  webhookUrl?: string;
+  redirectUrl?: string;
+  webhookHeaders?: Record<string, string>;
+  webhookPayload?: string;
+  successMessage?: string;
+  errorMessage?: string;
 };
 
 export type NpsResponse = {
