@@ -9,6 +9,7 @@ import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Overview from './pages/Overview';
+import Reports from './pages/Reports';
 import CampaignCreate from './pages/CampaignCreate';
 import CampaignDashboard from './pages/CampaignDashboard';
 import CampaignResponses from './pages/CampaignResponses';
@@ -67,9 +68,10 @@ function App() {
                     }
                   >
                     {/* Redirect root to overview */}
-                    <Route index element={<Navigate to="/overview\" replace />} />
+                    <Route index element={<Navigate to="/overview" replace />} />
                     <Route path="overview" element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
+                    <Route path="reports" element={<Reports />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="billing" element={<Billing />} />
                     

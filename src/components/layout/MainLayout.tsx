@@ -19,7 +19,8 @@ import {
   Globe,
   CreditCard,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -53,6 +54,11 @@ const MainLayout: React.FC = () => {
       label: language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns', 
       icon: <TrendingUp size={20} /> 
     },
+    { 
+      path: '/reports', 
+      label: language === 'pt-BR' ? 'Relatórios' : 'Reports', 
+      icon: <FileText size={20} /> 
+    },
   ];
 
   const settingsItems = [
@@ -68,6 +74,9 @@ const MainLayout: React.FC = () => {
     }
     if (path === '/campaigns') {
       return location.pathname === '/campaigns' || location.pathname.startsWith('/campaigns');
+    }
+    if (path === '/reports') {
+      return location.pathname === '/reports' || location.pathname.startsWith('/reports');
     }
     return location.pathname === path;
   };
