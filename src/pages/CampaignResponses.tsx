@@ -33,8 +33,10 @@ const CampaignResponses: React.FC = () => {
     const form = getCampaignForm(id);
     setCampaignForm(form);
 
-    // Load responses
-    const campaignResponses = getResponses(id);
+    // Load responses and sort by date (newest first)
+    const campaignResponses = getResponses(id).sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
     setResponses(campaignResponses);
     setFilteredResponses(campaignResponses);
 
@@ -61,7 +63,7 @@ const CampaignResponses: React.FC = () => {
     setGroups(groupsMap);
   }, [id]);
 
-  // Filter responses based on filters (removed search)
+  // Filter responses based on filters
   useEffect(() => {
     let filtered = [...responses];
 
@@ -109,32 +111,7 @@ const CampaignResponses: React.FC = () => {
 
     const headers = [...baseHeaders, ...formHeaders];
 
-    // Create a map to store all form responses for each response
-    const responseDataMap = new Map();
-    
-    // For now, we'll use the existing response data structure
-    // In a real implementation, you'd store all form field responses
-    filteredResponses.forEach(response => {
-      const formData: any = {};
-      
-      sortedFields.forEach(field => {
-        if (field.type === 'nps') {
-          formData[field.id] = {
-            score: response.score,
-            category: response.score >= 9 ? 'Promotor' : response.score <= 6 ? 'Detrator' : 'Neutro'
-          };
-        } else if (field.type === 'text') {
-          // Use feedback field for text responses
-          formData[field.id] = response.feedback || '';
-        } else {
-          // For other field types, we'd need to store the actual responses
-          formData[field.id] = '';
-        }
-      });
-      
-      responseDataMap.set(response.id, formData);
-    });
-
+    // Create CSV content with all form responses
     const csvContent = [
       headers.join(','),
       ...filteredResponses.map(response => {
@@ -149,16 +126,21 @@ const CampaignResponses: React.FC = () => {
         ];
 
         const formData: string[] = [];
-        const responseFormData = responseDataMap.get(response.id);
         
         // Add data for each form field in order
         sortedFields.forEach(field => {
           if (field.type === 'nps') {
-            const npsData = responseFormData[field.id];
-            formData.push(npsData.score.toString(), `"${npsData.category}"`);
-          } else {
-            const fieldValue = responseFormData[field.id] || '';
+            const category = response.score >= 9 ? 'Promotor' : response.score <= 6 ? 'Detrator' : 'Neutro';
+            formData.push(response.score.toString(), `"${category}"`);
+          } else if (field.type === 'text') {
+            // For text fields, use the feedback field (this is a limitation of current data structure)
+            // In a real implementation, you'd store responses for each field separately
+            const fieldValue = response.feedback || '';
             formData.push(`"${fieldValue.toString().replace(/"/g, '""')}"`);
+          } else {
+            // For other field types (select, radio), we'd need to store the actual responses
+            // For now, we'll leave empty as the current data structure doesn't support this
+            formData.push('""');
           }
         });
 
@@ -275,7 +257,7 @@ const CampaignResponses: React.FC = () => {
         </div>
       )}
 
-      {/* Filters - Removed search input */}
+      {/* Filters */}
       {responses.length > 0 && (
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader title="Filtros" />
@@ -487,7 +469,7 @@ const CampaignResponses: React.FC = () => {
                     {/* Response ID (for debugging/reference) */}
                     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                       <span className="text-xs text-gray-400">
-                        ID: {response.id.slice(0, 8)}...
+                        ID: {response.id.slice(0, 8)}... • {new Date(response.createdAt).toLocaleString('pt-BR')}
                       </span>
                     </div>
                   </motion.div>
