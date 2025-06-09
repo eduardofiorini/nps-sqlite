@@ -25,9 +25,7 @@ import {
   Code,
   Type,
   Eye,
-  User,
-  Maximize2,
-  Minimize2
+  User
 } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -54,11 +52,8 @@ const CampaignDashboard: React.FC = () => {
   const [emailBody, setEmailBody] = useState('');
   const [emailType, setEmailType] = useState<'text' | 'html'>('html');
   const [targetContacts, setTargetContacts] = useState<any[]>([]);
+  const [previewMode, setPreviewMode] = useState(false);
   const [previewContact, setPreviewContact] = useState<any>(null);
-  
-  // New states for preview modal and fullscreen editor
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const [isFullscreenEditor, setIsFullscreenEditor] = useState(false);
   
   useEffect(() => {
     if (!id) return;
@@ -162,18 +157,14 @@ const CampaignDashboard: React.FC = () => {
   // Handle escape key to exit TV mode
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (isTvMode) {
-          setIsTvMode(false);
-        } else if (isFullscreenEditor) {
-          setIsFullscreenEditor(false);
-        }
+      if (event.key === 'Escape' && isTvMode) {
+        setIsTvMode(false);
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isTvMode, isFullscreenEditor]);
+  }, [isTvMode]);
 
   // Auto-refresh data in TV mode
   useEffect(() => {
@@ -487,123 +478,6 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
       </div>
     </motion.div>
   );
-
-  // Fullscreen Editor Component
-  const FullscreenEditor = () => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-white dark:bg-gray-900 z-50 flex flex-col"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Editor de E-mail - {emailType === 'html' ? 'HTML' : 'Texto'}
-          </h2>
-          <div className="flex space-x-2">
-            <button
-              type="button"
-              onClick={switchToTextTemplate}
-              className={`flex items-center px-3 py-1 rounded-md border text-sm transition-colors ${
-                emailType === 'text'
-                  ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
-                  : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              <Type size={12} className="mr-1" />
-              Texto
-            </button>
-            <button
-              type="button"
-              onClick={switchToHtmlTemplate}
-              className={`flex items-center px-3 py-1 rounded-md border text-sm transition-colors ${
-                emailType === 'html'
-                  ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
-                  : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              <Code size={12} className="mr-1" />
-              HTML
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Eye size={14} />}
-            onClick={() => setIsPreviewModalOpen(true)}
-            disabled={!previewContact}
-          >
-            Preview
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Minimize2 size={14} />}
-            onClick={() => setIsFullscreenEditor(false)}
-          >
-            Sair da Tela Cheia
-          </Button>
-        </div>
-      </div>
-
-      {/* Editor */}
-      <div className="flex-1 overflow-hidden">
-        {emailType === 'html' ? (
-          <CodeMirror
-            value={emailBody}
-            onChange={(value) => setEmailBody(value)}
-            extensions={[html()]}
-            theme={isDark ? oneDark : undefined}
-            height="100%"
-            basicSetup={{
-              lineNumbers: true,
-              foldGutter: true,
-              dropCursor: false,
-              allowMultipleSelections: false,
-              indentOnInput: true,
-              bracketMatching: true,
-              closeBrackets: true,
-              autocompletion: true,
-              highlightSelectionMatches: true,
-            }}
-            placeholder="Digite o HTML do e-mail"
-          />
-        ) : (
-          <textarea
-            value={emailBody}
-            onChange={(e) => setEmailBody(e.target.value)}
-            className="w-full h-full p-4 border-0 focus:outline-none resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
-            placeholder="Digite o conteúdo do e-mail"
-          />
-        )}
-      </div>
-
-      {/* Footer with variables */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <div className="flex items-center justify-between">
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Variáveis Disponíveis:
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {['{{nome}}', '{{email}}', '{{telefone}}', '{{empresa}}', '{{cargo}}', '{{link_pesquisa}}'].map(variable => (
-                <code key={variable} className="bg-white dark:bg-gray-700 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-600">
-                  {variable}
-                </code>
-              ))}
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Pressione ESC para sair da tela cheia
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
   
   return (
     <>
@@ -812,11 +686,6 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
         {isTvMode && <TvDashboard />}
       </AnimatePresence>
 
-      {/* Fullscreen Editor Overlay */}
-      <AnimatePresence>
-        {isFullscreenEditor && <FullscreenEditor />}
-      </AnimatePresence>
-
       {/* Email Modal - Tamanho ajustado */}
       <Modal
         isOpen={isEmailModalOpen}
@@ -933,63 +802,75 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Conteúdo ({emailType === 'html' ? 'HTML' : 'Texto'})
               </label>
-              <div className="flex space-x-2">
-                {previewContact && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    icon={<Eye size={12} />}
-                    onClick={() => setIsPreviewModalOpen(true)}
-                    className="text-xs px-2 py-1"
-                  >
-                    Preview
-                  </Button>
-                )}
+              {previewContact && (
                 <Button
                   variant="outline"
                   size="sm"
-                  icon={<Maximize2 size={12} />}
-                  onClick={() => setIsFullscreenEditor(true)}
+                  icon={<Eye size={12} />}
+                  onClick={() => setPreviewMode(!previewMode)}
                   className="text-xs px-2 py-1"
                 >
-                  Tela Cheia
+                  {previewMode ? 'Editar' : 'Preview'}
                 </Button>
-              </div>
-            </div>
-            
-            <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-              {emailType === 'html' ? (
-                <CodeMirror
-                  value={emailBody}
-                  onChange={(value) => setEmailBody(value)}
-                  extensions={[html()]}
-                  theme={isDark ? oneDark : undefined}
-                  height="200px"
-                  basicSetup={{
-                    lineNumbers: true,
-                    foldGutter: false,
-                    dropCursor: false,
-                    allowMultipleSelections: false,
-                    indentOnInput: true,
-                    bracketMatching: true,
-                    closeBrackets: true,
-                    autocompletion: true,
-                    highlightSelectionMatches: false,
-                  }}
-                  placeholder="Digite o HTML do e-mail"
-                  editable={emailStatus !== 'sending'}
-                />
-              ) : (
-                <textarea
-                  value={emailBody}
-                  onChange={(e) => setEmailBody(e.target.value)}
-                  className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
-                  rows={8}
-                  placeholder="Digite o conteúdo do e-mail"
-                  disabled={emailStatus === 'sending'}
-                />
               )}
             </div>
+            
+            {previewMode && previewContact ? (
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700 max-h-48 overflow-y-auto">
+                <div className="flex items-center mb-2">
+                  <User size={12} className="text-gray-500 mr-1" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Preview: {previewContact.name}
+                  </span>
+                </div>
+                {emailType === 'html' ? (
+                  <div 
+                    className="prose prose-sm max-w-none bg-white p-2 rounded border text-xs"
+                    dangerouslySetInnerHTML={{ 
+                      __html: personalizeContent(emailBody, previewContact) 
+                    }}
+                  />
+                ) : (
+                  <div className="whitespace-pre-wrap text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 p-2 rounded border">
+                    {personalizeContent(emailBody, previewContact)}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                {emailType === 'html' ? (
+                  <CodeMirror
+                    value={emailBody}
+                    onChange={(value) => setEmailBody(value)}
+                    extensions={[html()]}
+                    theme={isDark ? oneDark : undefined}
+                    height="200px"
+                    basicSetup={{
+                      lineNumbers: true,
+                      foldGutter: false,
+                      dropCursor: false,
+                      allowMultipleSelections: false,
+                      indentOnInput: true,
+                      bracketMatching: true,
+                      closeBrackets: true,
+                      autocompletion: true,
+                      highlightSelectionMatches: false,
+                    }}
+                    placeholder="Digite o HTML do e-mail"
+                    editable={emailStatus !== 'sending'}
+                  />
+                ) : (
+                  <textarea
+                    value={emailBody}
+                    onChange={(e) => setEmailBody(e.target.value)}
+                    className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
+                    rows={8}
+                    placeholder="Digite o conteúdo do e-mail"
+                    disabled={emailStatus === 'sending'}
+                  />
+                )}
+              </div>
+            )}
           </div>
 
           {/* Personalization Variables */}
@@ -1016,82 +897,6 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                 <p className="text-xs text-yellow-700 dark:text-yellow-300">
                   Adicione contatos ao grupo desta campanha primeiro.
                 </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </Modal>
-
-      {/* Preview Modal */}
-      <Modal
-        isOpen={isPreviewModalOpen}
-        onClose={() => setIsPreviewModalOpen(false)}
-        title={`Preview do E-mail - ${previewContact?.name || 'Contato'}`}
-        size="xl"
-        footer={
-          <div className="flex justify-end space-x-3">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsPreviewModalOpen(false)}
-            >
-              Fechar
-            </Button>
-          </div>
-        }
-      >
-        <div className="max-h-[80vh] overflow-y-auto">
-          {previewContact && (
-            <div className="space-y-4">
-              {/* Contact Info */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="flex items-center">
-                  <User size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
-                  <div>
-                    <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      {previewContact.name}
-                    </h4>
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                      {previewContact.email} • {previewContact.company || 'Sem empresa'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Email Subject Preview */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Assunto:
-                </label>
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                  <p className="text-sm text-gray-900 dark:text-white font-medium">
-                    {personalizeContent(emailSubject, previewContact)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Email Body Preview */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Conteúdo:
-                </label>
-                <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-                  {emailType === 'html' ? (
-                    <div className="bg-white p-4">
-                      <div 
-                        className="prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ 
-                          __html: personalizeContent(emailBody, previewContact) 
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4">
-                      <div className="whitespace-pre-wrap text-sm text-gray-900 dark:text-white">
-                        {personalizeContent(emailBody, previewContact)}
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           )}
