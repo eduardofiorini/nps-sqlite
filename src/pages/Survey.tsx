@@ -20,6 +20,7 @@ const Survey: React.FC = () => {
   const [countdown, setCountdown] = useState(10);
   const [isProcessing, setIsProcessing] = useState(false);
   const [automationError, setAutomationError] = useState<string>('');
+  const [webhookRetryCount, setWebhookRetryCount] = useState(0);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -90,7 +91,7 @@ const Survey: React.FC = () => {
     }
   };
 
-  const executeWebhook = async (responseData: NpsResponse) => {
+  const executeWebhook = async (responseData: NpsResponse, retryAttempt = 0) => {
     if (!campaign?.automation?.webhookUrl) return;
 
     try {
@@ -142,14 +143,15 @@ const Survey: React.FC = () => {
 
       // Send webhook with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
       try {
         const response = await fetch(webhookUrl, {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          signal: controller.signal
+          signal: controller.signal,
+          mode: 'cors' // Explicitly set CORS mode
         });
 
         clearTimeout(timeoutId);
@@ -159,16 +161,17 @@ const Survey: React.FC = () => {
         }
 
         console.log('Webhook sent successfully');
+        setAutomationError(''); // Clear any previous errors on success
       } catch (fetchError) {
         clearTimeout(timeoutId);
         
         if (fetchError.name === 'AbortError') {
-          throw new Error('Timeout: O webhook demorou muito para responder');
+          throw new Error('Timeout: O webhook demorou muito para responder (15s)');
         }
         
         // Handle different types of fetch errors
-        if (fetchError.message.includes('Failed to fetch')) {
-          throw new Error('Erro de conectividade: Verifique se a URL do webhook está acessível e se não há problemas de CORS');
+        if (fetchError.message.includes('Failed to fetch') || fetchError.name === 'TypeError') {
+          throw new Error('CORS_ERROR');
         }
         
         throw fetchError;
@@ -179,22 +182,40 @@ const Survey: React.FC = () => {
       
       // Set user-friendly error message
       let errorMessage = 'Erro ao enviar webhook. A resposta foi salva, mas a automação falhou.';
+      let showRetryOption = false;
       
       if (error instanceof Error) {
         if (error.message.includes('URL do webhook inválida')) {
           errorMessage = 'URL do webhook inválida. Verifique a configuração da campanha.';
         } else if (error.message.includes('Timeout')) {
           errorMessage = 'Timeout: O webhook demorou muito para responder. A resposta foi salva.';
-        } else if (error.message.includes('Erro de conectividade')) {
-          errorMessage = 'Erro de conectividade: Verifique se a URL do webhook está acessível e configurada corretamente para CORS.';
+          showRetryOption = retryAttempt < 2;
+        } else if (error.message === 'CORS_ERROR') {
+          errorMessage = `Erro de CORS: O servidor webhook não permite requisições desta origem (${window.location.origin}). Para resolver este problema:
+
+• Configure o servidor webhook para incluir o header "Access-Control-Allow-Origin: ${window.location.origin}" ou "Access-Control-Allow-Origin: *"
+• Para requisições POST com JSON, o servidor também deve responder a requisições OPTIONS com os headers apropriados
+• Alternativamente, use um proxy no seu backend para contornar as restrições de CORS do navegador
+
+A resposta da pesquisa foi salva com sucesso.`;
         } else if (error.message.includes('Webhook falhou com status')) {
           errorMessage = `Erro do servidor webhook: ${error.message}. A resposta foi salva.`;
+          showRetryOption = retryAttempt < 2;
         } else if (error.message.includes('payload personalizado')) {
           errorMessage = 'Erro no payload personalizado do webhook. Verifique a configuração JSON.';
         }
       }
       
       setAutomationError(errorMessage);
+      
+      // Auto-retry for certain errors
+      if (showRetryOption && retryAttempt < 2) {
+        console.log(`Retrying webhook (attempt ${retryAttempt + 1}/3)...`);
+        setWebhookRetryCount(retryAttempt + 1);
+        setTimeout(() => {
+          executeWebhook(responseData, retryAttempt + 1);
+        }, 2000 * (retryAttempt + 1)); // Exponential backoff
+      }
     }
   };
 
@@ -202,6 +223,7 @@ const Survey: React.FC = () => {
     e.preventDefault();
     setIsProcessing(true);
     setAutomationError(''); // Clear any previous errors
+    setWebhookRetryCount(0); // Reset retry count
 
     if (!campaign || !form) return;
 
@@ -242,6 +264,24 @@ const Survey: React.FC = () => {
     setFormData({});
     setCountdown(10);
     setAutomationError('');
+    setWebhookRetryCount(0);
+  };
+
+  const retryWebhook = async () => {
+    if (!campaign || webhookRetryCount >= 3) return;
+    
+    setIsProcessing(true);
+    setAutomationError('');
+    
+    // Get the last response to retry webhook
+    const responses = JSON.parse(localStorage.getItem('nps_responses') || '[]');
+    const lastResponse = responses[responses.length - 1];
+    
+    if (lastResponse) {
+      await executeWebhook(lastResponse, webhookRetryCount);
+    }
+    
+    setIsProcessing(false);
   };
 
   if (!campaign || !form) {
@@ -281,7 +321,7 @@ const Survey: React.FC = () => {
           <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         )}
         
-        <div className="relative z-10 max-w-lg w-full">
+        <div className="relative z-10 max-w-2xl w-full">
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -331,15 +371,30 @@ const Survey: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+                className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-left"
               >
                 <div className="flex items-start space-x-3">
                   <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
-                  <div className="text-left">
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-yellow-800 mb-1">Aviso sobre Automação</p>
-                    <p className="text-sm text-yellow-700">{automationError}</p>
+                    <div className="text-sm text-yellow-700 whitespace-pre-line">{automationError}</div>
+                    
+                    {/* Show retry button for certain errors */}
+                    {(automationError.includes('Timeout') || automationError.includes('servidor webhook')) && webhookRetryCount < 3 && (
+                      <div className="mt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={retryWebhook}
+                          disabled={isProcessing}
+                          className="text-yellow-800 border-yellow-300 hover:bg-yellow-100"
+                        >
+                          {isProcessing ? 'Tentando novamente...' : `Tentar novamente (${webhookRetryCount + 1}/3)`}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -355,7 +410,9 @@ const Survey: React.FC = () => {
               >
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-600"></div>
-                  <span className="text-sm text-gray-600">Processando automação...</span>
+                  <span className="text-sm text-gray-600">
+                    {webhookRetryCount > 0 ? `Tentativa ${webhookRetryCount + 1}/3...` : 'Processando automação...'}
+                  </span>
                 </div>
               </motion.div>
             )}
