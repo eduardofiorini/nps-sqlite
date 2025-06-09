@@ -58,7 +58,7 @@ const LoginForm: React.FC = () => {
             transition={{ duration: 0.8 }}
           >
             <div className="flex items-center mb-8">
-              <div className="w-42 h-42 mr-4 flex items-center justify-center">
+              <div className="w-34 h-34 mr-4 flex items-center justify-center">
                 <img 
                   src="/logo-white.png" 
                   alt="Meu NPS" 
