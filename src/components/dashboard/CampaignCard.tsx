@@ -73,7 +73,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
                 {campaign.active && <Badge variant="success" className="ml-2">{t('campaign.active')}</Badge>}
                 {!campaign.active && <Badge variant="danger" className="ml-2">{t('campaign.inactive')}</Badge>}
               </div>
-              <div className="flex space-x-1">
+              <div className="flex space-x-1 ml-auto">
                 <Link to={`/campaigns/${campaign.id}/form`}>
                   <button
                     className="p-1 text-gray-400 hover:text-[#073143] dark:hover:text-white transition-colors"
