@@ -439,7 +439,7 @@ const Survey: React.FC = () => {
               </motion.button>
             </form>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
