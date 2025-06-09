@@ -101,7 +101,7 @@ const Contacts: React.FC = () => {
     // Tags filter
     if (selectedTags.length > 0) {
       filtered = filtered.filter(contact =>
-        contact.tags?.some(tag => selectedTags.includes(tag))
+        (contact.tags || []).some(tag => selectedTags.includes(tag))
       );
     }
 
@@ -138,7 +138,10 @@ const Contacts: React.FC = () => {
   };
 
   const handleEdit = (contact: Contact) => {
-    setCurrentContact(contact);
+    setCurrentContact({
+      ...contact,
+      tags: contact.tags || [] // Ensure tags is always an array
+    });
     setIsEditing(true);
     setModalOpen(true);
   };
@@ -151,7 +154,10 @@ const Contacts: React.FC = () => {
   };
 
   const handleOpenModal = () => {
-    setCurrentContact({ groupIds: [] });
+    setCurrentContact({ 
+      groupIds: [],
+      tags: [] // Ensure tags is always an array
+    });
     setIsEditing(false);
     setModalOpen(true);
   };
@@ -166,14 +172,16 @@ const Contacts: React.FC = () => {
   };
 
   const handleTagAdd = (tag: string) => {
-    if (tag.trim() && !currentContact.tags?.includes(tag.trim())) {
-      const newTags = [...(currentContact.tags || []), tag.trim()];
+    const currentTags = currentContact.tags || [];
+    if (tag.trim() && !currentTags.includes(tag.trim())) {
+      const newTags = [...currentTags, tag.trim()];
       setCurrentContact({ ...currentContact, tags: newTags });
     }
   };
 
   const handleTagRemove = (tagToRemove: string) => {
-    const newTags = currentContact.tags?.filter(tag => tag !== tagToRemove) || [];
+    const currentTags = currentContact.tags || [];
+    const newTags = currentTags.filter(tag => tag !== tagToRemove);
     setCurrentContact({ ...currentContact, tags: newTags });
   };
 
@@ -187,7 +195,7 @@ const Contacts: React.FC = () => {
         `"${contact.company || ''}"`,
         `"${contact.position || ''}"`,
         `"${contact.groupIds.map(id => groups.find(g => g.id === id)?.name).filter(Boolean).join('; ')}"`,
-        `"${contact.tags?.join('; ') || ''}"`,
+        `"${(contact.tags || []).join('; ')}"`,
         `"${contact.notes || ''}"`
       ].join(','))
     ].join('\n');
@@ -751,7 +759,7 @@ const Contacts: React.FC = () => {
         size="lg"
         footer={
           <div className="flex justify-end space-x-3">
-            <Button variant="outline\" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleSave}>
@@ -861,7 +869,7 @@ const Contacts: React.FC = () => {
             </label>
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
-                {currentContact.tags?.map(tag => (
+                {(currentContact.tags || []).map(tag => (
                   <span
                     key={tag}
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-[#073143]/10 dark:bg-[#073143]/20 text-[#073143] dark:text-white"
