@@ -759,7 +759,7 @@ const Contacts: React.FC = () => {
         size="lg"
         footer={
           <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button variant="outline\" onClick={() => setModalOpen(false)}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleSave}>
