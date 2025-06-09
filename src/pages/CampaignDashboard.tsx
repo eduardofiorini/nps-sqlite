@@ -686,12 +686,12 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
         {isTvMode && <TvDashboard />}
       </AnimatePresence>
 
-      {/* Email Modal */}
+      {/* Email Modal - Tamanho ajustado */}
       <Modal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         title="Enviar Campanha por E-mail"
-        size="xl"
+        size="lg"
         footer={
           <div className="flex justify-end space-x-3">
             <Button 
@@ -713,69 +713,69 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           </div>
         }
       >
-        <div className="space-y-6">
+        <div className="max-h-[70vh] overflow-y-auto space-y-4">
           {/* Status Messages */}
           {emailStatus === 'success' && (
-            <div className="flex items-center p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-              <CheckCircle size={20} className="text-green-600 dark:text-green-400 mr-3" />
+            <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <CheckCircle size={18} className="text-green-600 dark:text-green-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-green-800 dark:text-green-200">E-mails Enviados!</h4>
-                <p className="text-sm text-green-700 dark:text-green-300">{emailMessage}</p>
+                <p className="text-xs text-green-700 dark:text-green-300">{emailMessage}</p>
               </div>
             </div>
           )}
 
           {emailStatus === 'error' && (
-            <div className="flex items-center p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <AlertTriangle size={20} className="text-red-600 dark:text-red-400 mr-3" />
+            <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <AlertTriangle size={18} className="text-red-600 dark:text-red-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Erro no Envio</h4>
-                <p className="text-sm text-red-700 dark:text-red-300">{emailMessage}</p>
+                <p className="text-xs text-red-700 dark:text-red-300">{emailMessage}</p>
               </div>
             </div>
           )}
 
           {/* Target Contacts Info */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-            <div className="flex items-center mb-2">
-              <Users size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center mb-1">
+              <Users size={14} className="text-blue-600 dark:text-blue-400 mr-2" />
               <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
                 Grupo: {getGroups().find(g => g.id === campaign?.defaultGroupId)?.name || 'Grupo Padrão'}
               </h4>
             </div>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              <strong>{targetContacts.length} contatos</strong> receberão o e-mail personalizado com o link da pesquisa NPS.
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              <strong>{targetContacts.length} contatos</strong> receberão o e-mail personalizado.
             </p>
           </div>
 
           {/* Email Type Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Tipo de E-mail
             </label>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3">
               <button
                 type="button"
                 onClick={switchToTextTemplate}
-                className={`flex items-center px-4 py-2 rounded-md border transition-colors ${
+                className={`flex items-center px-3 py-2 rounded-md border text-sm transition-colors ${
                   emailType === 'text'
                     ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
                     : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
-                <Type size={16} className="mr-2" />
-                Texto Simples
+                <Type size={14} className="mr-1" />
+                Texto
               </button>
               <button
                 type="button"
                 onClick={switchToHtmlTemplate}
-                className={`flex items-center px-4 py-2 rounded-md border transition-colors ${
+                className={`flex items-center px-3 py-2 rounded-md border text-sm transition-colors ${
                   emailType === 'html'
                     ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
                     : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
-                <Code size={16} className="mr-2" />
+                <Code size={14} className="mr-1" />
                 HTML
               </button>
             </div>
@@ -784,13 +784,13 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           {/* Email Subject */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Assunto do E-mail
+              Assunto
             </label>
             <input
               type="text"
               value={emailSubject}
               onChange={(e) => setEmailSubject(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               placeholder="Digite o assunto do e-mail"
               disabled={emailStatus === 'sending'}
             />
@@ -800,39 +800,38 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Conteúdo do E-mail ({emailType === 'html' ? 'HTML' : 'Texto'})
+                Conteúdo ({emailType === 'html' ? 'HTML' : 'Texto'})
               </label>
-              <div className="flex space-x-2">
-                {previewContact && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    icon={<Eye size={14} />}
-                    onClick={() => setPreviewMode(!previewMode)}
-                  >
-                    {previewMode ? 'Editar' : 'Pré-visualizar'}
-                  </Button>
-                )}
-              </div>
+              {previewContact && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<Eye size={12} />}
+                  onClick={() => setPreviewMode(!previewMode)}
+                  className="text-xs px-2 py-1"
+                >
+                  {previewMode ? 'Editar' : 'Preview'}
+                </Button>
+              )}
             </div>
             
             {previewMode && previewContact ? (
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
-                <div className="flex items-center mb-3">
-                  <User size={16} className="text-gray-500 mr-2" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Pré-visualização para: {previewContact.name}
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700 max-h-48 overflow-y-auto">
+                <div className="flex items-center mb-2">
+                  <User size={12} className="text-gray-500 mr-1" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Preview: {previewContact.name}
                   </span>
                 </div>
                 {emailType === 'html' ? (
                   <div 
-                    className="prose prose-sm max-w-none bg-white p-4 rounded border"
+                    className="prose prose-sm max-w-none bg-white p-2 rounded border text-xs"
                     dangerouslySetInnerHTML={{ 
                       __html: personalizeContent(emailBody, previewContact) 
                     }}
                   />
                 ) : (
-                  <div className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 p-3 rounded border">
+                  <div className="whitespace-pre-wrap text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 p-2 rounded border">
                     {personalizeContent(emailBody, previewContact)}
                   </div>
                 )}
@@ -845,10 +844,10 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                     onChange={(value) => setEmailBody(value)}
                     extensions={[html()]}
                     theme={isDark ? oneDark : undefined}
-                    height="300px"
+                    height="200px"
                     basicSetup={{
                       lineNumbers: true,
-                      foldGutter: true,
+                      foldGutter: false,
                       dropCursor: false,
                       allowMultipleSelections: false,
                       indentOnInput: true,
@@ -864,8 +863,8 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                   <textarea
                     value={emailBody}
                     onChange={(e) => setEmailBody(e.target.value)}
-                    className="w-full px-4 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                    rows={12}
+                    className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
+                    rows={8}
                     placeholder="Digite o conteúdo do e-mail"
                     disabled={emailStatus === 'sending'}
                   />
@@ -875,31 +874,28 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           </div>
 
           {/* Personalization Variables */}
-          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Variáveis de Personalização Disponíveis:
+          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+            <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Variáveis Disponíveis:
             </h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{nome}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{email}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{telefone}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{empresa}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{cargo}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{link_pesquisa}}'}</code>
+            <div className="grid grid-cols-3 gap-1 text-xs">
+              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{nome}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{email}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{telefone}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{empresa}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{cargo}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{link_pesquisa}}'}</code>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Essas variáveis serão automaticamente substituídas pelos dados de cada contato.
-            </p>
           </div>
 
           {/* Warning if no contacts */}
           {targetContacts.length === 0 && (
-            <div className="flex items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <AlertTriangle size={20} className="text-yellow-600 dark:text-yellow-400 mr-3" />
+            <div className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-400 mr-2" />
               <div>
-                <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Nenhum Contato Encontrado</h4>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                  Não há contatos vinculados ao grupo desta campanha. Adicione contatos ao grupo primeiro.
+                <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Nenhum Contato</h4>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                  Adicione contatos ao grupo desta campanha primeiro.
                 </p>
               </div>
             </div>
