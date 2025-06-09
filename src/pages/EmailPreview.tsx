@@ -214,7 +214,7 @@ const EmailPreview: React.FC = () => {
                   <div className="flex items-center">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300 w-16">Para:</span>
                     <span className="text-sm text-gray-900 dark:text-white">
-                      {selectedContact.name} <{selectedContact.email}>
+                      {selectedContact.name} &lt;{selectedContact.email}&gt;
                     </span>
                   </div>
                   <div className="flex items-center">
