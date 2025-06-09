@@ -21,7 +21,11 @@ import {
   Users,
   CheckCircle,
   AlertTriangle,
-  Clock
+  Clock,
+  Code,
+  Type,
+  Eye,
+  User
 } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +45,10 @@ const CampaignDashboard: React.FC = () => {
   const [emailMessage, setEmailMessage] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
+  const [emailType, setEmailType] = useState<'text' | 'html'>('html');
   const [targetContacts, setTargetContacts] = useState<any[]>([]);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewContact, setPreviewContact] = useState<any>(null);
   
   useEffect(() => {
     if (!id) return;
@@ -84,22 +91,56 @@ const CampaignDashboard: React.FC = () => {
           contact.groupIds.includes(foundCampaign.defaultGroupId!)
         );
         setTargetContacts(groupContacts);
+        setPreviewContact(groupContacts[0] || null);
         
         // Set default email content
         setEmailSubject(`Pesquisa NPS: ${foundCampaign.name}`);
-        setEmailBody(`Olá,
-
-Gostaríamos de conhecer sua opinião sobre nossos serviços. Sua avaliação é muito importante para nós!
-
-Por favor, clique no link abaixo para responder nossa pesquisa NPS:
-${window.location.origin}/survey/${foundCampaign.id}
-
-A pesquisa leva apenas alguns minutos para ser concluída.
-
-Obrigado pela sua participação!
-
-Atenciosamente,
-Equipe ${foundCampaign.name}`);
+        setEmailBody(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa NPS</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .logo { max-width: 150px; height: auto; }
+        h1 { color: #073143; margin-bottom: 10px; }
+        .highlight { background-color: #073143; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; font-weight: bold; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; text-align: center; }
+        .personalized { color: #073143; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pesquisa de Satisfação NPS</h1>
+        </div>
+        
+        <p>Olá <span class="personalized">{{nome}}</span>,</p>
+        
+        <p>Esperamos que você esteja bem! Gostaríamos de conhecer sua opinião sobre nossos serviços.</p>
+        
+        <p>Sua avaliação é muito importante para nós e nos ajuda a melhorar continuamente nossos produtos e serviços.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{link_pesquisa}}" class="highlight">Responder Pesquisa NPS</a>
+        </div>
+        
+        <p>A pesquisa leva apenas alguns minutos para ser concluída e sua participação faz toda a diferença!</p>
+        
+        <p>Obrigado pela sua confiança e por nos ajudar a crescer.</p>
+        
+        <p>Atenciosamente,<br>
+        <strong>Equipe ${foundCampaign.name}</strong></p>
+        
+        <div class="footer">
+            <p>Este e-mail foi enviado para {{email}}. Se você não deseja mais receber estes e-mails, pode ignorar esta mensagem.</p>
+        </div>
+    </div>
+</body>
+</html>`);
       }
       
       setIsLoading(false);
@@ -132,6 +173,18 @@ Equipe ${foundCampaign.name}`);
     return () => clearInterval(interval);
   }, [isTvMode, id]);
 
+  const personalizeContent = (content: string, contact: any): string => {
+    const surveyLink = `${window.location.origin}/survey/${campaign?.id}`;
+    
+    return content
+      .replace(/\{\{nome\}\}/g, contact.name)
+      .replace(/\{\{email\}\}/g, contact.email)
+      .replace(/\{\{telefone\}\}/g, contact.phone || '')
+      .replace(/\{\{empresa\}\}/g, contact.company || '')
+      .replace(/\{\{cargo\}\}/g, contact.position || '')
+      .replace(/\{\{link_pesquisa\}\}/g, surveyLink);
+  };
+
   const handleSendEmail = async () => {
     if (!campaign || targetContacts.length === 0) return;
     
@@ -143,9 +196,18 @@ Equipe ${foundCampaign.name}`);
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // In a real application, this would integrate with an email service
-      // For now, we'll just simulate success
+      // For each contact, personalize the content
+      const personalizedEmails = targetContacts.map(contact => ({
+        to: contact.email,
+        subject: personalizeContent(emailSubject, contact),
+        body: personalizeContent(emailBody, contact),
+        type: emailType
+      }));
+      
+      console.log('Sending personalized emails:', personalizedEmails);
+      
       setEmailStatus('success');
-      setEmailMessage(`E-mails enviados com sucesso para ${targetContacts.length} contatos!`);
+      setEmailMessage(`E-mails personalizados enviados com sucesso para ${targetContacts.length} contatos!`);
       
       // Auto-close modal after success
       setTimeout(() => {
@@ -172,6 +234,73 @@ Equipe ${foundCampaign.name}`);
     }
     
     setIsEmailModalOpen(true);
+  };
+
+  const switchToTextTemplate = () => {
+    setEmailType('text');
+    setEmailBody(`Olá {{nome}},
+
+Gostaríamos de conhecer sua opinião sobre nossos serviços. Sua avaliação é muito importante para nós!
+
+Por favor, clique no link abaixo para responder nossa pesquisa NPS:
+{{link_pesquisa}}
+
+A pesquisa leva apenas alguns minutos para ser concluída.
+
+Obrigado pela sua participação!
+
+Atenciosamente,
+Equipe ${campaign?.name || 'Nossa Equipe'}`);
+  };
+
+  const switchToHtmlTemplate = () => {
+    setEmailType('html');
+    setEmailBody(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa NPS</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .logo { max-width: 150px; height: auto; }
+        h1 { color: #073143; margin-bottom: 10px; }
+        .highlight { background-color: #073143; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; font-weight: bold; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; text-align: center; }
+        .personalized { color: #073143; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pesquisa de Satisfação NPS</h1>
+        </div>
+        
+        <p>Olá <span class="personalized">{{nome}}</span>,</p>
+        
+        <p>Esperamos que você esteja bem! Gostaríamos de conhecer sua opinião sobre nossos serviços.</p>
+        
+        <p>Sua avaliação é muito importante para nós e nos ajuda a melhorar continuamente nossos produtos e serviços.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{link_pesquisa}}" class="highlight">Responder Pesquisa NPS</a>
+        </div>
+        
+        <p>A pesquisa leva apenas alguns minutos para ser concluída e sua participação faz toda a diferença!</p>
+        
+        <p>Obrigado pela sua confiança e por nos ajudar a crescer.</p>
+        
+        <p>Atenciosamente,<br>
+        <strong>Equipe ${campaign?.name || 'Nossa Equipe'}</strong></p>
+        
+        <div class="footer">
+            <p>Este e-mail foi enviado para {{email}}. Se você não deseja mais receber estes e-mails, pode ignorar esta mensagem.</p>
+        </div>
+    </div>
+</body>
+</html>`);
   };
   
   if (isLoading || !campaign) {
@@ -557,7 +686,7 @@ Equipe ${foundCampaign.name}`);
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         title="Enviar Campanha por E-mail"
-        size="lg"
+        size="xl"
         footer={
           <div className="flex justify-end space-x-3">
             <Button 
@@ -610,7 +739,7 @@ Equipe ${foundCampaign.name}`);
               </h4>
             </div>
             <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-              {targetContacts.length} contatos receberão o e-mail com o link da pesquisa NPS.
+              {targetContacts.length} contatos receberão o e-mail personalizado com o link da pesquisa NPS.
             </p>
             <div className="max-h-32 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -625,6 +754,39 @@ Equipe ${foundCampaign.name}`);
                   +{targetContacts.length - 10} contatos adicionais...
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* Email Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Tipo de E-mail
+            </label>
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={switchToTextTemplate}
+                className={`flex items-center px-4 py-2 rounded-md border transition-colors ${
+                  emailType === 'text'
+                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Type size={16} className="mr-2" />
+                Texto Simples
+              </button>
+              <button
+                type="button"
+                onClick={switchToHtmlTemplate}
+                className={`flex items-center px-4 py-2 rounded-md border transition-colors ${
+                  emailType === 'html'
+                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Code size={16} className="mr-2" />
+                HTML
+              </button>
             </div>
           </div>
 
@@ -645,32 +807,73 @@ Equipe ${foundCampaign.name}`);
 
           {/* Email Body */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Conteúdo do E-mail
-            </label>
-            <textarea
-              value={emailBody}
-              onChange={(e) => setEmailBody(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              rows={8}
-              placeholder="Digite o conteúdo do e-mail"
-              disabled={emailStatus === 'sending'}
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              O link da pesquisa já está incluído no texto padrão. Você pode personalizar a mensagem conforme necessário.
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Conteúdo do E-mail ({emailType === 'html' ? 'HTML' : 'Texto'})
+              </label>
+              <div className="flex space-x-2">
+                {previewContact && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={<Eye size={14} />}
+                    onClick={() => setPreviewMode(!previewMode)}
+                  >
+                    {previewMode ? 'Editar' : 'Pré-visualizar'}
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {previewMode && previewContact ? (
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+                <div className="flex items-center mb-3">
+                  <User size={16} className="text-gray-500 mr-2" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Pré-visualização para: {previewContact.name}
+                  </span>
+                </div>
+                {emailType === 'html' ? (
+                  <div 
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ 
+                      __html: personalizeContent(emailBody, previewContact) 
+                    }}
+                  />
+                ) : (
+                  <div className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 p-3 rounded border">
+                    {personalizeContent(emailBody, previewContact)}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+                rows={emailType === 'html' ? 12 : 8}
+                placeholder={emailType === 'html' ? 'Digite o HTML do e-mail' : 'Digite o conteúdo do e-mail'}
+                disabled={emailStatus === 'sending'}
+              />
+            )}
           </div>
 
-          {/* Survey Link Preview */}
+          {/* Personalization Variables */}
           <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Link da Pesquisa (incluído no e-mail):
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Variáveis de Personalização Disponíveis:
             </h4>
-            <div className="bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-600">
-              <code className="text-sm text-blue-600 dark:text-blue-400 break-all">
-                {window.location.origin}/survey/{campaign?.id}
-              </code>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{nome}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{email}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{telefone}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{empresa}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{cargo}}'}</code>
+              <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded border">{'{{link_pesquisa}}'}</code>
             </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Essas variáveis serão automaticamente substituídas pelos dados de cada contato.
+            </p>
           </div>
 
           {/* Warning if no contacts */}
