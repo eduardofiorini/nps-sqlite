@@ -67,13 +67,15 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
       <Card className="transition-all duration-200 hover:shadow-lg h-full flex flex-col">
         <CardHeader
           title={
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-gray-900 dark:text-white">{campaign.name}</span>
-                {campaign.active && <Badge variant="success" className="ml-2">{t('campaign.active')}</Badge>}
-                {!campaign.active && <Badge variant="danger" className="ml-2">{t('campaign.inactive')}</Badge>}
+            <div className="flex items-start justify-between w-full">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center">
+                  <span className="text-gray-900 dark:text-white truncate">{campaign.name}</span>
+                  {campaign.active && <Badge variant="success" className="ml-2 flex-shrink-0">{t('campaign.active')}</Badge>}
+                  {!campaign.active && <Badge variant="danger" className="ml-2 flex-shrink-0">{t('campaign.inactive')}</Badge>}
+                </div>
               </div>
-              <div className="flex space-x-1 ml-auto">
+              <div className="flex space-x-1 ml-2 flex-shrink-0">
                 <Link to={`/campaigns/${campaign.id}/form`}>
                   <button
                     className="p-1 text-gray-400 hover:text-[#073143] dark:hover:text-white transition-colors"

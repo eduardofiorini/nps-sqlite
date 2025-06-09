@@ -59,11 +59,40 @@ const LoginForm: React.FC = () => {
           >
             <div className="flex items-center mb-8">
               <div className="w-32 h-32 mr-4 flex items-center justify-center">
-                <img 
-                  src="/logo-white.png" 
-                  alt="Meu NPS" 
-                  className="w-full h-full object-contain"
-                />
+                <svg 
+                  viewBox="0 0 400 400" 
+                  className="w-full h-full"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Circular background with gradient */}
+                  <defs>
+                    <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#4ade80" />
+                      <stop offset="25%" stopColor="#fbbf24" />
+                      <stop offset="50%" stopColor="#f87171" />
+                      <stop offset="100%" stopColor="#4ade80" />
+                    </radialGradient>
+                  </defs>
+                  
+                  {/* Main circle */}
+                  <circle cx="200" cy="200" r="180" fill="url(#bgGradient)" />
+                  
+                  {/* Inner white circle */}
+                  <circle cx="200" cy="200" r="120" fill="white" />
+                  
+                  {/* Smiley face */}
+                  <circle cx="175" cy="170" r="8" fill="#073143" />
+                  <circle cx="225" cy="170" r="8" fill="#073143" />
+                  <path d="M 170 220 Q 200 250 230 220" stroke="#073143" strokeWidth="6" fill="none" strokeLinecap="round" />
+                  
+                  {/* Arrow pointing up and right */}
+                  <path d="M 250 120 L 320 50 L 300 70 L 340 30 L 320 50 L 300 30" 
+                        stroke="#073143" 
+                        strokeWidth="12" 
+                        fill="none" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" />
+                </svg>
               </div>
             </div>
             
@@ -105,11 +134,40 @@ const LoginForm: React.FC = () => {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center mb-8">
             <div className="w-24 h-24 mr-3 flex items-center justify-center">
-              <img 
-                src="/logo-white.png" 
-                alt="Meu NPS" 
-                className="w-full h-full object-contain"
-              />
+              <svg 
+                viewBox="0 0 400 400" 
+                className="w-full h-full"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* Circular background with gradient */}
+                <defs>
+                  <radialGradient id="bgGradientMobile" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#4ade80" />
+                    <stop offset="25%" stopColor="#fbbf24" />
+                    <stop offset="50%" stopColor="#f87171" />
+                    <stop offset="100%" stopColor="#4ade80" />
+                  </radialGradient>
+                </defs>
+                
+                {/* Main circle */}
+                <circle cx="200" cy="200" r="180" fill="url(#bgGradientMobile)" />
+                
+                {/* Inner white circle */}
+                <circle cx="200" cy="200" r="120" fill="white" />
+                
+                {/* Smiley face */}
+                <circle cx="175" cy="170" r="8" fill="#073143" />
+                <circle cx="225" cy="170" r="8" fill="#073143" />
+                <path d="M 170 220 Q 200 250 230 220" stroke="#073143" strokeWidth="6" fill="none" strokeLinecap="round" />
+                
+                {/* Arrow pointing up and right */}
+                <path d="M 250 120 L 320 50 L 300 70 L 340 30 L 320 50 L 300 30" 
+                      stroke="#073143" 
+                      strokeWidth="12" 
+                      fill="none" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" />
+              </svg>
             </div>
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold text-[#073143] dark:text-white">Meu NPS</h1>
