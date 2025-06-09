@@ -96,6 +96,13 @@ const Survey: React.FC = () => {
     try {
       const { webhookUrl, webhookHeaders, webhookPayload } = campaign.automation;
       
+      // Validate webhook URL format
+      try {
+        new URL(webhookUrl);
+      } catch (urlError) {
+        throw new Error('URL do webhook inválida');
+      }
+
       // Prepare payload
       let payload = {
         campaign_id: responseData.campaignId,
@@ -123,6 +130,7 @@ const Survey: React.FC = () => {
           payload = { ...payload, ...parsedCustomPayload };
         } catch (error) {
           console.error('Error parsing custom webhook payload:', error);
+          throw new Error('Erro ao processar payload personalizado do webhook');
         }
       }
 
@@ -132,27 +140,68 @@ const Survey: React.FC = () => {
         ...webhookHeaders
       };
 
-      // Send webhook
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      });
+      // Send webhook with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      if (!response.ok) {
-        throw new Error(`Webhook failed with status: ${response.status}`);
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`Webhook falhou com status: ${response.status} ${response.statusText}`);
+        }
+
+        console.log('Webhook sent successfully');
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        
+        if (fetchError.name === 'AbortError') {
+          throw new Error('Timeout: O webhook demorou muito para responder');
+        }
+        
+        // Handle different types of fetch errors
+        if (fetchError.message.includes('Failed to fetch')) {
+          throw new Error('Erro de conectividade: Verifique se a URL do webhook está acessível e se não há problemas de CORS');
+        }
+        
+        throw fetchError;
       }
 
-      console.log('Webhook sent successfully');
     } catch (error) {
       console.error('Webhook error:', error);
-      setAutomationError('Erro ao enviar webhook. A resposta foi salva, mas a automação falhou.');
+      
+      // Set user-friendly error message
+      let errorMessage = 'Erro ao enviar webhook. A resposta foi salva, mas a automação falhou.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('URL do webhook inválida')) {
+          errorMessage = 'URL do webhook inválida. Verifique a configuração da campanha.';
+        } else if (error.message.includes('Timeout')) {
+          errorMessage = 'Timeout: O webhook demorou muito para responder. A resposta foi salva.';
+        } else if (error.message.includes('Erro de conectividade')) {
+          errorMessage = 'Erro de conectividade: Verifique se a URL do webhook está acessível e configurada corretamente para CORS.';
+        } else if (error.message.includes('Webhook falhou com status')) {
+          errorMessage = `Erro do servidor webhook: ${error.message}. A resposta foi salva.`;
+        } else if (error.message.includes('payload personalizado')) {
+          errorMessage = 'Erro no payload personalizado do webhook. Verifique a configuração JSON.';
+        }
+      }
+      
+      setAutomationError(errorMessage);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+    setAutomationError(''); // Clear any previous errors
 
     if (!campaign || !form) return;
 
@@ -173,6 +222,8 @@ const Survey: React.FC = () => {
     };
 
     console.log('Saving response with form data:', response);
+    
+    // Always save the response first, regardless of webhook success
     saveResponse(response);
 
     // Execute webhook if configured
@@ -280,9 +331,17 @@ const Survey: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+                className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
               >
-                <p className="text-sm text-yellow-800">{automationError}</p>
+                <div className="flex items-start space-x-3">
+                  <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-yellow-800 mb-1">Aviso sobre Automação</p>
+                    <p className="text-sm text-yellow-700">{automationError}</p>
+                  </div>
+                </div>
               </motion.div>
             )}
 
