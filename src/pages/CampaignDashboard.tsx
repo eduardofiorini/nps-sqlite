@@ -25,7 +25,8 @@ import {
   Code,
   Type,
   Eye,
-  User
+  User,
+  ExternalLink
 } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -239,6 +240,20 @@ const CampaignDashboard: React.FC = () => {
     }
     
     setIsEmailModalOpen(true);
+  };
+
+  const openPreviewInNewPage = () => {
+    if (!previewContact || !campaign) return;
+    
+    const params = new URLSearchParams({
+      subject: encodeURIComponent(emailSubject),
+      body: encodeURIComponent(emailBody),
+      type: emailType,
+      contactId: previewContact.id
+    });
+    
+    const previewUrl = `/email-preview/${campaign.id}?${params.toString()}`;
+    window.open(previewUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
   };
 
   const switchToTextTemplate = () => {
@@ -806,71 +821,48 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                 <Button
                   variant="outline"
                   size="sm"
-                  icon={<Eye size={12} />}
-                  onClick={() => setPreviewMode(!previewMode)}
+                  icon={<ExternalLink size={12} />}
+                  onClick={openPreviewInNewPage}
                   className="text-xs px-2 py-1"
                 >
-                  {previewMode ? 'Editar' : 'Preview'}
+                  Preview
                 </Button>
               )}
             </div>
             
-            {previewMode && previewContact ? (
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700 max-h-48 overflow-y-auto">
-                <div className="flex items-center mb-2">
-                  <User size={12} className="text-gray-500 mr-1" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                    Preview: {previewContact.name}
-                  </span>
-                </div>
-                {emailType === 'html' ? (
-                  <div 
-                    className="prose prose-sm max-w-none bg-white p-2 rounded border text-xs"
-                    dangerouslySetInnerHTML={{ 
-                      __html: personalizeContent(emailBody, previewContact) 
-                    }}
-                  />
-                ) : (
-                  <div className="whitespace-pre-wrap text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 p-2 rounded border">
-                    {personalizeContent(emailBody, previewContact)}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                {emailType === 'html' ? (
-                  <CodeMirror
-                    value={emailBody}
-                    onChange={(value) => setEmailBody(value)}
-                    extensions={[html()]}
-                    theme={isDark ? oneDark : undefined}
-                    height="200px"
-                    basicSetup={{
-                      lineNumbers: true,
-                      foldGutter: false,
-                      dropCursor: false,
-                      allowMultipleSelections: false,
-                      indentOnInput: true,
-                      bracketMatching: true,
-                      closeBrackets: true,
-                      autocompletion: true,
-                      highlightSelectionMatches: false,
-                    }}
-                    placeholder="Digite o HTML do e-mail"
-                    editable={emailStatus !== 'sending'}
-                  />
-                ) : (
-                  <textarea
-                    value={emailBody}
-                    onChange={(e) => setEmailBody(e.target.value)}
-                    className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
-                    rows={8}
-                    placeholder="Digite o conteúdo do e-mail"
-                    disabled={emailStatus === 'sending'}
-                  />
-                )}
-              </div>
-            )}
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+              {emailType === 'html' ? (
+                <CodeMirror
+                  value={emailBody}
+                  onChange={(value) => setEmailBody(value)}
+                  extensions={[html()]}
+                  theme={isDark ? oneDark : undefined}
+                  height="200px"
+                  basicSetup={{
+                    lineNumbers: true,
+                    foldGutter: false,
+                    dropCursor: false,
+                    allowMultipleSelections: false,
+                    indentOnInput: true,
+                    bracketMatching: true,
+                    closeBrackets: true,
+                    autocompletion: true,
+                    highlightSelectionMatches: false,
+                  }}
+                  placeholder="Digite o HTML do e-mail"
+                  editable={emailStatus !== 'sending'}
+                />
+              ) : (
+                <textarea
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value)}
+                  className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
+                  rows={8}
+                  placeholder="Digite o conteúdo do e-mail"
+                  disabled={emailStatus === 'sending'}
+                />
+              )}
+            </div>
           </div>
 
           {/* Personalization Variables */}

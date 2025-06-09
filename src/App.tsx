@@ -17,6 +17,7 @@ import CampaignResponses from './pages/CampaignResponses';
 import CampaignShare from './pages/CampaignShare';
 import CampaignForm from './pages/CampaignForm';
 import Survey from './pages/Survey';
+import EmailPreview from './pages/EmailPreview';
 import EntityCrud from './pages/EntityCrud';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
@@ -60,6 +61,9 @@ function App() {
                   {/* Public survey route */}
                   <Route path="/survey/:id" element={<Survey />} />
                   
+                  {/* Public email preview route */}
+                  <Route path="/email-preview/:campaignId" element={<EmailPreview />} />
+                  
                   <Route
                     path="/"
                     element={
@@ -69,7 +73,7 @@ function App() {
                     }
                   >
                     {/* Redirect root to overview */}
-                    <Route index element={<Navigate to="/overview\" replace />} />
+                    <Route index element={<Navigate to="/overview" replace />} />
                     <Route path="overview" element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="reports" element={<Reports />} />
