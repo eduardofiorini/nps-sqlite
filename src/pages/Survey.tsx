@@ -62,17 +62,20 @@ const Survey: React.FC = () => {
     const npsField = form.fields.find(f => f.type === 'nps');
     if (!npsField || !formData[npsField.id]) return;
 
+    // Create the response with all form field data
     const response: NpsResponse = {
       id: uuidv4(),
       campaignId: campaign.id,
       score: parseInt(formData[npsField.id], 10),
-      feedback: formData['feedback'] || '',
+      feedback: formData['feedback'] || '', // Keep for backward compatibility
       sourceId: sources[0]?.id || '',
       situationId: situations[0]?.id || '',
       groupId: groups[0]?.id || '',
       createdAt: new Date().toISOString(),
+      formResponses: { ...formData } // Store all form responses
     };
 
+    console.log('Saving response with form data:', response);
     saveResponse(response);
     setSubmitted(true);
     setCountdown(10); // Reset countdown
@@ -294,8 +297,8 @@ const Survey: React.FC = () => {
                       </label>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between text-xs" style={{ color: customization?.textColor || '#6b7280' }}>
-                          <span>{t('survey.notLikely')}</span>
-                          <span>{t('survey.extremelyLikely')}</span>
+                          <span>Nada provável</span>
+                          <span>Extremamente provável</span>
                         </div>
                         <div className="flex justify-between space-x-1">
                           {Array.from({ length: 11 }, (_, i) => (
@@ -432,11 +435,11 @@ const Survey: React.FC = () => {
                   focusRingColor: customization?.primaryColor || '#3b82f6'
                 }}
               >
-                {t('survey.submitFeedback')}
+                Enviar Feedback
               </motion.button>
             </form>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

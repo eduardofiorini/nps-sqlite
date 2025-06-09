@@ -44,8 +44,8 @@ export type NpsResponse = {
   situationId: string;
   groupId: string;
   createdAt: string;
-  // Additional form responses (for future expansion)
-  formResponses?: Record<string, any>;
+  // Store all form field responses
+  formResponses: Record<string, any>;
 };
 
 export type FormField = {

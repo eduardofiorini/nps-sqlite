@@ -132,15 +132,10 @@ const CampaignResponses: React.FC = () => {
           if (field.type === 'nps') {
             const category = response.score >= 9 ? 'Promotor' : response.score <= 6 ? 'Detrator' : 'Neutro';
             formData.push(response.score.toString(), `"${category}"`);
-          } else if (field.type === 'text') {
-            // For text fields, use the feedback field (this is a limitation of current data structure)
-            // In a real implementation, you'd store responses for each field separately
-            const fieldValue = response.feedback || '';
-            formData.push(`"${fieldValue.toString().replace(/"/g, '""')}"`);
           } else {
-            // For other field types (select, radio), we'd need to store the actual responses
-            // For now, we'll leave empty as the current data structure doesn't support this
-            formData.push('""');
+            // Get the actual response for this field from formResponses
+            const fieldValue = response.formResponses?.[field.id] || '';
+            formData.push(`"${fieldValue.toString().replace(/"/g, '""')}"`);
           }
         });
 
@@ -165,6 +160,11 @@ const CampaignResponses: React.FC = () => {
     if (score >= 9) return { label: 'Promotor', color: 'success' as const };
     if (score <= 6) return { label: 'Detrator', color: 'danger' as const };
     return { label: 'Neutro', color: 'warning' as const };
+  };
+
+  const getUsagePercentage = (used: number, limit: number | 'unlimited') => {
+    if (limit === 'unlimited') return 0;
+    return Math.min((used / limit) * 100, 100);
   };
 
   if (!campaign) {
@@ -417,17 +417,21 @@ const CampaignResponses: React.FC = () => {
                                   </div>
                                 </div>
                               );
-                            } else if (field.type === 'text' && response.feedback) {
-                              return (
-                                <div key={field.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
-                                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    {field.label}
-                                  </h4>
-                                  <p className="text-gray-900 dark:text-white italic">
-                                    "{response.feedback}"
-                                  </p>
-                                </div>
-                              );
+                            } else {
+                              // For other field types, get the response from formResponses
+                              const fieldResponse = response.formResponses?.[field.id];
+                              if (fieldResponse) {
+                                return (
+                                  <div key={field.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                      {field.label}
+                                    </h4>
+                                    <p className="text-gray-900 dark:text-white">
+                                      {field.type === 'text' ? `"${fieldResponse}"` : fieldResponse}
+                                    </p>
+                                  </div>
+                                );
+                              }
                             }
                             return null;
                           })}

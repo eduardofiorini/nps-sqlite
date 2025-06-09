@@ -199,9 +199,15 @@ export const getResponses = (campaignId?: string): NpsResponse[] => {
   const responses = localStorage.getItem(STORAGE_KEYS.RESPONSES);
   const allResponses = responses ? JSON.parse(responses) : [];
   
+  // Ensure backward compatibility - add formResponses if missing
+  const normalizedResponses = allResponses.map((response: any) => ({
+    ...response,
+    formResponses: response.formResponses || {}
+  }));
+  
   return campaignId 
-    ? allResponses.filter((r: NpsResponse) => r.campaignId === campaignId)
-    : allResponses;
+    ? normalizedResponses.filter((r: NpsResponse) => r.campaignId === campaignId)
+    : normalizedResponses;
 };
 
 export const saveResponse = (response: NpsResponse): NpsResponse => {
@@ -210,7 +216,10 @@ export const saveResponse = (response: NpsResponse): NpsResponse => {
     ...response,
     id: response.id || uuidv4(),
     createdAt: response.createdAt || new Date().toISOString(),
+    formResponses: response.formResponses || {}
   };
+  
+  console.log('Saving response:', newResponse);
   
   const index = responses.findIndex((r: NpsResponse) => r.id === newResponse.id);
   
@@ -239,14 +248,14 @@ export const getCampaignForm = (campaignId: string): CampaignForm | null => {
   // Ensure fields are properly ordered
   if (form.fields) {
     form.fields = form.fields
-      .map((field: FormField, index: number) => ({
+      .map((field: any, index: number) => ({
         ...field,
         order: field.order !== undefined ? field.order : index
       }))
-      .sort((a: FormField, b: FormField) => a.order - b.order);
+      .sort((a: any, b: any) => a.order - b.order);
   }
   
-  console.log(`Loaded form for campaign ${campaignId}:`, form.fields?.map((f: FormField) => ({ id: f.id, label: f.label, order: f.order })));
+  console.log(`Loaded form for campaign ${campaignId}:`, form.fields?.map((f: any) => ({ id: f.id, label: f.label, order: f.order })));
   
   return form;
 };
