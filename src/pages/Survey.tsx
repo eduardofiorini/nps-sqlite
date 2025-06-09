@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Campaign, CampaignForm, NpsResponse } from '../types';
-import { getCampaigns, getCampaignForm, saveResponse } from '../utils/localStorage';
+import { getCampaigns, getCampaignForm, saveResponse, getSituations } from '../utils/localStorage';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
-import { getSources, getSituations, getGroups } from '../utils/localStorage';
 import { v4 as uuidv4 } from 'uuid';
 import { motion } from 'framer-motion';
 
@@ -17,9 +16,7 @@ const Survey: React.FC = () => {
   const [form, setForm] = useState<CampaignForm | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [sources] = useState(getSources());
   const [situations] = useState(getSituations());
-  const [groups] = useState(getGroups());
   const [countdown, setCountdown] = useState(10);
   const { t } = useLanguage();
 
@@ -62,15 +59,15 @@ const Survey: React.FC = () => {
     const npsField = form.fields.find(f => f.type === 'nps');
     if (!npsField || !formData[npsField.id]) return;
 
-    // Create the response with all form field data
+    // Create the response with campaign defaults and all form field data
     const response: NpsResponse = {
       id: uuidv4(),
       campaignId: campaign.id,
       score: parseInt(formData[npsField.id], 10),
       feedback: formData['feedback'] || '', // Keep for backward compatibility
-      sourceId: sources[0]?.id || '',
-      situationId: situations[0]?.id || '',
-      groupId: groups[0]?.id || '',
+      sourceId: campaign.defaultSourceId || '',
+      situationId: situations[0]?.id || '', // Default to first situation (usually "Responded")
+      groupId: campaign.defaultGroupId || '',
       createdAt: new Date().toISOString(),
       formResponses: { ...formData } // Store all form responses
     };
@@ -439,7 +436,7 @@ const Survey: React.FC = () => {
               </motion.button>
             </form>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

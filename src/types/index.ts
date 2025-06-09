@@ -24,6 +24,9 @@ export type Campaign = {
   updatedAt: string;
   // Survey customization
   surveyCustomization?: SurveyCustomization;
+  // Default source and group for responses
+  defaultSourceId?: string;
+  defaultGroupId?: string;
 };
 
 export type SurveyCustomization = {

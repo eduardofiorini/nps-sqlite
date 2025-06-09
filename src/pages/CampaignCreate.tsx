@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { saveCampaign, saveCampaignForm } from '../utils/localStorage';
-import { Campaign, CampaignForm, SurveyCustomization } from '../types';
+import { saveCampaign, saveCampaignForm, getSources, getGroups } from '../utils/localStorage';
+import { Campaign, CampaignForm, SurveyCustomization, Source, Group } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import Select from '../components/ui/Select';
 import FormBuilder from '../components/dashboard/FormBuilder';
 import { motion } from 'framer-motion';
 import { 
@@ -13,13 +14,17 @@ import {
   Image as ImageIcon, 
   Palette,
   Eye,
-  X
+  X,
+  Database,
+  Users
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 const CampaignCreate: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [sources, setSources] = useState<Source[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [campaign, setCampaign] = useState<Campaign>({
     id: uuidv4(),
     name: '',
@@ -29,6 +34,8 @@ const CampaignCreate: React.FC = () => {
     active: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    defaultSourceId: '',
+    defaultGroupId: '',
     surveyCustomization: {
       backgroundType: 'color',
       backgroundColor: '#f8fafc',
@@ -36,6 +43,23 @@ const CampaignCreate: React.FC = () => {
       textColor: '#1f2937'
     }
   });
+
+  useEffect(() => {
+    // Load sources and groups
+    const loadedSources = getSources();
+    const loadedGroups = getGroups();
+    
+    setSources(loadedSources);
+    setGroups(loadedGroups);
+
+    // Set default selections if available
+    if (loadedSources.length > 0 && !campaign.defaultSourceId) {
+      setCampaign(prev => ({ ...prev, defaultSourceId: loadedSources[0].id }));
+    }
+    if (loadedGroups.length > 0 && !campaign.defaultGroupId) {
+      setCampaign(prev => ({ ...prev, defaultGroupId: loadedGroups[0].id }));
+    }
+  }, []);
   
   const handleCampaignChange = (field: keyof Campaign, value: string | boolean | null) => {
     setCampaign({ ...campaign, [field]: value });
@@ -70,7 +94,15 @@ const CampaignCreate: React.FC = () => {
   const handleNextStep = () => {
     if (currentStep === 1) {
       if (!campaign.name) {
-        alert('Please enter a campaign name');
+        alert('Por favor, digite o nome da campanha');
+        return;
+      }
+      if (!campaign.defaultSourceId) {
+        alert('Por favor, selecione uma fonte de dados');
+        return;
+      }
+      if (!campaign.defaultGroupId) {
+        alert('Por favor, selecione um grupo');
         return;
       }
     }
@@ -117,6 +149,17 @@ const CampaignCreate: React.FC = () => {
     { name: 'Orange', color: '#f59e0b' },
     { name: 'Pink', color: '#ec4899' },
   ];
+
+  // Convert sources and groups to options format
+  const sourceOptions = sources.map(source => ({
+    value: source.id,
+    label: source.name
+  }));
+
+  const groupOptions = groups.map(group => ({
+    value: group.id,
+    label: group.name
+  }));
   
   return (
     <div className="max-w-6xl mx-auto">
@@ -124,7 +167,7 @@ const CampaignCreate: React.FC = () => {
         <Button 
           variant="outline" 
           icon={<ChevronLeft size={16} />}
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/campaigns')}
         >
           Voltar ao Dashboard
         </Button>
@@ -210,6 +253,86 @@ const CampaignCreate: React.FC = () => {
                 fullWidth
               />
             </div>
+
+            {/* Source and Group Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative">
+                <Select
+                  label="Fonte de Dados Padrão"
+                  options={sourceOptions}
+                  value={campaign.defaultSourceId || ''}
+                  onChange={(e) => handleCampaignChange('defaultSourceId', e.target.value)}
+                  fullWidth
+                  required
+                />
+                <div className="absolute top-9 left-3 text-gray-400 pointer-events-none">
+                  <Database size={16} />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Fonte padrão para novas respostas desta campanha
+                </p>
+              </div>
+
+              <div className="relative">
+                <Select
+                  label="Grupo Padrão"
+                  options={groupOptions}
+                  value={campaign.defaultGroupId || ''}
+                  onChange={(e) => handleCampaignChange('defaultGroupId', e.target.value)}
+                  fullWidth
+                  required
+                />
+                <div className="absolute top-9 left-3 text-gray-400 pointer-events-none">
+                  <Users size={16} />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Grupo padrão para segmentação das respostas
+                </p>
+              </div>
+            </div>
+
+            {/* Warning if no sources or groups */}
+            {(sources.length === 0 || groups.length === 0) && (
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                      Configuração necessária
+                    </h3>
+                    <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                      <p>
+                        {sources.length === 0 && 'Você precisa configurar pelo menos uma fonte de dados. '}
+                        {groups.length === 0 && 'Você precisa configurar pelo menos um grupo. '}
+                        Vá para Configurações para adicionar essas opções.
+                      </p>
+                    </div>
+                    <div className="mt-4">
+                      <div className="-mx-2 -my-1.5 flex">
+                        <button
+                          type="button"
+                          onClick={() => navigate('/settings/sources')}
+                          className="bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600"
+                        >
+                          Configurar Fontes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => navigate('/settings/groups')}
+                          className="ml-3 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600"
+                        >
+                          Configurar Grupos
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div>
               <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
@@ -243,6 +366,7 @@ const CampaignCreate: React.FC = () => {
               variant="primary"
               onClick={handleNextStep}
               icon={<ChevronRight size={16} />}
+              disabled={sources.length === 0 || groups.length === 0}
             >
               Próximo: Design da Pesquisa
             </Button>
@@ -541,6 +665,17 @@ const CampaignCreate: React.FC = () => {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Campaign Info Preview */}
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                Configurações da Campanha:
+              </h4>
+              <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                <p><strong>Fonte padrão:</strong> {sources.find(s => s.id === campaign.defaultSourceId)?.name || 'Não selecionada'}</p>
+                <p><strong>Grupo padrão:</strong> {groups.find(g => g.id === campaign.defaultGroupId)?.name || 'Não selecionado'}</p>
               </div>
             </div>
           </div>
