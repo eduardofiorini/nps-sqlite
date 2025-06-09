@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@uiw/react-codemirror": "^4.23.12",
     "chart.js": "^4.4.1",
     "framer-motion": "^11.0.6",
     "lucide-react": "^0.344.0",

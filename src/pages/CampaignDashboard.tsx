@@ -29,10 +29,15 @@ import {
 } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../contexts/ThemeContext';
+import CodeMirror from '@uiw/react-codemirror';
+import { html } from '@codemirror/lang-html';
+import { oneDark } from '@codemirror/theme-one-dark';
 
 const CampaignDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [responses, setResponses] = useState<NpsResponse[]>([]);
@@ -735,26 +740,12 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
             <div className="flex items-center mb-2">
               <Users size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
               <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                Contatos do Grupo: {getGroups().find(g => g.id === campaign?.defaultGroupId)?.name || 'Grupo Padrão'}
+                Grupo: {getGroups().find(g => g.id === campaign?.defaultGroupId)?.name || 'Grupo Padrão'}
               </h4>
             </div>
-            <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-              {targetContacts.length} contatos receberão o e-mail personalizado com o link da pesquisa NPS.
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <strong>{targetContacts.length} contatos</strong> receberão o e-mail personalizado com o link da pesquisa NPS.
             </p>
-            <div className="max-h-32 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {targetContacts.slice(0, 10).map((contact) => (
-                  <div key={contact.id} className="text-xs text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800/30 px-2 py-1 rounded">
-                    {contact.name} ({contact.email})
-                  </div>
-                ))}
-              </div>
-              {targetContacts.length > 10 && (
-                <p className="text-xs text-blue-600 dark:text-blue-300 mt-2">
-                  +{targetContacts.length - 10} contatos adicionais...
-                </p>
-              )}
-            </div>
           </div>
 
           {/* Email Type Selection */}
@@ -835,7 +826,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                 </div>
                 {emailType === 'html' ? (
                   <div 
-                    className="prose prose-sm max-w-none"
+                    className="prose prose-sm max-w-none bg-white p-4 rounded border"
                     dangerouslySetInnerHTML={{ 
                       __html: personalizeContent(emailBody, previewContact) 
                     }}
@@ -847,14 +838,39 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                 )}
               </div>
             ) : (
-              <textarea
-                value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
-                rows={emailType === 'html' ? 12 : 8}
-                placeholder={emailType === 'html' ? 'Digite o HTML do e-mail' : 'Digite o conteúdo do e-mail'}
-                disabled={emailStatus === 'sending'}
-              />
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                {emailType === 'html' ? (
+                  <CodeMirror
+                    value={emailBody}
+                    onChange={(value) => setEmailBody(value)}
+                    extensions={[html()]}
+                    theme={isDark ? oneDark : undefined}
+                    height="300px"
+                    basicSetup={{
+                      lineNumbers: true,
+                      foldGutter: true,
+                      dropCursor: false,
+                      allowMultipleSelections: false,
+                      indentOnInput: true,
+                      bracketMatching: true,
+                      closeBrackets: true,
+                      autocompletion: true,
+                      highlightSelectionMatches: false,
+                    }}
+                    placeholder="Digite o HTML do e-mail"
+                    editable={emailStatus !== 'sending'}
+                  />
+                ) : (
+                  <textarea
+                    value={emailBody}
+                    onChange={(e) => setEmailBody(e.target.value)}
+                    className="w-full px-4 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    rows={12}
+                    placeholder="Digite o conteúdo do e-mail"
+                    disabled={emailStatus === 'sending'}
+                  />
+                )}
+              </div>
             )}
           </div>
 
