@@ -69,21 +69,19 @@ function App() {
                     }
                   >
                     {/* Redirect root to overview */}
-                    <Route index element={<Navigate to="/overview\" replace />} />
-                    <Route path="overview\" element={<Overview />} />
+                    <Route index element={<Navigate to="/overview" replace />} />
+                    <Route path="overview" element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="reports" element={<Reports />} />
                     <Route path="contacts" element={<Contacts />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="billing" element={<Billing />} />
                     
-                    <Route path="campaigns">
-                      <Route path="new" element={<CampaignCreate />} />
-                      <Route path=":id" element={<CampaignDashboard />} />
-                      <Route path=":id/responses" element={<CampaignResponses />} />
-                      <Route path=":id/share" element={<CampaignShare />} />
-                      <Route path=":id/form" element={<CampaignForm />} />
-                    </Route>
+                    <Route path="campaigns/new" element={<CampaignCreate />} />
+                    <Route path="campaigns/:id" element={<CampaignDashboard />} />
+                    <Route path="campaigns/:id/responses" element={<CampaignResponses />} />
+                    <Route path="campaigns/:id/share" element={<CampaignShare />} />
+                    <Route path="campaigns/:id/form" element={<CampaignForm />} />
                     
                     <Route path="settings" element={<Settings />} />
                     <Route path="settings/sources" element={<EntityCrud entityType="sources" />} />
