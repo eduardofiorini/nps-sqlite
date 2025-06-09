@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { NpsResponse, Campaign, CampaignForm } from '../types';
 import { getResponses, getCampaigns, getSources, getSituations, getGroups, getCampaignForm } from '../utils/localStorage';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
-import { ChevronLeft, Download, MessageSquare, Calendar, Filter } from 'lucide-react';
+import { ChevronLeft, Download, MessageSquare, Calendar, Filter, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const CampaignResponses: React.FC = () => {
@@ -20,6 +20,10 @@ const CampaignResponses: React.FC = () => {
   const [scoreFilter, setScoreFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [groupFilter, setGroupFilter] = useState<string>('all');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [responsesPerPage] = useState(10);
 
   useEffect(() => {
     if (!id) return;
@@ -89,7 +93,20 @@ const CampaignResponses: React.FC = () => {
     }
 
     setFilteredResponses(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [responses, scoreFilter, sourceFilter, groupFilter]);
+
+  // Calculate pagination
+  const indexOfLastResponse = currentPage * responsesPerPage;
+  const indexOfFirstResponse = indexOfLastResponse - responsesPerPage;
+  const currentResponses = filteredResponses.slice(indexOfFirstResponse, indexOfLastResponse);
+  const totalPages = Math.ceil(filteredResponses.length / responsesPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // Scroll to top of responses list
+    document.getElementById('responses-list')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleExportCSV = () => {
     if (!filteredResponses.length || !campaignForm) return;
@@ -318,18 +335,25 @@ const CampaignResponses: React.FC = () => {
       )}
 
       {/* Responses List */}
-      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700" id="responses-list">
         <CardHeader 
           title={`Respostas (${filteredResponses.length})`}
           action={
             responses.length > 0 && (
-              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                <Filter size={16} />
-                <span>Filtros ativos: {[
-                  scoreFilter !== 'all' && 'Categoria',
-                  sourceFilter !== 'all' && 'Fonte',
-                  groupFilter !== 'all' && 'Grupo'
-                ].filter(Boolean).join(', ') || 'Nenhum'}</span>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Filter size={16} />
+                  <span>Filtros ativos: {[
+                    scoreFilter !== 'all' && 'Categoria',
+                    sourceFilter !== 'all' && 'Fonte',
+                    groupFilter !== 'all' && 'Grupo'
+                  ].filter(Boolean).join(', ') || 'Nenhum'}</span>
+                </div>
+                {totalPages > 1 && (
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Página {currentPage} de {totalPages}
+                  </div>
+                )}
               </div>
             )
           }
@@ -351,135 +375,200 @@ const CampaignResponses: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredResponses.map((response, index) => {
-                const category = getScoreCategory(response.score);
-                return (
-                  <motion.div
-                    key={response.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-all duration-200 bg-gray-50 dark:bg-gray-700/50"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      {/* Score and Category */}
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold ${getScoreColor(response.score)}`}>
-                          {response.score}
+            <>
+              <div className="space-y-4">
+                {currentResponses.map((response, index) => {
+                  const category = getScoreCategory(response.score);
+                  return (
+                    <motion.div
+                      key={response.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-all duration-200 bg-gray-50 dark:bg-gray-700/50"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        {/* Score and Category */}
+                        <div className="flex items-center space-x-4">
+                          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold ${getScoreColor(response.score)}`}>
+                            {response.score}
+                          </div>
+                          <div>
+                            <Badge variant={category.color} className="mb-2">
+                              {category.label}
+                            </Badge>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              Pontuação: {response.score}/10
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <Badge variant={category.color} className="mb-2">
-                            {category.label}
-                          </Badge>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            Pontuação: {response.score}/10
+
+                        {/* Date and Time */}
+                        <div className="text-right">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
+                            <Calendar size={14} className="mr-1" />
+                            {new Date(response.createdAt).toLocaleDateString('pt-BR')}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-500">
+                            {new Date(response.createdAt).toLocaleTimeString('pt-BR')}
                           </div>
                         </div>
                       </div>
 
-                      {/* Date and Time */}
-                      <div className="text-right">
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          <Calendar size={14} className="mr-1" />
-                          {new Date(response.createdAt).toLocaleDateString('pt-BR')}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-500">
-                          {new Date(response.createdAt).toLocaleTimeString('pt-BR')}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* All Form Responses */}
-                    {campaignForm && (
-                      <div className="mb-4 space-y-3">
-                        {campaignForm.fields
-                          .sort((a, b) => a.order - b.order)
-                          .map((field) => {
-                            if (field.type === 'nps') {
-                              return (
-                                <div key={field.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
-                                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    {field.label}
-                                  </h4>
-                                  <div className="flex items-center space-x-3">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${getScoreColor(response.score)}`}>
-                                      {response.score}
-                                    </div>
-                                    <div>
-                                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {category.label}
-                                      </div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                                        Pontuação: {response.score}/10
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            } else {
-                              // For other field types, get the response from formResponses
-                              const fieldResponse = response.formResponses?.[field.id];
-                              if (fieldResponse) {
+                      {/* All Form Responses */}
+                      {campaignForm && (
+                        <div className="mb-4 space-y-3">
+                          {campaignForm.fields
+                            .sort((a, b) => a.order - b.order)
+                            .map((field) => {
+                              if (field.type === 'nps') {
                                 return (
                                   <div key={field.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
                                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                       {field.label}
                                     </h4>
-                                    <p className="text-gray-900 dark:text-white">
-                                      {field.type === 'text' ? `"${fieldResponse}"` : fieldResponse}
-                                    </p>
+                                    <div className="flex items-center space-x-3">
+                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${getScoreColor(response.score)}`}>
+                                        {response.score}
+                                      </div>
+                                      <div>
+                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                          {category.label}
+                                        </div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                          Pontuação: {response.score}/10
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                 );
+                              } else {
+                                // For other field types, get the response from formResponses
+                                const fieldResponse = response.formResponses?.[field.id];
+                                if (fieldResponse) {
+                                  return (
+                                    <div key={field.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        {field.label}
+                                      </h4>
+                                      <p className="text-gray-900 dark:text-white">
+                                        {field.type === 'text' ? `"${fieldResponse}"` : fieldResponse}
+                                      </p>
+                                    </div>
+                                  );
+                                }
                               }
-                            }
-                            return null;
-                          })}
-                      </div>
-                    )}
+                              return null;
+                            })}
+                        </div>
+                      )}
 
-                    {/* Metadata */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                      <div>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Fonte
-                        </span>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-                          {sources[response.sourceId] || 'Fonte Desconhecida'}
+                      {/* Metadata */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Fonte
+                          </span>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
+                            {sources[response.sourceId] || 'Fonte Desconhecida'}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Situação
+                          </span>
+                          <div className="mt-1">
+                            <Badge variant="secondary">
+                              {situations[response.situationId] || 'Desconhecido'}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Grupo
+                          </span>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {groups[response.groupId] || 'Grupo Desconhecido'}
+                          </div>
                         </div>
                       </div>
-                      
-                      <div>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Situação
-                        </span>
-                        <div className="mt-1">
-                          <Badge variant="secondary">
-                            {situations[response.situationId] || 'Desconhecido'}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Grupo
-                        </span>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                          {groups[response.groupId] || 'Grupo Desconhecido'}
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Response ID (for debugging/reference) */}
-                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-xs text-gray-400">
-                        ID: {response.id.slice(0, 8)}... • {new Date(response.createdAt).toLocaleString('pt-BR')}
-                      </span>
+                      {/* Response ID (for debugging/reference) */}
+                      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <span className="text-xs text-gray-400">
+                          ID: {response.id.slice(0, 8)}... • {new Date(response.createdAt).toLocaleString('pt-BR')}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-between">
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando {indexOfFirstResponse + 1} a {Math.min(indexOfLastResponse, filteredResponses.length)} de {filteredResponses.length} respostas
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      icon={<ChevronLeft size={16} />}
+                    >
+                      Anterior
+                    </Button>
+                    
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          // Show first page, last page, current page, and pages around current page
+                          return page === 1 || 
+                                 page === totalPages || 
+                                 Math.abs(page - currentPage) <= 1;
+                        })
+                        .map((page, index, array) => {
+                          // Add ellipsis if there's a gap
+                          const showEllipsis = index > 0 && page - array[index - 1] > 1;
+                          
+                          return (
+                            <React.Fragment key={page}>
+                              {showEllipsis && (
+                                <span className="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>
+                              )}
+                              <button
+                                onClick={() => handlePageChange(page)}
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                                  currentPage === page
+                                    ? 'bg-[#073143] text-white'
+                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      icon={<ChevronRight size={16} />}
+                    >
+                      Próxima
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
