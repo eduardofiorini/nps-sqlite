@@ -56,14 +56,14 @@ const MainLayout: React.FC = () => {
       icon: <TrendingUp size={20} /> 
     },
     { 
-      path: '/reports', 
-      label: language === 'pt-BR' ? 'Relatórios' : 'Reports', 
-      icon: <FileText size={20} /> 
-    },
-    { 
       path: '/contacts', 
       label: language === 'pt-BR' ? 'Contatos' : 'Contacts', 
       icon: <Users size={20} /> 
+    },
+    { 
+      path: '/reports', 
+      label: language === 'pt-BR' ? 'Relatórios' : 'Reports', 
+      icon: <FileText size={20} /> 
     },
   ];
 
