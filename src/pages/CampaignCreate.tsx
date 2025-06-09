@@ -341,9 +341,6 @@ const CampaignCreate: React.FC = () => {
                   fullWidth
                   required
                 />
-                <div className="absolute top-9 left-3 text-gray-400 pointer-events-none">
-                  <Database size={16} />
-                </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Fonte padrão para novas respostas desta campanha
                 </p>
@@ -358,9 +355,6 @@ const CampaignCreate: React.FC = () => {
                   fullWidth
                   required
                 />
-                <div className="absolute top-9 left-3 text-gray-400 pointer-events-none">
-                  <Users size={16} />
-                </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Grupo padrão para segmentação das respostas
                 </p>
