@@ -22,10 +22,13 @@ const EmailPreview: React.FC = () => {
     const foundCampaign = campaigns.find(c => c.id === campaignId);
     setCampaign(foundCampaign || null);
 
+    // Initialize groupContacts as empty array
+    let groupContacts: any[] = [];
+
     // Load contacts from campaign group
     if (foundCampaign?.defaultGroupId) {
       const allContacts = getContacts();
-      const groupContacts = allContacts.filter(contact => 
+      groupContacts = allContacts.filter(contact => 
         contact.groupIds.includes(foundCampaign.defaultGroupId!)
       );
       setContacts(groupContacts);
@@ -211,7 +214,7 @@ const EmailPreview: React.FC = () => {
                   <div className="flex items-center">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300 w-16">Para:</span>
                     <span className="text-sm text-gray-900 dark:text-white">
-                      {selectedContact.name} &lt;{selectedContact.email}&gt;
+                      {selectedContact.name} <{selectedContact.email}>
                     </span>
                   </div>
                   <div className="flex items-center">
