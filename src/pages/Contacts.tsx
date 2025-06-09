@@ -32,7 +32,12 @@ import {
   Calendar,
   MessageSquare,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -41,6 +46,7 @@ const Contacts: React.FC = () => {
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [currentContact, setCurrentContact] = useState<Partial<Contact>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,7 +57,14 @@ const Contacts: React.FC = () => {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [contactsPerPage] = useState(12);
+  const [contactsPerPage] = useState(8);
+
+  // Import states
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [importStatus, setImportStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [importMessage, setImportMessage] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -186,6 +199,147 @@ const Contacts: React.FC = () => {
     link.click();
   };
 
+  // Import Excel functionality
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImportFile(file);
+      parseExcelFile(file);
+    }
+  };
+
+  const parseExcelFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n');
+        
+        if (lines.length < 2) {
+          setImportStatus('error');
+          setImportMessage('Arquivo deve conter pelo menos um cabeçalho e uma linha de dados');
+          return;
+        }
+
+        // Parse CSV (simplified - assumes comma-separated)
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const data = lines.slice(1)
+          .filter(line => line.trim())
+          .map(line => {
+            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+            const row: any = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index] || '';
+            });
+            return row;
+          });
+
+        setImportPreview(data.slice(0, 5)); // Show first 5 rows for preview
+        setImportStatus('idle');
+      } catch (error) {
+        setImportStatus('error');
+        setImportMessage('Erro ao ler o arquivo. Verifique se é um arquivo CSV válido.');
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const processImport = async () => {
+    if (!importFile) return;
+
+    setIsImporting(true);
+    setImportStatus('processing');
+
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result as string;
+          const lines = text.split('\n');
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+          
+          let successCount = 0;
+          let errorCount = 0;
+
+          lines.slice(1).forEach(line => {
+            if (!line.trim()) return;
+
+            try {
+              const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+              const row: any = {};
+              headers.forEach((header, index) => {
+                row[header] = values[index] || '';
+              });
+
+              // Map common column names
+              const contact: Contact = {
+                id: '',
+                name: row.nome || row.name || row['nome completo'] || '',
+                email: row.email || row['e-mail'] || row.mail || '',
+                phone: row.telefone || row.phone || row.celular || row.fone || '',
+                groupIds: groups.length > 0 ? [groups[0].id] : [], // Default to first group
+                company: row.empresa || row.company || '',
+                position: row.cargo || row.position || row.funcao || '',
+                tags: row.tags ? row.tags.split(';').map((t: string) => t.trim()) : [],
+                notes: row.notas || row.notes || row.observacoes || '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+
+              if (contact.name && contact.email && contact.phone) {
+                saveContact(contact);
+                successCount++;
+              } else {
+                errorCount++;
+              }
+            } catch (error) {
+              errorCount++;
+            }
+          });
+
+          setImportStatus('success');
+          setImportMessage(`Importação concluída! ${successCount} contatos importados com sucesso. ${errorCount > 0 ? `${errorCount} linhas com erro.` : ''}`);
+          loadData();
+          
+          setTimeout(() => {
+            setImportModalOpen(false);
+            setImportFile(null);
+            setImportPreview([]);
+            setImportStatus('idle');
+            setImportMessage('');
+          }, 3000);
+
+        } catch (error) {
+          setImportStatus('error');
+          setImportMessage('Erro ao processar o arquivo. Verifique o formato.');
+        } finally {
+          setIsImporting(false);
+        }
+      };
+
+      reader.readAsText(importFile);
+    } catch (error) {
+      setImportStatus('error');
+      setImportMessage('Erro ao processar o arquivo.');
+      setIsImporting(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const template = [
+      ['Nome', 'Email', 'Telefone', 'Empresa', 'Cargo', 'Tags', 'Notas'].join(','),
+      ['João Silva', 'joao@email.com', '(11) 99999-9999', 'Tech Corp', 'Gerente', 'cliente;vip', 'Cliente importante'].join(','),
+      ['Maria Santos', 'maria@empresa.com', '(11) 88888-8888', 'Marketing Pro', 'Diretora', 'parceiro', 'Contato de marketing'].join(',')
+    ].join('\n');
+
+    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'template-contatos.csv';
+    link.click();
+  };
+
   // Get all unique tags
   const allTags = Array.from(new Set(contacts.flatMap(contact => contact.tags || [])));
 
@@ -221,6 +375,13 @@ const Contacts: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-3">
+          <Button
+            variant="outline"
+            icon={<Upload size={16} />}
+            onClick={() => setImportModalOpen(true)}
+          >
+            Importar Excel
+          </Button>
           <Button
             variant="outline"
             icon={<Download size={16} />}
@@ -374,17 +535,71 @@ const Contacts: React.FC = () => {
         </Card>
       </div>
 
+      {/* Pagination Info */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            Mostrando {indexOfFirstContact + 1} a {Math.min(indexOfLastContact, filteredContacts.length)} de {filteredContacts.length} contatos
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              icon={<ChevronLeft size={16} />}
+            >
+              Anterior
+            </Button>
+            
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  return page === 1 || 
+                         page === totalPages || 
+                         Math.abs(page - currentPage) <= 1;
+                })
+                .map((page, index, array) => {
+                  const showEllipsis = index > 0 && page - array[index - 1] > 1;
+                  
+                  return (
+                    <React.Fragment key={page}>
+                      {showEllipsis && (
+                        <span className="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>
+                      )}
+                      <button
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                          currentPage === page
+                            ? 'bg-[#073143] text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              icon={<ChevronRight size={16} />}
+            >
+              Próxima
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Contacts Grid */}
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader 
           title={`Contatos (${filteredContacts.length})`}
-          action={
-            totalPages > 1 && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Página {currentPage} de {totalPages}
-              </div>
-            )
-          }
         />
         <CardContent>
           {currentContacts.length === 0 ? (
@@ -408,183 +623,122 @@ const Contacts: React.FC = () => {
               )}
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {currentContacts.map((contact, index) => (
-                  <motion.div
-                    key={contact.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600"
-                  >
-                    {/* Contact Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-[#073143] text-white rounded-full flex items-center justify-center text-lg font-bold mr-3">
-                          {contact.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                            {contact.name}
-                          </h3>
-                          {contact.position && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {contact.position}
-                            </p>
-                          )}
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {currentContacts.map((contact, index) => (
+                <motion.div
+                  key={contact.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600"
+                >
+                  {/* Contact Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-[#073143] text-white rounded-full flex items-center justify-center text-lg font-bold mr-3">
+                        {contact.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="flex space-x-1">
-                        <button
-                          onClick={() => handleEdit(contact)}
-                          className="p-1 text-gray-400 hover:text-[#073143] dark:hover:text-white transition-colors"
-                        >
-                          <Edit size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(contact.id)}
-                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+                          {contact.name}
+                        </h3>
+                        {contact.position && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {contact.position}
+                          </p>
+                        )}
                       </div>
                     </div>
-
-                    {/* Contact Info */}
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <Mail size={12} className="mr-2 flex-shrink-0" />
-                        <span className="truncate">{contact.email}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <Phone size={12} className="mr-2 flex-shrink-0" />
-                        <span>{contact.phone}</span>
-                      </div>
-                      {contact.company && (
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                          <Building size={12} className="mr-2 flex-shrink-0" />
-                          <span className="truncate">{contact.company}</span>
-                        </div>
-                      )}
+                    <div className="flex space-x-1">
+                      <button
+                        onClick={() => handleEdit(contact)}
+                        className="p-1 text-gray-400 hover:text-[#073143] dark:hover:text-white transition-colors"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(contact.id)}
+                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
+                  </div>
 
-                    {/* Groups */}
-                    {contact.groupIds.length > 0 && (
-                      <div className="mb-3">
-                        <div className="flex flex-wrap gap-1">
-                          {contact.groupIds.slice(0, 2).map(groupId => {
-                            const group = groups.find(g => g.id === groupId);
-                            return group ? (
-                              <Badge key={groupId} variant="secondary" className="text-xs">
-                                {group.name}
-                              </Badge>
-                            ) : null;
-                          })}
-                          {contact.groupIds.length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{contact.groupIds.length - 2}
+                  {/* Contact Info */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                      <Mail size={12} className="mr-2 flex-shrink-0" />
+                      <span className="truncate">{contact.email}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                      <Phone size={12} className="mr-2 flex-shrink-0" />
+                      <span>{contact.phone}</span>
+                    </div>
+                    {contact.company && (
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <Building size={12} className="mr-2 flex-shrink-0" />
+                        <span className="truncate">{contact.company}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Groups */}
+                  {contact.groupIds.length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {contact.groupIds.slice(0, 2).map(groupId => {
+                          const group = groups.find(g => g.id === groupId);
+                          return group ? (
+                            <Badge key={groupId} variant="secondary" className="text-xs">
+                              {group.name}
                             </Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Tags */}
-                    {contact.tags && contact.tags.length > 0 && (
-                      <div className="mb-3">
-                        <div className="flex flex-wrap gap-1">
-                          {contact.tags.slice(0, 3).map(tag => (
-                            <span
-                              key={tag}
-                              className="px-2 py-1 bg-[#073143]/10 dark:bg-[#073143]/20 text-[#073143] dark:text-white text-xs rounded-full"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                          {contact.tags.length > 3 && (
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs rounded-full">
-                              +{contact.tags.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Notes Preview */}
-                    {contact.notes && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                        {contact.notes}
-                      </div>
-                    )}
-
-                    {/* Footer */}
-                    <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-400">
-                      Criado em {new Date(contact.createdAt).toLocaleDateString('pt-BR')}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-8 flex items-center justify-between">
-                  <div className="text-sm text-gray-700 dark:text-gray-300">
-                    Mostrando {indexOfFirstContact + 1} a {Math.min(indexOfLastContact, filteredContacts.length)} de {filteredContacts.length} contatos
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Anterior
-                    </Button>
-                    
-                    <div className="flex items-center space-x-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter(page => {
-                          return page === 1 || 
-                                 page === totalPages || 
-                                 Math.abs(page - currentPage) <= 1;
-                        })
-                        .map((page, index, array) => {
-                          const showEllipsis = index > 0 && page - array[index - 1] > 1;
-                          
-                          return (
-                            <React.Fragment key={page}>
-                              {showEllipsis && (
-                                <span className="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>
-                              )}
-                              <button
-                                onClick={() => handlePageChange(page)}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                                  currentPage === page
-                                    ? 'bg-[#073143] text-white'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                }`}
-                              >
-                                {page}
-                              </button>
-                            </React.Fragment>
-                          );
+                          ) : null;
                         })}
+                        {contact.groupIds.length > 2 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{contact.groupIds.length - 2}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Próxima
-                    </Button>
+                  )}
+
+                  {/* Tags */}
+                  {contact.tags && contact.tags.length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {contact.tags.slice(0, 3).map(tag => (
+                          <span
+                            key={tag}
+                            className="px-2 py-1 bg-[#073143]/10 dark:bg-[#073143]/20 text-[#073143] dark:text-white text-xs rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {contact.tags.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs rounded-full">
+                            +{contact.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notes Preview */}
+                  {contact.notes && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                      {contact.notes}
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-400">
+                    Criado em {new Date(contact.createdAt).toLocaleDateString('pt-BR')}
                   </div>
-                </div>
-              )}
-            </>
+                </motion.div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -597,7 +751,7 @@ const Contacts: React.FC = () => {
         size="lg"
         footer={
           <div className="flex justify-end space-x-3">
-            <Button variant="outline\" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleSave}>
@@ -766,6 +920,147 @@ const Contacts: React.FC = () => {
               rows={4}
             />
           </div>
+        </div>
+      </Modal>
+
+      {/* Import Modal */}
+      <Modal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        title="Importar Contatos do Excel"
+        size="lg"
+        footer={
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={downloadTemplate}
+              icon={<FileSpreadsheet size={16} />}
+            >
+              Baixar Template
+            </Button>
+            <div className="flex space-x-3">
+              <Button variant="outline" onClick={() => setImportModalOpen(false)}>
+                Cancelar
+              </Button>
+              {importFile && importStatus === 'idle' && (
+                <Button 
+                  variant="primary" 
+                  onClick={processImport}
+                  isLoading={isImporting}
+                  icon={<Upload size={16} />}
+                >
+                  Importar Contatos
+                </Button>
+              )}
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-6">
+          {/* Instructions */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+              Instruções para Importação
+            </h4>
+            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <li>• O arquivo deve estar no formato CSV (separado por vírgulas)</li>
+              <li>• Colunas aceitas: Nome, Email, Telefone, Empresa, Cargo, Tags, Notas</li>
+              <li>• Nome, Email e Telefone são obrigatórios</li>
+              <li>• Tags devem ser separadas por ponto e vírgula (;)</li>
+              <li>• Baixe o template para ver o formato correto</li>
+            </ul>
+          </div>
+
+          {/* File Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Selecionar Arquivo CSV
+            </label>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <FileSpreadsheet size={48} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Clique para selecionar um arquivo CSV ou arraste aqui
+                </p>
+                {importFile && (
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                    Arquivo selecionado: {importFile.name}
+                  </p>
+                )}
+              </label>
+            </div>
+          </div>
+
+          {/* Status Messages */}
+          {importStatus === 'error' && (
+            <div className="flex items-center p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <AlertCircle size={20} className="text-red-600 dark:text-red-400 mr-3" />
+              <div>
+                <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Erro na Importação</h4>
+                <p className="text-sm text-red-700 dark:text-red-300">{importMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {importStatus === 'success' && (
+            <div className="flex items-center p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <CheckCircle size={20} className="text-green-600 dark:text-green-400 mr-3" />
+              <div>
+                <h4 className="text-sm font-medium text-green-800 dark:text-green-200">Importação Concluída</h4>
+                <p className="text-sm text-green-700 dark:text-green-300">{importMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {importStatus === 'processing' && (
+            <div className="flex items-center p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-600 mr-3"></div>
+              <div>
+                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">Processando...</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300">Importando contatos, aguarde...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Preview */}
+          {importPreview.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Pré-visualização (primeiras 5 linhas)
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      {Object.keys(importPreview[0] || {}).map(key => (
+                        <th key={key} className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                          {key}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {importPreview.map((row, index) => (
+                      <tr key={index}>
+                        {Object.values(row).map((value: any, cellIndex) => (
+                          <td key={cellIndex} className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                            {value}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>
