@@ -1,4 +1,4 @@
-import { AppConfig, Campaign, CampaignForm, Group, NpsResponse, Situation, Source, User, UserProfile, Subscription } from '../types';
+import { AppConfig, Campaign, CampaignForm, Group, NpsResponse, Situation, Source, User, UserProfile, Subscription, Contact } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 // Storage keys
@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
   SOURCES: 'sources',
   SITUATIONS: 'situations',
   GROUPS: 'groups',
+  CONTACTS: 'contacts',
   CONFIG: 'app_config',
 };
 
@@ -395,6 +396,63 @@ export const deleteGroup = (id: string): boolean => {
   return false;
 };
 
+// Contacts
+export const getContacts = (): Contact[] => {
+  const contacts = localStorage.getItem(STORAGE_KEYS.CONTACTS);
+  return contacts ? JSON.parse(contacts) : [];
+};
+
+export const saveContact = (contact: Contact): Contact => {
+  const contacts = getContacts();
+  const newContact = {
+    ...contact,
+    id: contact.id || uuidv4(),
+    createdAt: contact.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  
+  const index = contacts.findIndex(c => c.id === newContact.id);
+  
+  if (index >= 0) {
+    contacts[index] = newContact;
+  } else {
+    contacts.push(newContact);
+  }
+  
+  localStorage.setItem(STORAGE_KEYS.CONTACTS, JSON.stringify(contacts));
+  return newContact;
+};
+
+export const deleteContact = (id: string): boolean => {
+  const contacts = getContacts();
+  const filtered = contacts.filter(c => c.id !== id);
+  
+  if (filtered.length !== contacts.length) {
+    localStorage.setItem(STORAGE_KEYS.CONTACTS, JSON.stringify(filtered));
+    return true;
+  }
+  
+  return false;
+};
+
+export const getContactsByGroup = (groupId: string): Contact[] => {
+  const contacts = getContacts();
+  return contacts.filter(contact => contact.groupIds.includes(groupId));
+};
+
+export const searchContacts = (query: string): Contact[] => {
+  const contacts = getContacts();
+  const lowercaseQuery = query.toLowerCase();
+  
+  return contacts.filter(contact => 
+    contact.name.toLowerCase().includes(lowercaseQuery) ||
+    contact.email.toLowerCase().includes(lowercaseQuery) ||
+    contact.phone.includes(query) ||
+    contact.company?.toLowerCase().includes(lowercaseQuery) ||
+    contact.tags?.some(tag => tag.toLowerCase().includes(lowercaseQuery))
+  );
+};
+
 // App config
 export const getAppConfig = (): AppConfig => {
   const config = localStorage.getItem(STORAGE_KEYS.CONFIG);
@@ -435,6 +493,52 @@ export const initializeDefaultData = () => {
       { id: uuidv4(), name: 'Testes Internos' },
     ];
     localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(defaultGroups));
+  }
+
+  if (!localStorage.getItem(STORAGE_KEYS.CONTACTS)) {
+    const groups = getGroups();
+    const defaultContacts: Contact[] = [
+      {
+        id: uuidv4(),
+        name: 'João Silva',
+        email: 'joao.silva@email.com',
+        phone: '(11) 99999-1234',
+        groupIds: groups.length > 0 ? [groups[0].id] : [],
+        company: 'Tech Solutions',
+        position: 'Gerente de TI',
+        tags: ['cliente-vip', 'tecnologia'],
+        notes: 'Cliente há 3 anos, sempre muito satisfeito com nossos serviços.',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: uuidv4(),
+        name: 'Maria Santos',
+        email: 'maria.santos@empresa.com',
+        phone: '(11) 98888-5678',
+        groupIds: groups.length > 1 ? [groups[1].id] : [],
+        company: 'Marketing Pro',
+        position: 'Diretora de Marketing',
+        tags: ['marketing', 'parceiro'],
+        notes: 'Interessada em expandir a parceria para novos projetos.',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: uuidv4(),
+        name: 'Carlos Oliveira',
+        email: 'carlos@startup.com',
+        phone: '(11) 97777-9012',
+        groupIds: groups.length > 0 ? [groups[0].id, groups[1].id] : [],
+        company: 'StartupXYZ',
+        position: 'CEO',
+        tags: ['startup', 'inovação'],
+        notes: 'Fundador de startup promissora, potencial para grandes projetos.',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    ];
+    localStorage.setItem(STORAGE_KEYS.CONTACTS, JSON.stringify(defaultContacts));
   }
 
   if (!localStorage.getItem(STORAGE_KEYS.CONFIG)) {

@@ -10,6 +10,7 @@ import RegisterPage from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Overview from './pages/Overview';
 import Reports from './pages/Reports';
+import Contacts from './pages/Contacts';
 import CampaignCreate from './pages/CampaignCreate';
 import CampaignDashboard from './pages/CampaignDashboard';
 import CampaignResponses from './pages/CampaignResponses';
@@ -72,6 +73,7 @@ function App() {
                     <Route path="overview" element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="reports" element={<Reports />} />
+                    <Route path="contacts" element={<Contacts />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="billing" element={<Billing />} />
                     

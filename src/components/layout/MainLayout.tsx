@@ -20,7 +20,8 @@ import {
   CreditCard,
   PanelLeftClose,
   PanelLeftOpen,
-  FileText
+  FileText,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -59,6 +60,11 @@ const MainLayout: React.FC = () => {
       label: language === 'pt-BR' ? 'Relatórios' : 'Reports', 
       icon: <FileText size={20} /> 
     },
+    { 
+      path: '/contacts', 
+      label: language === 'pt-BR' ? 'Contatos' : 'Contacts', 
+      icon: <Users size={20} /> 
+    },
   ];
 
   const settingsItems = [
@@ -77,6 +83,9 @@ const MainLayout: React.FC = () => {
     }
     if (path === '/reports') {
       return location.pathname === '/reports' || location.pathname.startsWith('/reports');
+    }
+    if (path === '/contacts') {
+      return location.pathname === '/contacts' || location.pathname.startsWith('/contacts');
     }
     return location.pathname === path;
   };

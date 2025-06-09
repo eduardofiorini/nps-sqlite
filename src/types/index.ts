@@ -86,6 +86,21 @@ export type Group = {
   description?: string;
 };
 
+export type Contact = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  groupIds: string[]; // Array of group IDs
+  tags?: string[];
+  notes?: string;
+  company?: string;
+  position?: string;
+  lastContactDate?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AppConfig = {
   themeColor: string;
   logoUrl: string;
