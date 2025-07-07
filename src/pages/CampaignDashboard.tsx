@@ -686,12 +686,12 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
         {isTvMode && <TvDashboard />}
       </AnimatePresence>
 
-      {/* Email Modal - Updated with side-by-side layout */}
+      {/* Email Modal - Updated with wider size */}
       <Modal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         title="Enviar Campanha por E-mail"
-        size="xl"
+        size="2xl"
         footer={
           <div className="flex justify-end space-x-3">
             <Button 
