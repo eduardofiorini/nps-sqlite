@@ -686,7 +686,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
         {isTvMode && <TvDashboard />}
       </AnimatePresence>
 
-      {/* Email Modal - Updated with wider size */}
+      {/* Email Modal - Updated with wider size and isolated styles */}
       <Modal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
@@ -808,26 +808,28 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                 
                 <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                   {emailType === 'html' ? (
-                    <CodeMirror
-                      value={emailBody}
-                      onChange={(value) => setEmailBody(value)}
-                      extensions={[html()]}
-                      theme={isDark ? oneDark : undefined}
-                      height="300px"
-                      basicSetup={{
-                        lineNumbers: true,
-                        foldGutter: false,
-                        dropCursor: false,
-                        allowMultipleSelections: false,
-                        indentOnInput: true,
-                        bracketMatching: true,
-                        closeBrackets: true,
-                        autocompletion: true,
-                        highlightSelectionMatches: false,
-                      }}
-                      placeholder="Digite o HTML do e-mail"
-                      editable={emailStatus !== 'sending'}
-                    />
+                    <div className="email-editor-container">
+                      <CodeMirror
+                        value={emailBody}
+                        onChange={(value) => setEmailBody(value)}
+                        extensions={[html()]}
+                        theme={isDark ? oneDark : undefined}
+                        height="300px"
+                        basicSetup={{
+                          lineNumbers: true,
+                          foldGutter: false,
+                          dropCursor: false,
+                          allowMultipleSelections: false,
+                          indentOnInput: true,
+                          bracketMatching: true,
+                          closeBrackets: true,
+                          autocompletion: true,
+                          highlightSelectionMatches: false,
+                        }}
+                        placeholder="Digite o HTML do e-mail"
+                        editable={emailStatus !== 'sending'}
+                      />
+                    </div>
                   ) : (
                     <textarea
                       value={emailBody}
@@ -918,7 +920,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                   {previewContact ? (
                     emailType === 'html' ? (
                       <div 
-                        className="prose prose-sm max-w-none"
+                        className="prose prose-sm max-w-none email-preview-content"
                         dangerouslySetInnerHTML={{ 
                           __html: personalizeContent(emailBody, previewContact) 
                         }}
@@ -968,6 +970,24 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           )}
         </div>
       </Modal>
+
+      <style jsx>{`
+        .email-editor-container .cm-editor {
+          border: none !important;
+        }
+        
+        .email-editor-container .cm-focused {
+          outline: none !important;
+        }
+        
+        .email-preview-content {
+          font-family: Arial, sans-serif;
+        }
+        
+        .email-preview-content * {
+          max-width: 100% !important;
+        }
+      `}</style>
     </>
   );
 };
