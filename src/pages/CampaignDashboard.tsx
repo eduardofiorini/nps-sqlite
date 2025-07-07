@@ -53,7 +53,6 @@ const CampaignDashboard: React.FC = () => {
   const [emailBody, setEmailBody] = useState('');
   const [emailType, setEmailType] = useState<'text' | 'html'>('html');
   const [targetContacts, setTargetContacts] = useState<any[]>([]);
-  const [previewMode, setPreviewMode] = useState(false);
   const [previewContact, setPreviewContact] = useState<any>(null);
   
   useEffect(() => {
@@ -240,20 +239,6 @@ const CampaignDashboard: React.FC = () => {
     }
     
     setIsEmailModalOpen(true);
-  };
-
-  const openPreviewInNewPage = () => {
-    if (!previewContact || !campaign) return;
-    
-    const params = new URLSearchParams({
-      subject: encodeURIComponent(emailSubject),
-      body: encodeURIComponent(emailBody),
-      type: emailType,
-      contactId: previewContact.id
-    });
-    
-    const previewUrl = `/email-preview/${campaign.id}?${params.toString()}`;
-    window.open(previewUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
   };
 
   const switchToTextTemplate = () => {
@@ -701,12 +686,12 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
         {isTvMode && <TvDashboard />}
       </AnimatePresence>
 
-      {/* Email Modal - Tamanho ajustado */}
+      {/* Email Modal - Updated with side-by-side layout */}
       <Modal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         title="Enviar Campanha por E-mail"
-        size="lg"
+        size="xl"
         footer={
           <div className="flex justify-end space-x-3">
             <Button 
@@ -728,10 +713,10 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           </div>
         }
       >
-        <div className="max-h-[70vh] overflow-y-auto space-y-4">
+        <div className="max-h-[80vh] overflow-y-auto">
           {/* Status Messages */}
           {emailStatus === 'success' && (
-            <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-4">
               <CheckCircle size={18} className="text-green-600 dark:text-green-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-green-800 dark:text-green-200">E-mails Enviados!</h4>
@@ -741,7 +726,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           )}
 
           {emailStatus === 'error' && (
-            <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mb-4">
               <AlertTriangle size={18} className="text-red-600 dark:text-red-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Erro no Envio</h4>
@@ -751,7 +736,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           )}
 
           {/* Target Contacts Info */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
             <div className="flex items-center mb-1">
               <Users size={14} className="text-blue-600 dark:text-blue-400 mr-2" />
               <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
@@ -763,126 +748,215 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
             </p>
           </div>
 
-          {/* Email Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Tipo de E-mail
-            </label>
-            <div className="flex space-x-3">
-              <button
-                type="button"
-                onClick={switchToTextTemplate}
-                className={`flex items-center px-3 py-2 rounded-md border text-sm transition-colors ${
-                  emailType === 'text'
-                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-              >
-                <Type size={14} className="mr-1" />
-                Texto
-              </button>
-              <button
-                type="button"
-                onClick={switchToHtmlTemplate}
-                className={`flex items-center px-3 py-2 rounded-md border text-sm transition-colors ${
-                  emailType === 'html'
-                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-              >
-                <Code size={14} className="mr-1" />
-                HTML
-              </button>
-            </div>
-          </div>
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left side - Email configuration */}
+            <div className="space-y-4">
+              {/* Email Type Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tipo de E-mail
+                </label>
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={switchToTextTemplate}
+                    className={`flex items-center px-3 py-2 rounded-md border text-sm transition-colors ${
+                      emailType === 'text'
+                        ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <Type size={14} className="mr-1" />
+                    Texto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={switchToHtmlTemplate}
+                    className={`flex items-center px-3 py-2 rounded-md border text-sm transition-colors ${
+                      emailType === 'html'
+                        ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <Code size={14} className="mr-1" />
+                    HTML
+                  </button>
+                </div>
+              </div>
 
-          {/* Email Subject */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Assunto
-            </label>
-            <input
-              type="text"
-              value={emailSubject}
-              onChange={(e) => setEmailSubject(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-              placeholder="Digite o assunto do e-mail"
-              disabled={emailStatus === 'sending'}
-            />
-          </div>
-
-          {/* Email Body */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Conteúdo ({emailType === 'html' ? 'HTML' : 'Texto'})
-              </label>
-              {previewContact && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={<ExternalLink size={12} />}
-                  onClick={openPreviewInNewPage}
-                  className="text-xs px-2 py-1"
-                >
-                  Preview
-                </Button>
-              )}
-            </div>
-            
-            <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-              {emailType === 'html' ? (
-                <CodeMirror
-                  value={emailBody}
-                  onChange={(value) => setEmailBody(value)}
-                  extensions={[html()]}
-                  theme={isDark ? oneDark : undefined}
-                  height="200px"
-                  basicSetup={{
-                    lineNumbers: true,
-                    foldGutter: false,
-                    dropCursor: false,
-                    allowMultipleSelections: false,
-                    indentOnInput: true,
-                    bracketMatching: true,
-                    closeBrackets: true,
-                    autocompletion: true,
-                    highlightSelectionMatches: false,
-                  }}
-                  placeholder="Digite o HTML do e-mail"
-                  editable={emailStatus !== 'sending'}
-                />
-              ) : (
-                <textarea
-                  value={emailBody}
-                  onChange={(e) => setEmailBody(e.target.value)}
-                  className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
-                  rows={8}
-                  placeholder="Digite o conteúdo do e-mail"
+              {/* Email Subject */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Assunto
+                </label>
+                <input
+                  type="text"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                  placeholder="Digite o assunto do e-mail"
                   disabled={emailStatus === 'sending'}
                 />
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Personalization Variables */}
-          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-            <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Variáveis Disponíveis:
-            </h4>
-            <div className="grid grid-cols-3 gap-1 text-xs">
-              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{nome}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{email}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{telefone}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{empresa}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{cargo}}'}</code>
-              <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{link_pesquisa}}'}</code>
+              {/* Email Body */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Conteúdo ({emailType === 'html' ? 'HTML' : 'Texto'})
+                </label>
+                
+                <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                  {emailType === 'html' ? (
+                    <CodeMirror
+                      value={emailBody}
+                      onChange={(value) => setEmailBody(value)}
+                      extensions={[html()]}
+                      theme={isDark ? oneDark : undefined}
+                      height="300px"
+                      basicSetup={{
+                        lineNumbers: true,
+                        foldGutter: false,
+                        dropCursor: false,
+                        allowMultipleSelections: false,
+                        indentOnInput: true,
+                        bracketMatching: true,
+                        closeBrackets: true,
+                        autocompletion: true,
+                        highlightSelectionMatches: false,
+                      }}
+                      placeholder="Digite o HTML do e-mail"
+                      editable={emailStatus !== 'sending'}
+                    />
+                  ) : (
+                    <textarea
+                      value={emailBody}
+                      onChange={(e) => setEmailBody(e.target.value)}
+                      className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
+                      rows={12}
+                      placeholder="Digite o conteúdo do e-mail"
+                      disabled={emailStatus === 'sending'}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Selector for Preview */}
+              {targetContacts.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Visualizar como:
+                  </label>
+                  <select
+                    value={previewContact?.id || ''}
+                    onChange={(e) => {
+                      const contact = targetContacts.find(c => c.id === e.target.value);
+                      setPreviewContact(contact);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                  >
+                    {targetContacts.map(contact => (
+                      <option key={contact.id} value={contact.id}>
+                        {contact.name} ({contact.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Personalization Variables */}
+              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Variáveis Disponíveis:
+                </h4>
+                <div className="grid grid-cols-3 gap-1 text-xs">
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{nome}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{email}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{telefone}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{empresa}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{cargo}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{link_pesquisa}}'}</code>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Preview */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Preview do E-mail
+                </h4>
+                {previewContact && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Visualizando como: {previewContact.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Email Preview Container */}
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                {/* Email Header */}
+                <div className="border-b border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700">
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center">
+                      <span className="font-medium text-gray-700 dark:text-gray-300 w-12">Para:</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {previewContact ? `${previewContact.name} <${previewContact.email}>` : 'Contato não selecionado'}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="font-medium text-gray-700 dark:text-gray-300 w-12">Assunto:</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {previewContact ? personalizeContent(emailSubject, previewContact) : emailSubject}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Content Preview */}
+                <div className="p-4 max-h-96 overflow-y-auto">
+                  {previewContact ? (
+                    emailType === 'html' ? (
+                      <div 
+                        className="prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ 
+                          __html: personalizeContent(emailBody, previewContact) 
+                        }}
+                      />
+                    ) : (
+                      <div className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+                        {personalizeContent(emailBody, previewContact)}
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                      Selecione um contato para visualizar o preview
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              {previewContact && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="text-xs font-medium text-blue-800 dark:text-blue-200 mb-2">
+                    Dados do Contato:
+                  </h4>
+                  <div className="space-y-1 text-xs text-blue-700 dark:text-blue-300">
+                    <div><strong>Nome:</strong> {previewContact.name}</div>
+                    <div><strong>Email:</strong> {previewContact.email}</div>
+                    {previewContact.phone && <div><strong>Telefone:</strong> {previewContact.phone}</div>}
+                    {previewContact.company && <div><strong>Empresa:</strong> {previewContact.company}</div>}
+                    {previewContact.position && <div><strong>Cargo:</strong> {previewContact.position}</div>}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Warning if no contacts */}
           {targetContacts.length === 0 && (
-            <div className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <div className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mt-4">
               <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Nenhum Contato</h4>
