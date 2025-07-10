@@ -116,9 +116,44 @@ export type Contact = {
 
 export type AppConfig = {
   themeColor: string;
-  logoUrl: string;
-  defaultEmail: string;
   language: 'en' | 'pt-BR';
+  company: {
+    name: string;
+    document: string;
+    address: string;
+    email: string;
+    phone: string;
+  };
+  integrations: {
+    smtp: {
+      enabled: boolean;
+      host: string;
+      port: number;
+      secure: boolean;
+      username: string;
+      password: string;
+      fromName: string;
+      fromEmail: string;
+    };
+    zenvia: {
+      email: {
+        enabled: boolean;
+        apiKey: string;
+        fromEmail: string;
+        fromName: string;
+      };
+      sms: {
+        enabled: boolean;
+        apiKey: string;
+        from: string;
+      };
+      whatsapp: {
+        enabled: boolean;
+        apiKey: string;
+        from: string;
+      };
+    };
+  };
 };
 
 export type UserProfile = {

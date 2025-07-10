@@ -19,9 +19,44 @@ export const STORAGE_KEYS = {
 // Default data
 const DEFAULT_CONFIG: AppConfig = {
   themeColor: '#073143',
-  logoUrl: '',
-  defaultEmail: 'nps@meunps.com',
   language: 'en',
+  company: {
+    name: '',
+    document: '',
+    address: '',
+    email: '',
+    phone: '',
+  },
+  integrations: {
+    smtp: {
+      enabled: false,
+      host: '',
+      port: 587,
+      secure: false,
+      username: '',
+      password: '',
+      fromName: '',
+      fromEmail: '',
+    },
+    zenvia: {
+      email: {
+        enabled: false,
+        apiKey: '',
+        fromEmail: '',
+        fromName: '',
+      },
+      sms: {
+        enabled: false,
+        apiKey: '',
+        from: '',
+      },
+      whatsapp: {
+        enabled: false,
+        apiKey: '',
+        from: '',
+      },
+    },
+  },
 };
 
 // Authentication
