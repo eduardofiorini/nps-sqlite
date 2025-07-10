@@ -54,7 +54,7 @@ const Settings: React.FC = () => {
       setFormData({
         ...formData,
         [keys[0]]: {
-          ...(formData as any)[keys[0]],
+          ...((formData as any)[keys[0]] || {}),
           [keys[1]]: value
         }
       });
@@ -62,9 +62,9 @@ const Settings: React.FC = () => {
       setFormData({
         ...formData,
         [keys[0]]: {
-          ...(formData as any)[keys[0]],
+          ...((formData as any)[keys[0]] || {}),
           [keys[1]]: {
-            ...((formData as any)[keys[0]] as any)[keys[1]],
+            ...(((formData as any)[keys[0]] || {})[keys[1]] || {}),
             [keys[2]]: value
           }
         }
@@ -73,11 +73,11 @@ const Settings: React.FC = () => {
       setFormData({
         ...formData,
         [keys[0]]: {
-          ...(formData as any)[keys[0]],
+          ...((formData as any)[keys[0]] || {}),
           [keys[1]]: {
-            ...((formData as any)[keys[0]] as any)[keys[1]],
+            ...(((formData as any)[keys[0]] || {})[keys[1]] || {}),
             [keys[2]]: {
-              ...(((formData as any)[keys[0]] as any)[keys[1]] as any)[keys[2]],
+              ...((((formData as any)[keys[0]] || {})[keys[1]] || {})[keys[2]] || {}),
               [keys[3]]: value
             }
           }
