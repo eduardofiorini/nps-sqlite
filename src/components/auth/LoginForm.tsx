@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { supabase } from '../../lib/supabase'
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
