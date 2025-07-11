@@ -364,7 +364,7 @@ const Overview: React.FC = () => {
                             <Calendar size={14} className="mr-1" />
                             {new Date(stat.campaign.startDate).toLocaleDateString()}
                           </span>
-                          <div className={`flex items-center ${getTrendColor(stat.trend)} dark:text-gray-300`}>
+                          <div className={`flex items-center ${getTrendColor(stat.trend)}`}>
                             {getTrendIcon(stat.trend)}
                             <span className="ml-1 capitalize">{stat.trend === 'up' ? 'Crescendo' : stat.trend === 'down' ? 'Declinando' : 'Estável'}</span>
                           </div>

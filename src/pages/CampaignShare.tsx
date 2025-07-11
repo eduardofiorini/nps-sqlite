@@ -33,36 +33,32 @@ const CampaignShare: React.FC = () => {
   };
 
   if (!campaign) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       <div className="mb-6">
         <Link to={`/campaigns/${id}`}>
           <Button variant="outline" size="sm" icon={<ChevronLeft size={16} />}>
-            Voltar à Campanha
+            Back to Campaign
           </Button>
         </Link>
       </div>
 
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Compartilhar {campaign.name}</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Compartilhe sua pesquisa NPS com clientes usando estes métodos
+        <h1 className="text-2xl font-bold text-gray-900">Share {campaign.name}</h1>
+        <p className="text-gray-600 mt-1">
+          Share your NPS survey with customers using these methods
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <CardHeader title="Link Direto" />
+        <Card>
+          <CardHeader title="Direct Link" />
           <CardContent>
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md mb-4">
-              <code className="text-sm break-all text-gray-900 dark:text-white">{surveyUrl}</code>
+            <div className="bg-gray-50 p-4 rounded-md mb-4">
+              <code className="text-sm break-all">{surveyUrl}</code>
             </div>
             <Button
               variant="outline"
@@ -70,15 +66,15 @@ const CampaignShare: React.FC = () => {
               icon={copied ? undefined : <Copy size={16} />}
               onClick={handleCopyLink}
             >
-              {copied ? 'Copiado!' : 'Copiar Link'}
+              {copied ? 'Copied!' : 'Copy Link'}
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <CardHeader title="Código de Incorporação" />
+        <Card>
+          <CardHeader title="Embed Code" />
           <CardContent>
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md mb-4 font-mono text-sm text-gray-900 dark:text-white">
+            <div className="bg-gray-50 p-4 rounded-md mb-4 font-mono text-sm">
               {`<iframe src="${surveyUrl}" width="100%" height="600" frameborder="0"></iframe>`}
             </div>
             <Button
@@ -91,13 +87,13 @@ const CampaignShare: React.FC = () => {
                 );
               }}
             >
-              Copiar Código
+              Copy Embed Code
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <CardHeader title="Código QR" />
+        <Card>
+          <CardHeader title="QR Code" />
           <CardContent>
             <div className="text-center">
               <Button
@@ -105,7 +101,7 @@ const CampaignShare: React.FC = () => {
                 icon={<QrCode size={16} />}
                 onClick={() => setQrVisible(!qrVisible)}
               >
-                {qrVisible ? 'Ocultar QR Code' : 'Mostrar QR Code'}
+                {qrVisible ? 'Hide QR Code' : 'Show QR Code'}
               </Button>
               {qrVisible && (
                 <div className="mt-4">
@@ -113,7 +109,7 @@ const CampaignShare: React.FC = () => {
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                       surveyUrl
                     )}`}
-                    alt="QR Code da Pesquisa"
+                    alt="Survey QR Code"
                     className="mx-auto"
                   />
                 </div>
@@ -124,6 +120,6 @@ const CampaignShare: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
-export default CampaignShare;
+export default CampaignShare
