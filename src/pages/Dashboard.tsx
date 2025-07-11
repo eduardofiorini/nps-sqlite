@@ -1,164 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import CampaignCard from '../components/dashboard/CampaignCard';
-import Button from '../components/ui/Button';
-import { Campaign } from '../types';
-import { getCampaigns, initializeDefaultData } from '../utils/localStorage';
-import { useLanguage } from '../contexts/LanguageContext';
-import { motion } from 'framer-motion';
-import { Plus, RefreshCw } from 'lucide-react';
+import React from 'react'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
+import { Button } from '../components/ui/Button'
 
-const Dashboard: React.FC = () => {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const { t, language } = useLanguage();
-  
-  const loadCampaigns = () => {
-    // Initialize default data if first time
-    initializeDefaultData();
-    
-    // Load campaigns
-    const loadedCampaigns = getCampaigns();
-    setCampaigns(loadedCampaigns);
-  };
-  
-  useEffect(() => {
-    loadCampaigns();
-    setIsLoading(false);
-  }, []);
+export function Dashboard() {
+  const { user, loading, signOut } = useAuth()
 
-  const handleCampaignDeleted = () => {
-    setIsRefreshing(true);
-    // Reload campaigns after deletion
-    setTimeout(() => {
-      loadCampaigns();
-      setIsRefreshing(false);
-    }, 500);
-  };
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      loadCampaigns();
-      setIsRefreshing(false);
-    }, 500);
-  };
-  
-  // Animation variants for staggered animations
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-  
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 },
-  };
-
-  const pageTitle = language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns';
-  const pageSubtitle = language === 'pt-BR' ? 'Monitore e gerencie suas campanhas NPS' : 'Monitor and manage your NPS campaigns';
-  
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">{pageSubtitle}</p>
-        </div>
-        <div className="flex space-x-3">
-          <Button 
-            variant="outline" 
-            icon={<RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />}
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            {language === 'pt-BR' ? 'Atualizar' : 'Refresh'}
-          </Button>
-          <Link to="/campaigns/new">
-            <Button variant="primary" icon={<Plus size={16} />}>
-              {language === 'pt-BR' ? 'Nova Campanha' : 'New Campaign'}
-            </Button>
-          </Link>
-        </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
-      
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ) : campaigns.length === 0 ? (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center border border-gray-200 dark:border-gray-700"
-        >
-          <div className="mb-4 w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8 text-blue-600 dark:text-blue-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            {language === 'pt-BR' ? 'Nenhuma campanha ainda' : 'No campaigns yet'}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {language === 'pt-BR' 
-              ? 'Crie sua primeira campanha NPS para começar a coletar feedback dos clientes.'
-              : 'Create your first NPS campaign to start collecting customer feedback.'
-            }
-          </p>
-          <Link to="/campaigns/new">
-            <Button variant="primary" icon={<Plus size={16} />}>
-              {language === 'pt-BR' ? 'Criar Campanha' : 'Create Campaign'}
-            </Button>
-          </Link>
-        </motion.div>
-      ) : (
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {campaigns.map((campaign) => (
-            <motion.div key={campaign.id} variants={item}>
-              <CampaignCard 
-                campaign={campaign} 
-                onDelete={handleCampaignDeleted}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-      
-      {campaigns.length > 0 && (
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {campaigns.length} {campaigns.length === 1 
-              ? (language === 'pt-BR' ? 'campanha' : 'campaign')
-              : (language === 'pt-BR' ? 'campanhas' : 'campaigns')
-            } {language === 'pt-BR' ? 'no total' : 'total'}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-};
+    )
+  }
 
-export default Dashboard;
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold text-gray-900">
+                Meu NPS Dashboard
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-700">
+                {user.email}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={signOut}
+              >
+                Sair
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <SubscriptionStatus />
+            </div>
+            
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Bem-vindo ao Meu NPS!
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Aqui você poderá gerenciar suas pesquisas de NPS, visualizar relatórios
+                  e acompanhar a satisfação dos seus clientes.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      Pesquisas Ativas
+                    </h3>
+                    <p className="text-2xl font-bold text-blue-600">0</p>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      Respostas Este Mês
+                    </h3>
+                    <p className="text-2xl font-bold text-green-600">0</p>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      NPS Médio
+                    </h3>
+                    <p className="text-2xl font-bold text-purple-600">--</p>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      Promotores
+                    </h3>
+                    <p className="text-2xl font-bold text-orange-600">0%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}

@@ -4,13 +4,14 @@ import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Alert } from '../ui/Alert'
 
-interface LoginFormProps {
+interface SignupFormProps {
   onSuccess?: () => void
 }
 
-export function LoginForm({ onSuccess }: LoginFormProps) {
+export function SignupForm({ onSuccess }: SignupFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -19,17 +20,32 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setLoading(true)
     setError(null)
 
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem')
+      setLoading(false)
+      return
+    }
+
+    if (password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres')
+      setLoading(false)
+      return
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: undefined // Disable email confirmation
+        }
       })
 
       if (error) throw error
 
       onSuccess?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login')
+      setError(err instanceof Error ? err.message : 'Erro ao criar conta')
     } finally {
       setLoading(false)
     }
@@ -58,7 +74,16 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
-        placeholder="Sua senha"
+        placeholder="Mínimo 6 caracteres"
+      />
+      
+      <Input
+        label="Confirmar Senha"
+        type="password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        required
+        placeholder="Confirme sua senha"
       />
       
       <Button
@@ -66,7 +91,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         loading={loading}
         className="w-full"
       >
-        Entrar
+        Criar Conta
       </Button>
     </form>
   )
