@@ -385,7 +385,7 @@ const Overview: React.FC = () => {
                 ))}
                 
                 {campaignStats.length > 5 && (
-                  <div className="text-center pt-4 dark:text-white">
+                  <div className="text-center pt-4">
                     <Link to="/">
                       <Button variant="outline">
                         Ver todas as {campaignStats.length} campanhas
