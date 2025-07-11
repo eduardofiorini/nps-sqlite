@@ -51,7 +51,7 @@ const RegisterForm: React.FC = () => {
     {
       id: 'starter',
       name: 'Iniciante',
-      price: 29,
+      price: 49,
       period: 'mês',
       description: 'Perfeito para pequenas equipes começando com NPS',
       icon: <Users size={24} />,
@@ -67,7 +67,7 @@ const RegisterForm: React.FC = () => {
     {
       id: 'pro',
       name: 'Profissional',
-      price: 79,
+      price: 99,
       period: 'mês',
       description: 'Recursos avançados para empresas em crescimento',
       icon: <BarChart3 size={24} />,
@@ -86,7 +86,7 @@ const RegisterForm: React.FC = () => {
     {
       id: 'enterprise',
       name: 'Empresarial',
-      price: 199,
+      price: 249,
       period: 'mês',
       description: 'Solução completa para grandes organizações',
       icon: <Zap size={24} />,
