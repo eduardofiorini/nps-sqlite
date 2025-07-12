@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types';
-import { getAuthUser, setAuthUser, logout as logoutUser } from '../utils/localStorage';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextProps {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
 }
@@ -14,6 +16,8 @@ const AuthContext = createContext<AuthContextProps>({
   user: null,
   isAuthenticated: false,
   login: () => Promise.resolve(false),
+  register: () => Promise.resolve(false),
+  register: () => Promise.resolve(false),
   logout: () => {},
   loading: true,
 });
@@ -29,36 +33,82 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Check if user is logged in
-    const storedUser = getAuthUser();
-    if (storedUser) {
-      setUser(storedUser);
-    }
-    setLoading(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
   
-  // For demo purposes, this is a mock login that accepts any email/password
-  // In a real application, this would validate credentials against a backend
   const login = async (email: string, password: string): Promise<boolean> => {
-    if (!email || !password) return false;
-    
-    // Mock validation - in a real app this would check against a backend
-    const mockUser: User = {
-      id: '1',
-      email,
-      name: email.split('@')[0],
-      role: 'admin',
-    };
-    
-    setUser(mockUser);
-    setAuthUser(mockUser);
-    
-    return true;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Login error:', error.message);
+        return false;
+      }
+
+      if (data.user) {
+        setUser(data.user);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  };
+
+  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Registration error:', error.message);
+        return false;
+      }
+
+      if (data.user) {
+        // For email confirmation disabled, user will be automatically signed in
+        setUser(data.user);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
+    }
   };
   
-  const logout = () => {
-    setUser(null);
-    logoutUser();
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
   
   return (
@@ -66,7 +116,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       value={{ 
         user, 
         isAuthenticated: !!user, 
-        login, 
+        login,
+        register, 
         logout, 
         loading 
       }}

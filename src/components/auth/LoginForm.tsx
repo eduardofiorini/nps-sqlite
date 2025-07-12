@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { supabase } from '../../lib/supabase'
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
@@ -30,10 +29,10 @@ const LoginForm: React.FC = () => {
       if (success) {
         navigate('/');
       } else {
-        setError('Invalid email or password.');
+        setError('Email ou senha inválidos. Verifique suas credenciais e tente novamente.');
       }
     } catch (err) {
-      setError('An error occurred during login. Please try again.');
+      setError('Ocorreu um erro durante o login. Tente novamente.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -210,9 +209,17 @@ const LoginForm: React.FC = () => {
                 <Link 
                   to="/register" 
                   className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium"
-                >
-                  Iniciar teste gratuito
-                </Link>
+                <div className="text-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Não tem uma conta?{' '}
+                  </span>
+                  <Link 
+                    to="/register" 
+                    className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium"
+                  >
+                    Criar conta
+                  </Link>
+                </div>
               </div>
             </form>
             
