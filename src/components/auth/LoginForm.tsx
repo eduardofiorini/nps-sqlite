@@ -209,17 +209,9 @@ const LoginForm: React.FC = () => {
                 <Link 
                   to="/register" 
                   className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium"
-                <div className="text-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Não tem uma conta?{' '}
-                  </span>
-                  <Link 
-                    to="/register" 
-                    className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium"
-                  >
-                    Criar conta
-                  </Link>
-                </div>
+                >
+                  Criar conta
+                </Link>
               </div>
             </form>
             
