@@ -232,6 +232,7 @@ const LoginForm: React.FC = () => {
         </motion.div>
       </div>
     </div>
+  )
   );
 };
 
