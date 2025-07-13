@@ -26,7 +26,10 @@ import {
   Type,
   Eye,
   User,
-  ExternalLink
+  ExternalLink,
+  Smartphone,
+  MessageCircle,
+  Minimize
 } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,11 +50,17 @@ const CampaignDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isTvMode, setIsTvMode] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [smsStatus, setSmsStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [emailMessage, setEmailMessage] = useState('');
+  const [smsMessage, setSmsMessage] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
+  const [smsBody, setSmsBody] = useState('');
   const [emailType, setEmailType] = useState<'text' | 'html'>('html');
+  const [emailProvider, setEmailProvider] = useState<'smtp' | 'zenvia'>('smtp');
+  const [smsProvider, setSmsProvider] = useState<'sms' | 'whatsapp'>('sms');
   const [targetContacts, setTargetContacts] = useState<any[]>([]);
   const [previewContact, setPreviewContact] = useState<any>(null);
   
@@ -146,6 +155,16 @@ const CampaignDashboard: React.FC = () => {
     </div>
 </body>
 </html>`);
+
+        // Set default SMS content
+        setSmsBody(`Olá {{nome}}! 
+
+Gostaríamos de conhecer sua opinião sobre nossos serviços. Sua avaliação é muito importante para nós!
+
+Responda nossa pesquisa NPS: {{link_pesquisa}}
+
+Obrigado!
+Equipe ${foundCampaign.name}`);
       }
       
       setIsLoading(false);
@@ -158,7 +177,7 @@ const CampaignDashboard: React.FC = () => {
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isTvMode) {
-        setIsTvMode(false);
+        exitTvMode();
       }
     };
 
@@ -177,6 +196,26 @@ const CampaignDashboard: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [isTvMode, id]);
+
+  const enterTvMode = () => {
+    setIsTvMode(true);
+    // Request fullscreen
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.log('Error attempting to enable fullscreen:', err);
+      });
+    }
+  };
+
+  const exitTvMode = () => {
+    setIsTvMode(false);
+    // Exit fullscreen
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(err => {
+        console.log('Error attempting to exit fullscreen:', err);
+      });
+    }
+  };
 
   const personalizeContent = (content: string, contact: any): string => {
     const surveyLink = `${window.location.origin}/survey/${campaign?.id}`;
@@ -206,13 +245,14 @@ const CampaignDashboard: React.FC = () => {
         to: contact.email,
         subject: personalizeContent(emailSubject, contact),
         body: personalizeContent(emailBody, contact),
-        type: emailType
+        type: emailType,
+        provider: emailProvider
       }));
       
-      console.log('Sending personalized emails:', personalizedEmails);
+      console.log('Sending personalized emails via', emailProvider, ':', personalizedEmails);
       
       setEmailStatus('success');
-      setEmailMessage(`E-mails personalizados enviados com sucesso para ${targetContacts.length} contatos!`);
+      setEmailMessage(`E-mails personalizados enviados com sucesso via ${emailProvider.toUpperCase()} para ${targetContacts.length} contatos!`);
       
       // Auto-close modal after success
       setTimeout(() => {
@@ -224,6 +264,41 @@ const CampaignDashboard: React.FC = () => {
     } catch (error) {
       setEmailStatus('error');
       setEmailMessage('Erro ao enviar e-mails. Tente novamente.');
+    }
+  };
+
+  const handleSendSms = async () => {
+    if (!campaign || targetContacts.length === 0) return;
+    
+    setSmsStatus('sending');
+    setSmsMessage('');
+    
+    try {
+      // Simulate SMS sending process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // In a real application, this would integrate with ZenVia API
+      const personalizedMessages = targetContacts.map(contact => ({
+        to: smsProvider === 'sms' ? contact.phone : contact.phone,
+        message: personalizeContent(smsBody, contact),
+        provider: smsProvider
+      }));
+      
+      console.log(`Sending personalized ${smsProvider} messages via ZenVia:`, personalizedMessages);
+      
+      setSmsStatus('success');
+      setSmsMessage(`Mensagens ${smsProvider.toUpperCase()} enviadas com sucesso via ZenVia para ${targetContacts.length} contatos!`);
+      
+      // Auto-close modal after success
+      setTimeout(() => {
+        setIsSmsModalOpen(false);
+        setSmsStatus('idle');
+        setSmsMessage('');
+      }, 3000);
+      
+    } catch (error) {
+      setSmsStatus('error');
+      setSmsMessage(`Erro ao enviar mensagens ${smsProvider.toUpperCase()}. Tente novamente.`);
     }
   };
 
@@ -239,6 +314,28 @@ const CampaignDashboard: React.FC = () => {
     }
     
     setIsEmailModalOpen(true);
+  };
+
+  const openSmsModal = () => {
+    if (!campaign?.defaultGroupId) {
+      alert('Esta campanha não possui um grupo padrão configurado. Configure um grupo nas configurações da campanha.');
+      return;
+    }
+    
+    if (targetContacts.length === 0) {
+      alert('Não há contatos no grupo desta campanha. Adicione contatos ao grupo primeiro.');
+      return;
+    }
+    
+    // Filter contacts that have phone numbers
+    const contactsWithPhone = targetContacts.filter(contact => contact.phone && contact.phone.trim() !== '');
+    
+    if (contactsWithPhone.length === 0) {
+      alert('Não há contatos com telefone no grupo desta campanha. Adicione números de telefone aos contatos primeiro.');
+      return;
+    }
+    
+    setIsSmsModalOpen(true);
   };
 
   const switchToTextTemplate = () => {
@@ -331,13 +428,15 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white z-50 overflow-hidden"
+      style={{ zIndex: 9999 }}
     >
       {/* Exit Button */}
       <button
-        onClick={() => setIsTvMode(false)}
-        className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200"
+        onClick={exitTvMode}
+        className="absolute top-4 right-4 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200 flex items-center space-x-2"
       >
-        <X size={20} className="text-white" />
+        <Minimize size={20} className="text-white" />
+        <span className="text-white text-sm">Sair do Modo TV</span>
       </button>
 
       {/* Header - Compact */}
@@ -473,7 +572,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
 
       {/* Footer - Compact */}
       <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center text-gray-400 text-xs">
-        <div>Pressione ESC para sair do modo TV</div>
+        <div>Pressione ESC ou clique no botão para sair do modo TV</div>
         <div>Atualização automática a cada 30 segundos</div>
       </div>
     </motion.div>
@@ -516,7 +615,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
               <Button 
                 variant="secondary" 
                 icon={<Monitor size={16} />}
-                onClick={() => setIsTvMode(true)}
+                onClick={enterTvMode}
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 Modo TV
@@ -528,6 +627,14 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Enviar por E-mail
+              </Button>
+              <Button 
+                variant="secondary" 
+                icon={<MessageCircle size={16} />}
+                onClick={openSmsModal}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Enviar por Mensagem
               </Button>
               <Link to={`/campaigns/${id}/form`}>
                 <Button variant="outline" icon={<Edit size={16} />}>
@@ -560,6 +667,9 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
             <div className="flex justify-center space-x-3">
               <Button variant="secondary" icon={<Mail size={16} />} onClick={openEmailModal}>
                 Enviar por E-mail
+              </Button>
+              <Button variant="secondary" icon={<MessageCircle size={16} />} onClick={openSmsModal}>
+                Enviar por Mensagem
               </Button>
               <Link to={`/campaigns/${id}/share`}>
                 <Button variant="primary">
@@ -686,7 +796,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
         {isTvMode && <TvDashboard />}
       </AnimatePresence>
 
-      {/* Email Modal - Updated with wider size and isolated styles */}
+      {/* Email Modal */}
       <Modal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
@@ -713,10 +823,10 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           </div>
         }
       >
-        <div className="max-h-[80vh] overflow-y-auto">
+        <div className="max-h-[80vh] overflow-y-auto space-y-6">
           {/* Status Messages */}
           {emailStatus === 'success' && (
-            <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-4">
+            <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <CheckCircle size={18} className="text-green-600 dark:text-green-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-green-800 dark:text-green-200">E-mails Enviados!</h4>
@@ -726,7 +836,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           )}
 
           {emailStatus === 'error' && (
-            <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mb-4">
+            <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <AlertTriangle size={18} className="text-red-600 dark:text-red-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Erro no Envio</h4>
@@ -736,7 +846,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
           )}
 
           {/* Target Contacts Info */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center mb-1">
               <Users size={14} className="text-blue-600 dark:text-blue-400 mr-2" />
               <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
@@ -746,6 +856,39 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
             <p className="text-xs text-blue-700 dark:text-blue-300">
               <strong>{targetContacts.length} contatos</strong> receberão o e-mail personalizado.
             </p>
+          </div>
+
+          {/* Provider Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Provedor de E-mail
+            </label>
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={() => setEmailProvider('smtp')}
+                className={`flex items-center px-4 py-3 rounded-lg border transition-colors ${
+                  emailProvider === 'smtp'
+                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Mail size={16} className="mr-2" />
+                SMTP
+              </button>
+              <button
+                type="button"
+                onClick={() => setEmailProvider('zenvia')}
+                className={`flex items-center px-4 py-3 rounded-lg border transition-colors ${
+                  emailProvider === 'zenvia'
+                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Send size={16} className="mr-2" />
+                ZenVia E-mail
+              </button>
+            </div>
           </div>
 
           {/* Two-column layout */}
@@ -808,7 +951,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                 
                 <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                   {emailType === 'html' ? (
-                    <div className="email-editor-container">
+                    <div style={{ isolation: 'isolate' }}>
                       <CodeMirror
                         value={emailBody}
                         onChange={(value) => setEmailBody(value)}
@@ -912,6 +1055,12 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                         {previewContact ? personalizeContent(emailSubject, previewContact) : emailSubject}
                       </span>
                     </div>
+                    <div className="flex items-center">
+                      <span className="font-medium text-gray-700 dark:text-gray-300 w-12">Via:</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {emailProvider.toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -920,7 +1069,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                   {previewContact ? (
                     emailType === 'html' ? (
                       <div 
-                        className="prose prose-sm max-w-none email-preview-content"
+                        className="prose prose-sm max-w-none"
                         dangerouslySetInnerHTML={{ 
                           __html: personalizeContent(emailBody, previewContact) 
                         }}
@@ -958,7 +1107,7 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
 
           {/* Warning if no contacts */}
           {targetContacts.length === 0 && (
-            <div className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mt-4">
+            <div className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-400 mr-2" />
               <div>
                 <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Nenhum Contato</h4>
@@ -971,23 +1120,287 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
         </div>
       </Modal>
 
-      <style jsx>{`
-        .email-editor-container .cm-editor {
-          border: none !important;
+      {/* SMS/WhatsApp Modal */}
+      <Modal
+        isOpen={isSmsModalOpen}
+        onClose={() => setIsSmsModalOpen(false)}
+        title="Enviar Campanha por Mensagem"
+        size="2xl"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsSmsModalOpen(false)}
+              disabled={smsStatus === 'sending'}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={handleSendSms}
+              isLoading={smsStatus === 'sending'}
+              icon={smsStatus === 'sending' ? <Clock size={16} /> : <Send size={16} />}
+              disabled={!smsBody || targetContacts.filter(c => c.phone).length === 0}
+            >
+              {smsStatus === 'sending' ? 'Enviando...' : `Enviar ${smsProvider.toUpperCase()} para ${targetContacts.filter(c => c.phone).length} contatos`}
+            </Button>
+          </div>
         }
-        
-        .email-editor-container .cm-focused {
-          outline: none !important;
-        }
-        
-        .email-preview-content {
-          font-family: Arial, sans-serif;
-        }
-        
-        .email-preview-content * {
-          max-width: 100% !important;
-        }
-      `}</style>
+      >
+        <div className="max-h-[80vh] overflow-y-auto space-y-6">
+          {/* Status Messages */}
+          {smsStatus === 'success' && (
+            <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <CheckCircle size={18} className="text-green-600 dark:text-green-400 mr-2" />
+              <div>
+                <h4 className="text-sm font-medium text-green-800 dark:text-green-200">Mensagens Enviadas!</h4>
+                <p className="text-xs text-green-700 dark:text-green-300">{smsMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {smsStatus === 'error' && (
+            <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <AlertTriangle size={18} className="text-red-600 dark:text-red-400 mr-2" />
+              <div>
+                <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Erro no Envio</h4>
+                <p className="text-xs text-red-700 dark:text-red-300">{smsMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Target Contacts Info */}
+          <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center mb-1">
+              <Users size={14} className="text-green-600 dark:text-green-400 mr-2" />
+              <h4 className="text-sm font-medium text-green-800 dark:text-green-200">
+                Grupo: {getGroups().find(g => g.id === campaign?.defaultGroupId)?.name || 'Grupo Padrão'}
+              </h4>
+            </div>
+            <p className="text-xs text-green-700 dark:text-green-300">
+              <strong>{targetContacts.filter(c => c.phone).length} contatos</strong> com telefone receberão a mensagem personalizada.
+            </p>
+          </div>
+
+          {/* Provider Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Tipo de Mensagem (ZenVia)
+            </label>
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={() => setSmsProvider('sms')}
+                className={`flex items-center px-4 py-3 rounded-lg border transition-colors ${
+                  smsProvider === 'sms'
+                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Smartphone size={16} className="mr-2" />
+                SMS
+              </button>
+              <button
+                type="button"
+                onClick={() => setSmsProvider('whatsapp')}
+                className={`flex items-center px-4 py-3 rounded-lg border transition-colors ${
+                  smsProvider === 'whatsapp'
+                    ? 'bg-[#073143]/10 dark:bg-[#073143]/20 border-[#073143] dark:border-[#073143] text-[#073143] dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <MessageCircle size={16} className="mr-2" />
+                WhatsApp
+              </button>
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left side - Message configuration */}
+            <div className="space-y-4">
+              {/* Message Body */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Conteúdo da Mensagem
+                </label>
+                <textarea
+                  value={smsBody}
+                  onChange={(e) => setSmsBody(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none text-sm"
+                  rows={8}
+                  placeholder={`Digite o conteúdo da mensagem ${smsProvider.toUpperCase()}`}
+                  disabled={smsStatus === 'sending'}
+                  maxLength={smsProvider === 'sms' ? 160 : 1000}
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {smsBody.length}/{smsProvider === 'sms' ? '160' : '1000'} caracteres
+                  </p>
+                  {smsProvider === 'sms' && smsBody.length > 160 && (
+                    <p className="text-xs text-red-500">
+                      Mensagem muito longa para SMS
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Selector for Preview */}
+              {targetContacts.filter(c => c.phone).length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Visualizar como:
+                  </label>
+                  <select
+                    value={previewContact?.id || ''}
+                    onChange={(e) => {
+                      const contact = targetContacts.find(c => c.id === e.target.value);
+                      setPreviewContact(contact);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                  >
+                    {targetContacts.filter(c => c.phone).map(contact => (
+                      <option key={contact.id} value={contact.id}>
+                        {contact.name} ({contact.phone})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Personalization Variables */}
+              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Variáveis Disponíveis:
+                </h4>
+                <div className="grid grid-cols-3 gap-1 text-xs">
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{nome}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{telefone}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{empresa}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{cargo}}'}</code>
+                  <code className="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{'{{link_pesquisa}}'}</code>
+                </div>
+              </div>
+
+              {/* SMS/WhatsApp Info */}
+              <div className={`p-3 rounded-lg border ${
+                smsProvider === 'sms' 
+                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                  : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+              }`}>
+                <h4 className={`text-xs font-medium mb-2 ${
+                  smsProvider === 'sms' 
+                    ? 'text-blue-800 dark:text-blue-200'
+                    : 'text-green-800 dark:text-green-200'
+                }`}>
+                  Informações sobre {smsProvider.toUpperCase()}:
+                </h4>
+                <ul className={`text-xs space-y-1 ${
+                  smsProvider === 'sms' 
+                    ? 'text-blue-700 dark:text-blue-300'
+                    : 'text-green-700 dark:text-green-300'
+                }`}>
+                  {smsProvider === 'sms' ? (
+                    <>
+                      <li>• Limite de 160 caracteres por mensagem</li>
+                      <li>• Entrega rápida e confiável</li>
+                      <li>• Funciona em qualquer celular</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• Limite de 1000 caracteres por mensagem</li>
+                      <li>• Suporte a emojis e formatação</li>
+                      <li>• Requer WhatsApp instalado</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            </div>
+
+            {/* Right side - Preview */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Preview da Mensagem
+                </h4>
+                {previewContact && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Visualizando como: {previewContact.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Message Preview Container */}
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                {/* Message Header */}
+                <div className="border-b border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700">
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center">
+                      <span className="font-medium text-gray-700 dark:text-gray-300 w-12">Para:</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {previewContact ? `${previewContact.name} (${previewContact.phone})` : 'Contato não selecionado'}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="font-medium text-gray-700 dark:text-gray-300 w-12">Via:</span>
+                      <span className="text-gray-900 dark:text-white">
+                        ZenVia {smsProvider.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Message Content Preview */}
+                <div className="p-4">
+                  {previewContact ? (
+                    <div className={`p-3 rounded-lg ${
+                      smsProvider === 'sms' 
+                        ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+                        : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                    }`}>
+                      <div className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+                        {personalizeContent(smsBody, previewContact)}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                      Selecione um contato para visualizar o preview
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              {previewContact && (
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                  <h4 className="text-xs font-medium text-green-800 dark:text-green-200 mb-2">
+                    Dados do Contato:
+                  </h4>
+                  <div className="space-y-1 text-xs text-green-700 dark:text-green-300">
+                    <div><strong>Nome:</strong> {previewContact.name}</div>
+                    <div><strong>Telefone:</strong> {previewContact.phone}</div>
+                    {previewContact.company && <div><strong>Empresa:</strong> {previewContact.company}</div>}
+                    {previewContact.position && <div><strong>Cargo:</strong> {previewContact.position}</div>}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Warning if no contacts with phone */}
+          {targetContacts.filter(c => c.phone).length === 0 && (
+            <div className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-400 mr-2" />
+              <div>
+                <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Nenhum Contato com Telefone</h4>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                  Adicione números de telefone aos contatos do grupo desta campanha primeiro.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </>
   );
 };
