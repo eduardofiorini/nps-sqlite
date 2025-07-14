@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ConfigProvider } from './contexts/ConfigContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
@@ -24,6 +25,7 @@ import EntityCrud from './pages/EntityCrud';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import Billing from './pages/Billing';
+import TrialExpired from './pages/TrialExpired';
 import { initializeDefaultData } from './utils/supabaseStorage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,53 +69,56 @@ function App() {
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <ConfigProvider>
-              <AppInitializer>
-                <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/forgot-password" element={<ForgotPasswordForm />} />
-                  <Route path="/reset-password" element={<ResetPasswordForm />} />
-                  
-                  {/* Public survey route */}
-                  <Route path="/survey/:id" element={<Survey />} />
-                  
-                  {/* Public email preview route */}
-                  <Route path="/email-preview/:campaignId" element={<EmailPreview />} />
-                  
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout />
-                      </ProtectedRoute>
-                    }
-                  >
-                    {/* Redirect root to overview */}
-                    <Route index element={<Navigate to="/overview\" replace />} />
-                    <Route path="overview" element={<Overview />} />
-                    <Route path="campaigns" element={<Dashboard />} />
-                    <Route path="reports" element={<Reports />} />
-                    <Route path="contacts" element={<Contacts />} />
-                    <Route path="profile" element={<Profile />} />
-                    <Route path="billing" element={<Billing />} />
+            <SubscriptionProvider>
+              <ConfigProvider>
+                <AppInitializer>
+                  <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordForm />} />
+                    <Route path="/reset-password" element={<ResetPasswordForm />} />
+                    <Route path="/trial-expired" element={<TrialExpired />} />
                     
-                    <Route path="campaigns/new" element={<CampaignCreate />} />
-                    <Route path="campaigns/:id" element={<CampaignDashboard />} />
-                    <Route path="campaigns/:id/responses" element={<CampaignResponses />} />
-                    <Route path="campaigns/:id/share" element={<CampaignShare />} />
-                    <Route path="campaigns/:id/form" element={<CampaignForm />} />
+                    {/* Public survey route */}
+                    <Route path="/survey/:id" element={<Survey />} />
                     
-                    <Route path="settings" element={<Settings />} />
-                    <Route path="settings/sources" element={<EntityCrud entityType="sources" />} />
-                    <Route path="settings/situations" element={<EntityCrud entityType="situations" />} />
-                    <Route path="settings/groups" element={<EntityCrud entityType="groups" />} />
-                  </Route>
-                  
-                  <Route path="*" element={<Navigate to="/overview" />} />
-                </Routes>
-              </AppInitializer>
-            </ConfigProvider>
+                    {/* Public email preview route */}
+                    <Route path="/email-preview/:campaignId" element={<EmailPreview />} />
+                    
+                    <Route
+                      path="/"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout />
+                        </ProtectedRoute>
+                      }
+                    >
+                      {/* Redirect root to overview */}
+                      <Route index element={<Navigate to="/overview\" replace />} />
+                      <Route path="overview" element={<Overview />} />
+                      <Route path="campaigns" element={<Dashboard />} />
+                      <Route path="reports" element={<Reports />} />
+                      <Route path="contacts" element={<Contacts />} />
+                      <Route path="profile" element={<Profile />} />
+                      <Route path="billing" element={<Billing />} />
+                      
+                      <Route path="campaigns/new" element={<CampaignCreate />} />
+                      <Route path="campaigns/:id" element={<CampaignDashboard />} />
+                      <Route path="campaigns/:id/responses" element={<CampaignResponses />} />
+                      <Route path="campaigns/:id/share" element={<CampaignShare />} />
+                      <Route path="campaigns/:id/form" element={<CampaignForm />} />
+                      
+                      <Route path="settings" element={<Settings />} />
+                      <Route path="settings/sources" element={<EntityCrud entityType="sources" />} />
+                      <Route path="settings/situations" element={<EntityCrud entityType="situations" />} />
+                      <Route path="settings/groups" element={<EntityCrud entityType="groups" />} />
+                    </Route>
+                    
+                    <Route path="*" element={<Navigate to="/overview" />} />
+                  </Routes>
+                </AppInitializer>
+              </ConfigProvider>
+            </SubscriptionProvider>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>

@@ -7,7 +7,7 @@ interface AuthContextProps {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string, planId?: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
 }
@@ -145,7 +145,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (email: string, password: string, name: string, planId?: string): Promise<boolean> => {
     try {
       // Check if Supabase is configured first
       if (!isSupabaseConfigured()) {
@@ -172,7 +172,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password,
         options: {
           data: {
-            name: name,
+            name,
+            planId,
           }
         }
       });
@@ -184,6 +185,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (data.user) {
         // For email confirmation disabled, user will be automatically signed in
+        
+        // Create a trial subscription for the user
+        try {
+          // Calculate trial end date (7 days from now)
+          const trialEndDate = new Date();
+          trialEndDate.setDate(trialEndDate.getDate() + 7);
+          
+          // Create subscription record with trial status
+          const { error: subscriptionError } = await supabase
+            .from('stripe_subscriptions')
+            .insert({
+              customer_id: data.user.id,
+              subscription_status: 'trialing',
+              price_id: planId ? `price_${planId}` : 'price_pro', // Default to pro plan
+              current_period_start: Math.floor(Date.now() / 1000),
+              current_period_end: Math.floor(trialEndDate.getTime() / 1000),
+              cancel_at_period_end: false,
+              status: 'trialing'
+            });
+            
+          if (subscriptionError) {
+            console.error('Error creating trial subscription:', subscriptionError);
+          }
+        } catch (subscriptionError) {
+          console.error('Error setting up trial subscription:', subscriptionError);
+        }
         setUser(processSupabaseUser(data.user));
         return true;
       }
@@ -198,6 +225,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
           name: name || email.split('@')[0] || 'User',
+          planId: planId || 'pro',
           role: 'user'
         };
         setUser(mockUser);

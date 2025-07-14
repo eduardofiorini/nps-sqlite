@@ -133,7 +133,7 @@ const RegisterForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const success = await register(formData.email, formData.password, formData.name);
+      const success = await register(formData.email, formData.password, formData.name, selectedPlan);
       
       if (success) {
         navigate('/');
@@ -358,7 +358,7 @@ const RegisterForm: React.FC = () => {
                         Plano Selecionado: {plans.find(p => p.id === selectedPlan)?.name}
                       </p>
                       <p className="text-xs text-[#073143]/70 dark:text-gray-300">
-                        14 dias grátis, depois R${plans.find(p => p.id === selectedPlan)?.price}/mês
+                        7 dias grátis, depois R${plans.find(p => p.id === selectedPlan)?.price}/mês
                       </p>
                     </div>
                     <Shield size={20} className="text-[#073143] dark:text-white" />
@@ -393,7 +393,7 @@ const RegisterForm: React.FC = () => {
                   className="h-12 text-base font-medium bg-[#073143] hover:bg-[#0a4a5c] focus:ring-[#073143]"
                   icon={<ArrowRight size={18} />}
                 >
-                  Iniciar Teste Gratuito
+                  Iniciar Teste Gratuito de 7 dias
                 </Button>
 
                 <div className="text-center">
@@ -426,7 +426,7 @@ const RegisterForm: React.FC = () => {
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700"
         >
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
-            Por que escolher o Meu NPS?
+            Experimente por 7 dias grátis!
           </h3>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -438,7 +438,7 @@ const RegisterForm: React.FC = () => {
                 Análises em Tempo Real
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
-                Obtenha insights instantâneos sobre a satisfação do cliente com dashboards ao vivo e relatórios.
+                Obtenha insights instantâneos sobre a satisfação do cliente com dashboards ao vivo durante seu período de teste.
               </p>
             </div>
             
@@ -450,7 +450,7 @@ const RegisterForm: React.FC = () => {
                 Colaboração em Equipe
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
-                Trabalhe junto com sua equipe para analisar feedback e implementar melhorias.
+                Trabalhe junto com sua equipe para analisar feedback durante 7 dias sem compromisso.
               </p>
             </div>
             
@@ -462,7 +462,7 @@ const RegisterForm: React.FC = () => {
                 Segurança Empresarial
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
-                Seus dados estão protegidos com segurança de nível empresarial e padrões de conformidade.
+                Seus dados estão protegidos com segurança de nível empresarial durante e após o período de teste.
               </p>
             </div>
           </div>

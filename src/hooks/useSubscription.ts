@@ -14,6 +14,7 @@ interface Subscription {
 export function useSubscription() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
+  const [trialExpired, setTrialExpired] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,6 +34,18 @@ export function useSubscription() {
       if (error) {
         throw error
       }
+      
+      // Check if trial has expired
+      if (data) {
+        // If subscription status is 'trialing' and current_period_end is in the past
+        if (data.subscription_status === 'trialing' && 
+            data.current_period_end && 
+            new Date(data.current_period_end * 1000) < new Date()) {
+          setTrialExpired(true);
+        } else {
+          setTrialExpired(false);
+        }
+      }
 
       setSubscription(data)
     } catch (err) {
@@ -51,11 +64,14 @@ export function useSubscription() {
   const isActive = subscription?.subscription_status === 'active'
   const isPastDue = subscription?.subscription_status === 'past_due'
   const isCanceled = subscription?.subscription_status === 'canceled'
+  const isTrialing = subscription?.subscription_status === 'trialing'
 
   return {
     subscription,
     loading,
     error,
+    trialExpired,
+    isTrialing,
     refetch: fetchSubscription,
     plan: getSubscriptionPlan(),
     isActive,
