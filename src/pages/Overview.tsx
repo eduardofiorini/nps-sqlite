@@ -49,7 +49,6 @@ const Overview: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
-  const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
 
   useEffect(() => {
     loadData();
