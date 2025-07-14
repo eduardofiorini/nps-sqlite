@@ -23,8 +23,26 @@ const Survey: React.FC = () => {
   const [webhookRetryCount, setWebhookRetryCount] = useState(0);
   const { t } = useLanguage();
 
+  // Helper function to validate UUID format
+  const isValidUUID = (uuid: string): boolean => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuid.length === 36 && uuidRegex.test(uuid);
+  };
+
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setCampaign(null);
+      setForm(null);
+      return;
+    }
+
+    // Validate UUID format before making any queries
+    if (!isValidUUID(id)) {
+      console.error('Invalid UUID format:', id);
+      setCampaign(null);
+      setForm(null);
+      return;
+    }
 
     const loadData = async () => {
       try {
@@ -42,6 +60,8 @@ const Survey: React.FC = () => {
         setSituations(situationsData);
       } catch (error) {
         console.error('Error loading survey data:', error);
+        setCampaign(null);
+        setForm(null);
       }
     };
     
