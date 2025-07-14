@@ -25,10 +25,12 @@ import {
   TrendingDown,
   Minus,
   ExternalLink,
-  Settings,
-  ChevronRight
+  ChevronRight,
+  Monitor,
+  X,
+  PieChart
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CampaignDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +40,7 @@ const CampaignDashboard: React.FC = () => {
   const [situations, setSituations] = useState<Situation[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTvMode, setIsTvMode] = useState(false);
 
   // Calculate NPS metrics
   const npsScore = calculateNPS(responses);
@@ -82,6 +85,274 @@ const CampaignDashboard: React.FC = () => {
 
     loadData();
   }, [id]);
+
+  // Handle escape key to exit TV mode
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isTvMode) {
+        setIsTvMode(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isTvMode]);
+
+
+
+  
+  // Format dates
+  const startDate = campaign?.startDate ? new Date(campaign.startDate).toLocaleDateString('pt-BR') : 'N/A';
+  const endDate = campaign?.endDate ? new Date(campaign.endDate).toLocaleDateString('pt-BR') : 'Presente';
+
+
+// TV Mode Component
+const TvDashboard = () => {
+  const tvDashboardRef = React.useRef<HTMLDivElement>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+
+  // Auto-refresh data in TV mode
+  useEffect(() => {
+  if (!isTvMode || !id) return;
+  
+    const interval = setInterval(async () => {
+      try {
+            
+            // Atualiza todas as informações necessárias
+            const [campaigns, campaignResponses, sourcesData, situationsData, groupsData] = await Promise.all([
+              getCampaigns(),
+              getResponses(id),
+              getSources(),
+              getSituations(),
+              getGroups()
+            ]);
+
+            setCampaign(campaigns.find(c => c.id === id) || null);
+            setResponses(campaignResponses);
+            setSources(sourcesData);
+            setSituations(situationsData);
+            setGroups(groupsData);
+            setLastUpdated(new Date().toLocaleTimeString('pt-BR'));
+            
+          } catch (error) {
+            console.error('Error refreshing data:', error);
+          } finally {
+          }
+          }, 60000); 
+
+
+        return () => clearInterval(interval);
+      }, [isTvMode, id]);
+
+  // Ativar fullscreen quando o componente montar
+  useEffect(() => {
+    // Limpeza ao desmontar
+    return () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+    };
+  }, []);
+
+  return (
+    <motion.div
+  ref={tvDashboardRef}
+  initial={{ opacity: 0, margin: 0}}
+  animate={{ opacity: 1 }}
+  exit={{ opacity: 0 }}
+  className="fixed inset-0 bg-black text-white z-[9999] flex flex-col overflow-hidden"
+>
+  {/* Exit Button */}
+  <button
+    onClick={() => setIsTvMode(false)}
+    className="absolute top-4 right-4 z-10 p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-all duration-200"
+  >
+    <X size={20} className="text-white" />
+  </button>
+
+  {/* Header */}
+  <div className="p-4 border-b border-gray-700 bg-gray-800">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+      <div>
+        <h1 className="text-xl md:text-2xl font-bold text-white mb-1 truncate max-w-[80vw]">
+          {campaign?.name}
+        </h1>
+        <div className="flex items-center flex-wrap gap-2 text-gray-300">
+          <span className="text-xs md:text-sm whitespace-nowrap">
+            {startDate} até {endDate}
+          </span>
+          {campaign?.active ? (
+            <Badge variant="success" className="text-xs px-2 py-1 bg-green-800">Ativa</Badge>
+          ) : (
+            <Badge variant="danger" className="text-xs px-2 py-1 bg-red-800">Inativa</Badge>
+          )}
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="text-xs text-gray-400">Última atualização</div>
+        <div className="text-sm text-white whitespace-nowrap">
+          {new Date().toLocaleTimeString('pt-BR')}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {responses.length === 0 ? (
+    <div className="flex-1 flex items-center justify-center bg-gray-900">
+      <div className="text-center p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <PieChart size={48} className="text-gray-400 mx-auto mb-3" />
+        <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">
+          Nenhuma resposta ainda
+        </h3>
+        <p className="text-base md:text-lg text-gray-400">
+          Aguardando primeiras respostas da pesquisa NPS
+        </p>
+      </div>
+    </div>
+  ) : (
+    <div className="flex-1 flex flex-col p-2 md:p-4 overflow-hidden bg-gray-900">
+      {/* Main Metrics Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 md:gap-4 mb-2 md:mb-4 flex-shrink-0">
+        {/* NPS Score e Distribution */}
+        <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+          {/* NPS Score */}
+          <div className="bg-gray-800 rounded-xl p-3 md:p-4 flex flex-col items-center justify-center border border-gray-700">
+            <h2 className="text-base md:text-lg font-semibold text-gray-300 mb-2 md:mb-3">
+              Pontuação NPS
+            </h2>
+            <div className="flex justify-center mb-2 md:mb-3">
+              <NpsDoughnut 
+                npsScore={npsScore} 
+                width={window.innerWidth < 868 ? 160 : 260} 
+                height={window.innerWidth < 868 ? 160 : 260} 
+              />
+            </div>
+            <div className="text-center">
+              <div className="text-xs md:text-sm text-gray-400">Baseado em</div>
+              <div className="text-lg md:text-xl font-bold text-white">
+                {responses.length} respostas
+              </div>
+            </div>
+          </div>
+
+          {/* Distribution */}
+          <div className="bg-gray-800 rounded-xl p-3 md:p-4 border border-gray-700">
+            <h2 className="text-base md:text-lg font-semibold text-gray-300 mb-2 md:mb-3 text-center">
+              Distribuição
+            </h2>
+            <div className="h-48 md:h-64 flex justify-center items-center mb-8">
+              <NpsDistribution
+                promoters={promoters}
+                passives={passives}
+                detractors={detractors}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-1 md:gap-2">
+              <div className="bg-red-900/90 p-1 md:p-2 rounded-lg text-center border border-red-800">
+                <div className="text-lg md:text-xl font-bold text-red-400">
+                  {detractors}
+                </div>
+                <div className="text-2xs md:text-xs text-red-300">Detratores</div>
+              </div>
+              <div className="bg-yellow-900/90 p-1 md:p-2 rounded-lg text-center border border-yellow-800">
+                <div className="text-lg md:text-xl font-bold text-yellow-400">
+                  {passives}
+                </div>
+                <div className="text-2xs md:text-xs text-yellow-300">Neutros</div>
+              </div>
+              <div className="bg-green-900/90 p-1 md:p-2 rounded-lg text-center border border-green-800">
+                <div className="text-lg md:text-xl font-bold text-green-400">
+                  {promoters}
+                </div>
+                <div className="text-2xs md:text-xs text-green-300">Promotores</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trend */}
+        <div className="lg:col-span-5 mt-2 md:mt-0">
+          <div className="bg-gray-800 rounded-xl p-3 md:p-4 h-full border border-gray-700">
+            <h2 className="text-base md:text-lg font-semibold text-gray-300 mb-2 md:mb-3 text-center">
+              Tendência NPS
+            </h2>
+            <div className="h-">
+              <NpsTrend data={trendData} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Responses */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="bg-gray-800 rounded-xl p-3 md:p-4 h-full border border-gray-700 flex flex-col">
+          <h2 className="text-base md:text-lg font-semibold text-gray-300 mb-2 md:mb-3">
+            Últimas Respostas
+          </h2>
+          <div className="flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3 h-full overflow-y-auto pb-2">
+              {responses.slice(0, 8).map((response) => (
+                <div 
+                  key={response.id} 
+                  className="bg-gray-700 rounded-lg p-2 md:p-3 border border-gray-600"
+                >
+                  <div className="flex items-center justify-between mb-1 md:mb-2">
+                    <div 
+                      className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-base md:text-lg font-bold ${
+                        response.score >= 9 
+                          ? 'bg-green-600 text-white' 
+                          : response.score <= 6 
+                          ? 'bg-red-600 text-white' 
+                          : 'bg-yellow-600 text-white'
+                      }`}
+                    >
+                      {response.score}
+                    </div>
+                    <div className="text-right flex-1 ml-2">
+                      <div className="text-xs md:text-sm font-medium text-white truncate">
+                        {sources.find(s => s.id === response.sourceId)?.name || 'Fonte Desconhecida'}
+                      </div>
+                      <div className="text-2xs md:text-xs text-gray-400">
+                        {new Date(response.createdAt).toLocaleDateString('pt-BR')}
+                      </div>
+                    </div>
+                  </div>
+                  {response.feedback && (
+                    <div className="text-2xs md:text-xs text-gray-300 bg-gray-600 p-1 md:p-2 rounded line-clamp-2">
+                      "{response.feedback}"
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Footer */}
+  <div className="p-2 bg-gray-800 border-t border-gray-700">
+    <div className="flex flex-col sm:flex-row justify-between items-center text-gray-400 text-2xs md:text-xs">
+      <div className="mb-1 sm:mb-0">Pressione ESC para sair do modo TV</div>
+      <div className="flex items-center">
+        <span>Última atualização: {lastUpdated}</span>
+        {isRefreshing && (
+          <span className="ml-2 flex items-center">
+            <svg className="animate-spin h-3 w-3 mr-1" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Atualizando...
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
+</motion.div>
+  );
+};
 
   const getSourceName = (sourceId: string) => {
     const source = sources.find(s => s.id === sourceId);
@@ -161,6 +432,14 @@ const CampaignDashboard: React.FC = () => {
         </div>
         
         <div className="flex space-x-3">
+          <Button 
+            variant="secondary" 
+            icon={<Monitor size={16} />}
+            onClick={() => setIsTvMode(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            Modo TV
+          </Button>
           <Link to={`/campaigns/${id}/responses`}>
             <Button variant="outline" size="sm" icon={<Eye size={16} />}>
               Ver Respostas
@@ -351,7 +630,10 @@ const CampaignDashboard: React.FC = () => {
           </Card>
         </motion.div>
       )}
-
+      {/* TV Mode Overlay */}
+      <AnimatePresence>
+        {isTvMode && <TvDashboard />}
+      </AnimatePresence>
       {/* Recent Responses */}
       {recentResponses.length > 0 && (
         <motion.div
