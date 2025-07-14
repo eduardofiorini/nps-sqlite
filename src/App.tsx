@@ -41,7 +41,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
   useEffect(() => {
+    // Only initialize data when user is authenticated and auth loading is complete
+    if (!loading && isAuthenticated) {
     const initData = async () => {
       try {
         await initializeDefaultData();
@@ -51,7 +55,8 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
     };
     
     initData();
-  }, []);
+    }
+  }, [isAuthenticated, loading]);
 
   return <>{children}</>;
 };
