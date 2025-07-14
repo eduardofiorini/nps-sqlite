@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Campaign, NpsResponse } from '../types';
 import { getCampaigns, getResponses, getSources, getSituations, getGroups } from '../utils/supabaseStorage';
 import { useSubscriptionContext } from '../contexts/SubscriptionContext';
-import { useSubscriptionContext } from '../contexts/SubscriptionContext';
 import { calculateNPS, categorizeResponses } from '../utils/npsCalculator';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
