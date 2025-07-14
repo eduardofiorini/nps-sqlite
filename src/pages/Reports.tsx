@@ -46,7 +46,7 @@ const Reports: React.FC = () => {
   const [sources, setSources] = useState<Record<string, string>>({});
   const [situations, setSituations] = useState<Record<string, string>>({});
   const [groups, setGroups] = useState<Record<string, string>>({});
-  const [selectedCampaign, setSelectedCampaign] = useState<string>('all');
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<string>('30');
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -58,7 +58,23 @@ const Reports: React.FC = () => {
 
   useEffect(() => {
     loadReportData();
-  }, [selectedCampaign, dateRange]);
+  }, [selectedCampaigns, dateRange]);
+
+  const handleCampaignToggle = (campaignId: string) => {
+    setSelectedCampaigns(prev => 
+      prev.includes(campaignId)
+        ? prev.filter(id => id !== campaignId)
+        : [...prev, campaignId]
+    );
+  };
+
+  const handleSelectAllCampaigns = () => {
+    if (selectedCampaigns.length === campaigns.length) {
+      setSelectedCampaigns([]);
+    } else {
+      setSelectedCampaigns(campaigns.map(c => c.id));
+    }
+  };
 
   const loadReportData = () => {
     setIsLoading(true);
@@ -90,9 +106,9 @@ const Reports: React.FC = () => {
     setGroups(groupsMap);
 
     // Filter campaigns based on selection
-    const filteredCampaigns = selectedCampaign === 'all' 
+    const filteredCampaigns = selectedCampaigns.length === 0
       ? allCampaigns 
-      : allCampaigns.filter(c => c.id === selectedCampaign);
+      : allCampaigns.filter(c => selectedCampaigns.includes(c.id));
 
     // Calculate date filter
     const dateFilter = new Date();
