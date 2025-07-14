@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import { 
   User, 
@@ -19,14 +21,19 @@ import {
   Globe,
   Bell,
   Shield,
-  Settings
+  Settings,
+  AlertTriangle,
+  Key,
+  Trash2,
+  Download
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getUserProfile, saveUserProfile } from '../utils/supabaseStorage';
 import type { UserProfile } from '../types';
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -35,6 +42,16 @@ const Profile: React.FC = () => {
   const [saveMessage, setSaveMessage] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordError, setPasswordError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -156,6 +173,195 @@ const Profile: React.FC = () => {
     
     loadProfile();
     setIsEditing(false);
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('As senhas não coincidem');
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('A nova senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    
+    try {
+      const { supabase } = await import('../lib/supabase');
+      
+      // Update password
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Reset form and show success
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      
+      setShowPasswordModal(false);
+      setSaveMessage('Senha alterada com sucesso!');
+      
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        setSaveMessage('');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setPasswordError('Erro ao alterar senha. Verifique sua senha atual e tente novamente.');
+    }
+  };
+  
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== user?.email) {
+      return;
+    }
+    
+    setIsDeleting(true);
+    
+    try {
+      const { supabase } = await import('../lib/supabase');
+      
+      // Delete user data
+      const { error: deleteError } = await supabase.rpc('delete_user_data');
+      
+      if (deleteError) {
+        throw deleteError;
+      }
+      
+      // Delete user account
+      const { error } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Log out and redirect to login page
+      await logout();
+      navigate('/login');
+      
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setSaveMessage('Erro ao excluir conta. Entre em contato com o suporte.');
+    }
+  };
+  
+  const handleDataExport = async () => {
+    try {
+      const { supabase } = await import('../lib/supabase');
+      
+      // Get user data
+      const { data: userData, error: userError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+        
+      if (userError) throw userError;
+      
+      // Get campaigns
+      const { data: campaigns, error: campaignsError } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('user_id', user?.id);
+        
+      if (campaignsError) throw campaignsError;
+      
+      // Get contacts
+      const { data: contacts, error: contactsError } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('user_id', user?.id);
+        
+      if (contactsError) throw contactsError;
+      
+      // Get groups
+      const { data: groups, error: groupsError } = await supabase
+        .from('groups')
+        .select('*')
+        .eq('user_id', user?.id);
+        
+      if (groupsError) throw groupsError;
+      
+      // Get sources
+      const { data: sources, error: sourcesError } = await supabase
+        .from('sources')
+        .select('*')
+        .eq('user_id', user?.id);
+        
+      if (sourcesError) throw sourcesError;
+      
+      // Get situations
+      const { data: situations, error: situationsError } = await supabase
+        .from('situations')
+        .select('*')
+        .eq('user_id', user?.id);
+        
+      if (situationsError) throw situationsError;
+      
+      // Get app config
+      const { data: appConfig, error: appConfigError } = await supabase
+        .from('app_configs')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+        
+      if (appConfigError && appConfigError.code !== 'PGRST116') throw appConfigError;
+      
+      // Compile all data
+      const exportData = {
+        user: {
+          id: user?.id,
+          email: user?.email,
+          name: userData?.name,
+          phone: userData?.phone,
+          company: userData?.company,
+          position: userData?.position,
+          preferences: userData?.preferences,
+          created_at: userData?.created_at
+        },
+        campaigns,
+        contacts,
+        groups,
+        sources,
+        situations,
+        app_config: appConfig
+      };
+      
+      // Create and download file
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `meu-nps-data-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setSaveMessage('Dados exportados com sucesso!');
+      
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        setSaveMessage('');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      setSaveMessage('Erro ao exportar dados. Tente novamente.');
+    }
   };
 
   if (!user || !profile) {
@@ -359,6 +565,181 @@ const Profile: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Password and Security */}
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader title="Senha e Segurança" />
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">Alterar Senha</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Atualize sua senha para manter sua conta segura
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPasswordModal(true)}
+                    icon={<Key size={16} />}
+                  >
+                    Alterar Senha
+                  </Button>
+                </div>
+                
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-white">Exportar Meus Dados</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Baixe uma cópia de todos os seus dados pessoais
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={handleDataExport}
+                      icon={<Download size={16} />}
+                    >
+                      Exportar Dados
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-semibold text-red-600 dark:text-red-400">Excluir Minha Conta</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Exclua permanentemente sua conta e todos os seus dados
+                      </p>
+                    </div>
+                    <Button
+                      variant="danger"
+                      onClick={() => setShowDeleteModal(true)}
+                      icon={<Trash2 size={16} />}
+                    >
+                      Excluir Conta
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Privacy and Data Protection */}
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader title="Privacidade e Proteção de Dados" />
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex items-start space-x-3">
+                  <div className="mt-0.5">
+                    <Shield size={20} className="text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">LGPD e GDPR</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Estamos em conformidade com a Lei Geral de Proteção de Dados (LGPD) do Brasil e o Regulamento Geral de Proteção de Dados (GDPR) da União Europeia.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Seus Direitos de Privacidade</h4>
+                  
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={profile.preferences.dataConsent?.marketing || false}
+                        onChange={(e) => {
+                          if (profile) {
+                            setProfile({
+                              ...profile,
+                              preferences: {
+                                ...profile.preferences,
+                                dataConsent: {
+                                  ...(profile.preferences.dataConsent || {}),
+                                  marketing: e.target.checked
+                                }
+                              }
+                            });
+                          }
+                        }}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                      />
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                        Aceito receber comunicações de marketing e novidades
+                      </span>
+                    </label>
+                    
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={profile.preferences.dataConsent?.analytics || false}
+                        onChange={(e) => {
+                          if (profile) {
+                            setProfile({
+                              ...profile,
+                              preferences: {
+                                ...profile.preferences,
+                                dataConsent: {
+                                  ...(profile.preferences.dataConsent || {}),
+                                  analytics: e.target.checked
+                                }
+                              }
+                            });
+                          }
+                        }}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                      />
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                        Aceito o uso de dados para análises e melhorias do serviço
+                      </span>
+                    </label>
+                    
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={profile.preferences.dataConsent?.thirdParty || false}
+                        onChange={(e) => {
+                          if (profile) {
+                            setProfile({
+                              ...profile,
+                              preferences: {
+                                ...profile.preferences,
+                                dataConsent: {
+                                  ...(profile.preferences.dataConsent || {}),
+                                  thirdParty: e.target.checked
+                                }
+                              }
+                            });
+                          }
+                        }}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                      />
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                        Aceito o compartilhamento de dados com parceiros confiáveis
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Seus Direitos</h4>
+                  <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                    <li>• Direito de acesso aos seus dados pessoais</li>
+                    <li>• Direito de retificação de dados incorretos</li>
+                    <li>• Direito ao esquecimento (exclusão de dados)</li>
+                    <li>• Direito à portabilidade dos dados</li>
+                    <li>• Direito de revogar consentimento a qualquer momento</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Preferences Card */}
         </div>
@@ -500,6 +881,157 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
+      
+      {/* Password Change Modal */}
+      <Modal
+        isOpen={showPasswordModal}
+        onClose={() => {
+          setShowPasswordModal(false);
+          setPasswordError('');
+          setPasswordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          });
+        }}
+        title="Alterar Senha"
+        size="md"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowPasswordModal(false)}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={handlePasswordChange}
+            >
+              Alterar Senha
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          {passwordError && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800 rounded-md border">
+              {passwordError}
+            </div>
+          )}
+          
+          <Input
+            label="Senha Atual"
+            type="password"
+            value={passwordData.currentPassword}
+            onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+            placeholder="Digite sua senha atual"
+            fullWidth
+            required
+          />
+          
+          <Input
+            label="Nova Senha"
+            type="password"
+            value={passwordData.newPassword}
+            onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+            placeholder="Digite sua nova senha"
+            fullWidth
+            required
+          />
+          
+          <Input
+            label="Confirmar Nova Senha"
+            type="password"
+            value={passwordData.confirmPassword}
+            onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+            placeholder="Confirme sua nova senha"
+            fullWidth
+            required
+          />
+          
+          <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <p>Requisitos de senha:</p>
+            <ul className="list-disc list-inside">
+              <li>Mínimo de 6 caracteres</li>
+              <li>Recomendado: Incluir letras maiúsculas e minúsculas</li>
+              <li>Recomendado: Incluir números e caracteres especiais</li>
+            </ul>
+          </div>
+        </form>
+      </Modal>
+      
+      {/* Delete Account Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDeleteConfirmation('');
+        }}
+        title="Excluir Conta"
+        size="md"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDeleteModal(false)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={handleDeleteAccount}
+              isLoading={isDeleting}
+              disabled={deleteConfirmation !== user?.email || isDeleting}
+            >
+              Excluir Permanentemente
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+            <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 mr-3 flex-shrink-0" />
+            <div>
+              <h4 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Esta ação não pode ser desfeita
+              </h4>
+              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                Todos os seus dados serão permanentemente excluídos, incluindo:
+              </p>
+              <ul className="text-sm text-red-700 dark:text-red-300 mt-1 list-disc list-inside">
+                <li>Campanhas e respostas NPS</li>
+                <li>Contatos e grupos</li>
+                <li>Configurações e preferências</li>
+                <li>Histórico de pagamentos</li>
+              </ul>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            Para confirmar a exclusão, digite seu email <strong>{user?.email}</strong> abaixo:
+          </p>
+          
+          <Input
+            value={deleteConfirmation}
+            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            placeholder={user?.email}
+            fullWidth
+          />
+          
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+              Conformidade com LGPD e GDPR
+            </h4>
+            <p className="text-xs text-yellow-700 dark:text-yellow-300">
+              De acordo com a Lei Geral de Proteção de Dados (LGPD) e o Regulamento Geral de Proteção de Dados (GDPR), 
+              você tem o direito de solicitar a exclusão de seus dados pessoais. Esta ação excluirá permanentemente 
+              sua conta e todos os dados associados a ela.
+            </p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

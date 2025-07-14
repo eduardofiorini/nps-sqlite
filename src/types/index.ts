@@ -173,6 +173,11 @@ export type UserProfile = {
       weeklyReports: boolean;
       productUpdates: boolean;
     };
+    dataConsent?: {
+      marketing: boolean;
+      analytics: boolean;
+      thirdParty: boolean;
+    };
   };
   createdAt: string;
   updatedAt: string;
