@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppConfig } from '../types';
 import { getAppConfig, saveAppConfig } from '../utils/supabaseStorage';
+import { useAuth } from './AuthContext';
 
 interface ConfigContextProps {
   config: AppConfig;
@@ -24,6 +25,7 @@ interface ConfigProviderProps {
 }
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [config, setConfig] = useState<AppConfig>({
     themeColor: '#073143',
     language: 'pt-BR',
@@ -69,6 +71,11 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
   useEffect(() => {
     // Load configuration from Supabase
     const loadConfig = async () => {
+      // Only load config if user is authenticated and auth is not loading
+      if (authLoading || !isAuthenticated) {
+        return;
+      }
+      
       try {
         const storedConfig = await getAppConfig();
         if (storedConfig) {
@@ -80,7 +87,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     };
     
     loadConfig();
-  }, []);
+  }, [isAuthenticated, authLoading]);
   
   const updateConfig = async (newConfig: Partial<AppConfig>) => {
     const updatedConfig = { ...config, ...newConfig };
