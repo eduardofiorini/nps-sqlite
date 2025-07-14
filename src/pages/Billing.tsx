@@ -126,8 +126,7 @@ const Billing: React.FC = () => {
       if (url) {
         window.location.href = url;
       } else {
-        console.error('Checkout response:', await response.text());
-        throw new Error('No checkout URL returned from server');
+        throw new Error(error || 'No checkout URL returned from server');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
