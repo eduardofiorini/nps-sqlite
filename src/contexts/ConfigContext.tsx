@@ -24,7 +24,6 @@ interface ConfigProviderProps {
 }
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
-  const [config, setConfig] = useState<AppConfig>(getAppConfig());
   const [config, setConfig] = useState<AppConfig>({
     themeColor: '#073143',
     language: 'pt-BR',

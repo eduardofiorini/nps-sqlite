@@ -22,7 +22,6 @@ import {
   Settings
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getUserProfile, saveUserProfile } from '../utils/localStorage';
 import { getUserProfile, saveUserProfile } from '../utils/supabaseStorage';
 import type { UserProfile } from '../types';
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { saveCampaign, saveCampaignForm, getSources, getGroups } from '../utils/localStorage';
 import { saveCampaign, saveCampaignForm, getSources, getGroups } from '../utils/supabaseStorage';
 import { Campaign, CampaignForm, SurveyCustomization, CampaignAutomation, Source, Group } from '../types';
 import Button from '../components/ui/Button';
