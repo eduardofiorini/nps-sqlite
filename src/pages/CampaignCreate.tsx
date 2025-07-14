@@ -124,7 +124,7 @@ const CampaignCreate: React.FC = () => {
     handleCustomizationChange(field, '');
   };
   
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 1) {
       if (!campaign.name) {
         alert('Por favor, digite o nome da campanha');
@@ -138,16 +138,40 @@ const CampaignCreate: React.FC = () => {
         alert('Por favor, selecione um grupo');
         return;
       }
+      
+      // Save campaign and update state with returned ID
+      try {
+        const savedCampaign = await saveCampaign(campaign);
+        setCampaign(savedCampaign);
+      } catch (error) {
+        console.error('Error saving campaign:', error);
+        alert('Erro ao salvar campanha. Tente novamente.');
+        return;
+      }
     }
     
     if (currentStep === 2) {
       // Save campaign with customization
-      saveCampaign(campaign).catch(console.error);
+      try {
+        const savedCampaign = await saveCampaign(campaign);
+        setCampaign(savedCampaign);
+      } catch (error) {
+        console.error('Error saving campaign:', error);
+        alert('Erro ao salvar campanha. Tente novamente.');
+        return;
+      }
     }
 
     if (currentStep === 3) {
       // Save campaign with automation
-      saveCampaign(campaign).catch(console.error);
+      try {
+        const savedCampaign = await saveCampaign(campaign);
+        setCampaign(savedCampaign);
+      } catch (error) {
+        console.error('Error saving campaign:', error);
+        alert('Erro ao salvar campanha. Tente novamente.');
+        return;
+      }
     }
     
     setCurrentStep(currentStep + 1);
