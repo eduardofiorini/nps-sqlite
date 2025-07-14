@@ -24,10 +24,11 @@ const Survey: React.FC = () => {
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
 
-  // Helper function to validate UUID format
-  const isValidUUID = (uuid: string): boolean => {
+  // Helper function to extract valid UUID from input string
+  const extractValidUUID = (input: string): string | null => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuid.length === 36 && uuidRegex.test(uuid);
+    const match = input.match(uuidRegex);
+    return match ? match[0] : null;
   };
 
   useEffect(() => {
@@ -37,11 +38,13 @@ const Survey: React.FC = () => {
       return;
     }
 
-    // Validate UUID format before making any queries
-    if (!isValidUUID(id)) {
-      console.error('Invalid UUID format:', id);
+    // Extract valid UUID from the input
+    const validUUID = extractValidUUID(id);
+    if (!validUUID) {
+      console.error('No valid UUID found in:', id);
       setCampaign(null);
       setForm(null);
+      setIsLoading(false);
       return;
     }
 
@@ -50,11 +53,11 @@ const Survey: React.FC = () => {
         setIsLoading(true);
         // Load campaign data
         const campaigns = await getCampaigns();
-        const foundCampaign = campaigns.find(c => c.id === id);
+        const foundCampaign = campaigns.find(c => c.id === validUUID);
         setCampaign(foundCampaign || null);
 
         // Load form data
-        const formData = await getCampaignForm(id);
+        const formData = await getCampaignForm(validUUID);
         setForm(formData);
         
         // Load situations data
