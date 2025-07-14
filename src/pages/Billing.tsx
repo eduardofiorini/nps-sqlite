@@ -511,8 +511,8 @@ const Billing: React.FC = () => {
                 className={`relative bg-white dark:bg-gray-700 rounded-lg border-2 p-6 transition-all duration-300 ${
                   plan?.priceId === product.priceId
                     ? 'border-[#073143] shadow-lg'
-                isLoading={checkoutLoading && product.priceId === STRIPE_PRODUCTS.find(p => p.id === 'prod_Pro')?.priceId}
-                disabled={(plan?.priceId === product.priceId) || (checkoutLoading && product.priceId === STRIPE_PRODUCTS.find(p => p.id === 'prod_Pro')?.priceId)}
+                    : 'border-gray-200 dark:border-gray-600 hover:border-[#073143] dark:hover:border-[#073143]'
+                }`}
               >
                 {product.id === 'prod_Pro' && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -551,8 +551,8 @@ const Billing: React.FC = () => {
                   variant={plan?.priceId === product.priceId ? "outline" : "primary"}
                   fullWidth 
                   onClick={() => handleCheckout(product.priceId)}
-                  isLoading={checkoutLoading}
-                  disabled={plan?.priceId === product.priceId || checkoutLoading}
+                  isLoading={checkoutLoading && product.priceId === STRIPE_PRODUCTS.find(p => p.id === 'prod_Pro')?.priceId}
+                  disabled={(plan?.priceId === product.priceId) || (checkoutLoading && product.priceId === STRIPE_PRODUCTS.find(p => p.id === 'prod_Pro')?.priceId)}
                 >
                   {plan?.priceId === product.priceId ? 'Plano Atual' : 'Selecionar Plano'}
                 </Button>
