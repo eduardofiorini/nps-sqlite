@@ -53,7 +53,6 @@ const Profile: React.FC = () => {
     };
     
     loadProfile();
-    }
   }, []);
 
   const handleInputChange = (field: string, value: string | boolean) => {
