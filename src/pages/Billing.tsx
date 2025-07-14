@@ -126,11 +126,12 @@ const Billing: React.FC = () => {
       if (url) {
         window.location.href = url;
       } else {
-        throw new Error('No checkout URL returned');
+        console.error('Checkout response:', await response.text());
+        throw new Error('No checkout URL returned from server');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      setCheckoutError(error.message || 'Failed to create checkout session');
+      setCheckoutError(error instanceof Error ? error.message : 'Failed to create checkout session');
     } finally {
       setCheckoutLoading(false);
     }

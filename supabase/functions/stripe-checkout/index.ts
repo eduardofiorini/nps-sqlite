@@ -53,8 +53,7 @@ Deno.serve(async (req) => {
     if (!supabaseUrl || !supabaseKey || stripeSecret === 'sk_test_placeholder') {
       console.log('Running in demo mode - returning mock checkout URL');
       return corsResponse({ 
-        url: `${success_url}?session_id=demo_session_id`,
-        sessionId: 'demo_session_id'
+        url: `${success_url}?session_id=demo_session_id`
       });
     }
 
@@ -87,14 +86,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'User not found' }, 404);
     }
     
-    // For demo purposes, if we don't have a valid Stripe setup
-    if (stripeSecret === 'sk_test_placeholder') {
-      return corsResponse({ 
-        url: `${success_url}?session_id=demo_session_id`,
-        sessionId: 'demo_session_id'
-      });
-    }
-
     const { data: customer, error: getCustomerError } = await supabase
       .from('stripe_customers')
       .select('customer_id')
@@ -215,7 +206,7 @@ Deno.serve(async (req) => {
 
     console.log(`Created checkout session ${session.id} for customer ${customerId}`);
 
-    return corsResponse({ sessionId: session.id, url: session.url });
+    return corsResponse({ url: session.url });
   } catch (error: any) {
     console.error(`Checkout error: ${error.message}`);
     return corsResponse({ error: error.message }, 500);
