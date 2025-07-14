@@ -98,7 +98,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
       // For demo purposes, allow registration without actual Supabase connection
-      if (!isSupabaseConfigured() && email && password) {
+      if (!isSupabaseConfigured()) {
+        if (!email || !password) {
+          console.error('Registration error: Email and password are required');
+          return false;
+        }
         // Create a mock user for demo purposes
         const mockUser: User = {
           id: '123e4567-e89b-12d3-a456-426614174000',
@@ -110,6 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return true;
       }
       
+      // Only attempt Supabase registration if properly configured
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -134,6 +139,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     } catch (error) {
       console.error('Registration error:', error);
+      
+      // If Supabase is not configured, fall back to demo mode
+      if (!isSupabaseConfigured() && email && password) {
+        const mockUser: User = {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          email: email,
+          name: name || email.split('@')[0] || 'User',
+          role: 'user'
+        };
+        setUser(mockUser);
+        return true;
+      }
+      
       return false;
     }
   };

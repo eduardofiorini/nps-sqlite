@@ -141,8 +141,8 @@ const RegisterForm: React.FC = () => {
         setError('Falha no registro. Verifique os dados e tente novamente.');
       }
     } catch (err) {
+      console.error('Registration error:', err);
       setError('Ocorreu um erro durante o registro. Tente novamente.');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
