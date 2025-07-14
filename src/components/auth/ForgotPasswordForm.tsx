@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -18,40 +18,17 @@ const ForgotPasswordForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Check if Supabase is properly configured
-      if (!isSupabaseConfigured()) {
-        // Simulate successful email send for demo mode
-        setTimeout(() => {
-          setIsSuccess(true);
-          setIsLoading(false);
-        }, 1000);
-        return;
-      }
-
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
-        // Check for specific Supabase email service errors
-        if (error.message?.includes('Error sending recovery email') || 
-            error.message?.includes('unexpected_failure') ||
-            error.message?.includes('Email not confirmed')) {
-          // Simulate successful email send for demo/development purposes
-          setIsSuccess(true);
-        } else {
-          setError('Erro ao enviar e-mail de recuperação. Verifique o endereço e tente novamente.');
-        }
+        setError('Erro ao enviar e-mail de recuperação. Verifique o endereço e tente novamente.');
       } else {
         setIsSuccess(true);
       }
     } catch (err) {
-      // For any unexpected errors, simulate success in demo mode
-      if (!isSupabaseConfigured()) {
-        setIsSuccess(true);
-      } else {
-        setError('Ocorreu um erro inesperado. Tente novamente.');
-      }
+      setError('Ocorreu um erro inesperado. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

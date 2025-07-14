@@ -22,7 +22,11 @@ import {
 import { motion } from 'framer-motion';
 import { useSubscription } from '../hooks/useSubscription';
 import { STRIPE_PRODUCTS, formatPrice } from '../stripe-config';
+import type { Plan } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
 
 const Billing: React.FC = () => {
   const { 
@@ -41,9 +45,6 @@ const Billing: React.FC = () => {
   
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  
-  // Initialize Stripe
-  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
   
   // Usage stats (would be fetched from API in a real app)
   const [usageStats, setUsageStats] = useState({
@@ -105,68 +106,50 @@ const Billing: React.FC = () => {
     try {
       // Check if Supabase is configured - if not, simulate demo checkout
       if (!isSupabaseConfigured()) {
-        console.log('Running in demo mode - simulating checkout');
-        try {
-          setCheckoutLoading(true);
-          setTimeout(() => {
-            setCheckoutLoading(false);
-            window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
-          }, 1500);
-        } catch (error) {
-          console.error('Error in demo checkout:', error);
-          setCheckoutError('Error in demo checkout');
-          setCheckoutLoading(false);
-        }
+        // Simulate loading time for demo
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Redirect to success page in demo mode
+        window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
         return;
       }
       
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        if (!supabaseUrl) {
-          throw new Error('VITE_SUPABASE_URL is not defined');
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({
+          price_id: priceId,
+          success_url: `${window.location.origin}/billing?success=true`,
+          cancel_url: `${window.location.origin}/billing?canceled=true`,
+          mode: 'subscription'
+        })
+      });
+      
+      // Check if the response is successful
+      if (!response.ok) {
+        let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If we can't parse JSON, use the status text
         }
-        
-        const response = await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-          },
-          body: JSON.stringify({
-            price_id: priceId,
-            success_url: `${window.location.origin}/billing?success=true`,
-            cancel_url: `${window.location.origin}/billing?canceled=true`,
-            mode: 'subscription'
-          })
-        });
-        
-        // Check if the response is successful
-        if (!response.ok) {
-          let errorMessage = `Server error: ${response.status} ${response.statusText}`;
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData?.error || errorMessage;
-          } catch (jsonError) {
-            // If we can't parse JSON, use the status text
-            console.error('Error parsing JSON response:', jsonError);
-          }
-          throw new Error(errorMessage);
-        }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error('No checkout URL returned from server');
-        }
-      } catch (apiError) {
-        console.error('API error:', apiError);
-        throw apiError;
+        throw new Error(errorMessage);
+      }
+      
+      const { url, error } = await response.json();
+      
+      if (error) {
+        throw new Error(error);
+      }
+      
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error(error || 'No checkout URL returned from server');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
