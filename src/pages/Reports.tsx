@@ -242,17 +242,7 @@ const Reports: React.FC = () => {
         {/* Campaigns Filter */}
         <div className="lg:col-span-2">
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <BarChart3 size={20} className="text-[#073143] dark:text-blue-400 mr-2" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Campanhas</h3>
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  {selectedCampaigns.length} de {campaigns.length} selecionadas
-                </Badge>
-              </div>
-            </CardHeader>
+            <CardHeader title="Campanhas" />
             <CardContent>
               {/* Select All */}
               <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -335,12 +325,7 @@ const Reports: React.FC = () => {
         <div className="space-y-6">
           {/* Period Filter */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <div className="flex items-center">
-                <Calendar size={20} className="text-[#073143] dark:text-blue-400 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Período</h3>
-              </div>
-            </CardHeader>
+            <CardHeader title="Período" />
             <CardContent>
               <select
                 value={dateRange}
@@ -358,12 +343,7 @@ const Reports: React.FC = () => {
           {/* Filter Summary */}
           {selectedCampaigns.length > 0 && (
             <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-              <CardHeader>
-                <div className="flex items-center">
-                  <Filter size={20} className="text-blue-600 dark:text-blue-400 mr-2" />
-                  <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Filtros Aplicados</h3>
-                </div>
-              </CardHeader>
+              <CardHeader title="Filtros Aplicados" />
               <CardContent>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
