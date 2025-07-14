@@ -27,7 +27,27 @@ try {
   }
 } catch (error) {
   console.error('Invalid Supabase URL:', error);
-  // Create a dummy client that won't make actual API calls
+  
+  // Create a comprehensive mock client for demo mode
+  const createMockQueryBuilder = () => ({
+    select: () => createMockQueryBuilder(),
+    eq: () => createMockQueryBuilder(),
+    order: () => createMockQueryBuilder(),
+    limit: () => createMockQueryBuilder(),
+    contains: () => createMockQueryBuilder(),
+    or: () => createMockQueryBuilder(),
+    maybeSingle: () => Promise.resolve({ data: null, error: null }),
+    single: () => Promise.resolve({ data: null, error: null }),
+    then: (resolve) => resolve({ data: null, error: null })
+  });
+  
+  const createMockMutationBuilder = () => ({
+    eq: () => createMockMutationBuilder(),
+    select: () => createMockMutationBuilder(),
+    single: () => Promise.resolve({ data: null, error: null }),
+    then: (resolve) => resolve({ data: null, error: null })
+  });
+  
   supabase = {
     auth: {
       getSession: () => Promise.resolve({ data: { session: null } }),
@@ -35,14 +55,16 @@ try {
       signInWithPassword: () => Promise.resolve({ data: { user: null }, error: new Error('Demo mode') }),
       signUp: () => Promise.resolve({ data: { user: null }, error: new Error('Demo mode') }),
       signOut: () => Promise.resolve({ error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      resetPasswordForEmail: () => Promise.resolve({ data: null, error: new Error('Demo mode') }),
+      updateUser: () => Promise.resolve({ data: { user: null }, error: new Error('Demo mode') })
     },
     from: () => ({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
-      insert: () => Promise.resolve({ data: null, error: null }),
-      update: () => Promise.resolve({ data: null, error: null }),
-      upsert: () => Promise.resolve({ data: null, error: null }),
-      delete: () => Promise.resolve({ data: null, error: null })
+      select: () => createMockQueryBuilder(),
+      insert: () => createMockMutationBuilder(),
+      update: () => createMockMutationBuilder(),
+      upsert: () => createMockMutationBuilder(),
+      delete: () => createMockMutationBuilder()
     })
   };
 }
