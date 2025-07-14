@@ -224,26 +224,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, name: string, planId?: string): Promise<boolean> => {
     try {
       // Check if Supabase is configured first
-      if (!isSupabaseConfigured() || !email || !password || !name) {
+      if (!isSupabaseConfigured()) {
+        console.log('Supabase not configured, using demo mode');
+        return createDemoUser(email, password, name);
+      }
+      
+      if (!email || !password || !name) {
         // Demo mode - create mock user if credentials provided
         if (!email || !password || !name) {
           console.error('Registration error: Email and password are required');
           return false;
         }
-        
-        // Create a mock user for demo purposes
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: name || email.split('@')[0] || 'User',
-          role: 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return true;
       }
       
       // Only attempt Supabase registration if properly configured
@@ -283,7 +274,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return false;
         }
 
-        if (data.user) {
+        if (data?.user) {
           const processedUser = processSupabaseUser(data.user);
           setUser(processedUser);
           
@@ -294,7 +285,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Create user profile
           try {
-            await supabase.from('user_profiles').insert({
+            const { error: profileError } = await supabase.from('user_profiles').insert({
               user_id: data.user.id,
               name: name,
               preferences: {
@@ -307,6 +298,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 }
               }
             });
+            
+            if (profileError) {
+              console.error('Error creating user profile:', profileError);
+              // If profile creation fails, we should still return true since the user was created
+            } else {
+              console.log('User profile created successfully');
+            }
           } catch (profileError) {
             console.error('Error creating user profile:', profileError);
             // Continue even if profile creation fails
@@ -335,23 +333,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Registration error:', error);
+      return false;
+    }
+  };
+  
+  // Helper function to create a demo user
+  const createDemoUser = (email: string, password: string, name: string): boolean => {
+    if (!email || !password || !name) {
+      return false;
+    }
+    
+    try {
+      // Create a mock user for demo purposes
+      const mockUser: User = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        email: email,
+        name: name || email.split('@')[0] || 'User',
+        role: 'user'
+      };
+      setUser(mockUser);
       
-      // If Supabase is not configured, fall back to demo mode
-      if (email && password) {
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: name || email.split('@')[0] || 'User',
-          role: 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return true;
-      }
+      // Store mock user in localStorage
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
       
+      console.log('Created demo user:', mockUser.email);
+      return true;
+    } catch (error) {
+      console.error('Error creating demo user:', error);
       return false;
     }
   };

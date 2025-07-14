@@ -87,8 +87,19 @@ export { supabase };
 export const isSupabaseConfigured = () => {
   // Check if we have real Supabase credentials (not demo/placeholder values)
   try {
-    // Test if the URL is valid and not empty
-    new URL(supabaseUrl);
+    // Check if URL is empty or invalid
+    if (!supabaseUrl) {
+      console.warn('Supabase URL is empty');
+      return false;
+    }
+    
+    try {
+      // Test if the URL is valid
+      new URL(supabaseUrl);
+    } catch (urlError) {
+      console.warn('Supabase URL is invalid:', urlError);
+      return false;
+    }
     
     const hasRealUrl = supabaseUrl && 
                        supabaseUrl !== 'https://localhost:54321' && 
@@ -99,7 +110,10 @@ export const isSupabaseConfigured = () => {
                        supabaseAnonKey !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' &&
                        supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY';
                        
-    return hasRealUrl && hasRealKey;
+    const isConfigured = hasRealUrl && hasRealKey;
+    console.log('Supabase configuration check:', isConfigured ? 'Configured' : 'Not configured');
+    
+    return isConfigured;
   } catch (error) {
     // If URL is invalid, Supabase is not configured
     console.warn('Supabase not configured:', error);
