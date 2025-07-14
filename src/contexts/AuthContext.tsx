@@ -43,6 +43,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    // Only attempt to get session if Supabase is properly configured
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(processSupabaseUser(session?.user ?? null));
