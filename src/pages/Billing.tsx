@@ -108,12 +108,11 @@ const Billing: React.FC = () => {
       // Check if Supabase is configured - if not, simulate demo checkout
       if (!isSupabaseConfigured()) {
         console.log('Supabase not configured, simulating checkout in demo mode');
-        setCheckoutLoading(false);
         
-        // Simulate successful checkout by redirecting to success page
-        setTimeout(() => {
-          window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
-        }, 1000);
+        // Create a mock checkout URL that opens in a new tab
+        const mockCheckoutUrl = `https://checkout.stripe.com/c/pay/demo#fidkdWxOYHwnPyd1blpxYHZxWjA0TjE0PW1%2FYzVTM2FHNjQzQTVgYzY0YGRmZ01hNWg1NmNgM2Y2MzQyM2EyYGdnQTZhMWRmNzVgNTU0MzVhPScpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl`;
+        window.open(mockCheckoutUrl, '_blank');
+        setCheckoutLoading(false);
         return;
       }
       
@@ -509,11 +508,11 @@ const Billing: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`bg-white dark:bg-gray-700 rounded-lg border-2 p-6 transition-all duration-300 ${
+                className={`relative bg-white dark:bg-gray-700 rounded-lg border-2 p-6 transition-all duration-300 ${
                   plan?.priceId === product.priceId
                     ? 'border-[#073143] shadow-lg'
-                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                }`}
+                isLoading={checkoutLoading && product.priceId === STRIPE_PRODUCTS.find(p => p.id === 'prod_Pro')?.priceId}
+                disabled={(plan?.priceId === product.priceId) || (checkoutLoading && product.priceId === STRIPE_PRODUCTS.find(p => p.id === 'prod_Pro')?.priceId)}
               >
                 {product.id === 'prod_Pro' && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
