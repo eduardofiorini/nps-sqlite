@@ -6,7 +6,7 @@ import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
-import { ChevronLeft, Copy, Link as LinkIcon, QrCode, Mail, Users, Send, Check, AlertCircle, X, Eye } from 'lucide-react';
+import { ChevronLeft, Copy, Link as LinkIcon, QrCode, Mail, Users, Send, Check, AlertCircle, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const CampaignShare: React.FC = () => {
@@ -45,7 +45,20 @@ const CampaignShare: React.FC = () => {
       // Set default email content
       if (foundCampaign) {
         setEmailSubject(`Pesquisa de Satisfação - ${foundCampaign.name}`);
-        setEmailBody('Olá {{nome}},\n\nGostaríamos de convidar você a participar de nossa pesquisa de satisfação "{{campanha}}".\n\nSua opinião é muito importante para nós e nos ajudará a melhorar nossos produtos e serviços.\n\nPara participar, basta clicar no link abaixo:\n{{link_pesquisa}}\n\nA pesquisa leva apenas alguns minutos para ser concluída.\n\nAgradecemos sua participação!');
+        setEmailBody(`
+Olá {{nome}},
+
+Gostaríamos de convidar você a participar de nossa pesquisa de satisfação "${foundCampaign.name}".
+
+Sua opinião é muito importante para nós e nos ajudará a melhorar nossos produtos e serviços.
+
+Para participar, basta clicar no link abaixo:
+{{link_pesquisa}}
+
+A pesquisa leva apenas alguns minutos para ser concluída.
+
+Agradecemos sua participação!
+        `);
       }
     };
 
@@ -76,38 +89,30 @@ const CampaignShare: React.FC = () => {
     }
   };
 
-  const personalizeContent = (content: string, contact: any): string => {
-    if (!contact) return content;
-    
-    const surveyLink = `${window.location.origin}/survey/${id}`;
-    
-    return content
-      .replace(/\{\{nome\}\}/g, contact.name)
-      .replace(/\{\{email\}\}/g, contact.email)
-      .replace(/\{\{telefone\}\}/g, contact.phone || '')
-      .replace(/\{\{empresa\}\}/g, contact.company || '')
-      .replace(/\{\{cargo\}\}/g, contact.position || '')
-      .replace(/\{\{campanha\}\}/g, campaign?.name || '')
-      .replace(/\{\{link_pesquisa\}\}/g, surveyLink);
-  };
-
   const handleSendEmails = async () => {
     if (!campaign || selectedContacts.length === 0) return;
     
-    try {
-      setIsSending(true);
-      setSendingStatus('sending');
-      setSendingTotal(selectedContacts.length);
-      setSendingProgress(0);
+    setIsSending(true);
+    setSendingStatus('sending');
+    setSendingTotal(selectedContacts.length);
+    setSendingProgress(0);
     
+    try {
       // Get selected contacts
       const selectedContactsData = contacts.filter(c => selectedContacts.includes(c.id));
       
       // Create email queue
       const emailQueue = selectedContactsData.map(contact => {
         // Personalize email content
-        const personalizedSubject = personalizeContent(emailSubject, contact);
-        const personalizedBody = personalizeContent(emailBody, contact);
+        const personalizedSubject = emailSubject
+          .replace(/\{\{nome\}\}/g, contact.name)
+          .replace(/\{\{email\}\}/g, contact.email)
+          .replace(/\{\{link_pesquisa\}\}/g, surveyUrl);
+        
+        const personalizedBody = emailBody
+          .replace(/\{\{nome\}\}/g, contact.name)
+          .replace(/\{\{email\}\}/g, contact.email)
+          .replace(/\{\{link_pesquisa\}\}/g, surveyUrl);
         
         return {
           to: contact.email,
@@ -121,7 +126,7 @@ const CampaignShare: React.FC = () => {
       // Process queue with batching (5 at a time)
       const batchSize = 5;
       let processed = 0;
-
+      
       for (let i = 0; i < emailQueue.length; i += batchSize) {
         const batch = emailQueue.slice(i, i + batchSize);
         
@@ -167,7 +172,7 @@ const CampaignShare: React.FC = () => {
   const handleToggleContact = (contactId: string) => {
     setSelectedContacts(prev => 
       prev.includes(contactId)
-        ? prev.filter(cid => cid !== contactId)
+        ? prev.filter(id => id !== contactId)
         : [...prev, contactId]
     );
   };
@@ -212,15 +217,6 @@ const CampaignShare: React.FC = () => {
       </div>
     );
   }
-
-  // Dummy contact for preview
-  const dummyContact = {
-    name: 'Nome do Contato',
-    email: 'email@exemplo.com',
-    phone: '',
-    company: '',
-    position: ''
-  };
 
   return (
     <div className="space-y-6">
@@ -519,10 +515,14 @@ const CampaignShare: React.FC = () => {
             </div>
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
               <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                {personalizeContent(emailSubject, dummyContact)}
+                {emailSubject.replace(/\{\{nome\}\}/g, 'Nome do Contato')
+                  .replace(/\{\{email\}\}/g, 'email@exemplo.com')
+                  .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-                {personalizeContent(emailBody, dummyContact)}
+                {emailBody.replace(/\{\{nome\}\}/g, 'Nome do Contato')
+                  .replace(/\{\{email\}\}/g, 'email@exemplo.com')
+                  .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
               </div>
             </div>
           </div>

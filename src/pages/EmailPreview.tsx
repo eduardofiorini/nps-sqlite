@@ -63,7 +63,6 @@ const EmailPreview: React.FC = () => {
       .replace(/\{\{telefone\}\}/g, contact.phone || '')
       .replace(/\{\{empresa\}\}/g, contact.company || '')
       .replace(/\{\{cargo\}\}/g, contact.position || '')
-      .replace(/\{\{campanha\}\}/g, campaign?.name || '')
       .replace(/\{\{link_pesquisa\}\}/g, surveyLink);
   };
 
