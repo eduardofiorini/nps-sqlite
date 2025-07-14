@@ -43,11 +43,7 @@ const Profile: React.FC = () => {
       setAvatarPreview(userProfile.avatar || '');
     }
     setIsLoading(false);
-    setIsLoading(false);
   }, []);
-
-  // Add loading state for initial load
-  const [isLoading, setIsLoading] = useState(true);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     if (!profile) return;
