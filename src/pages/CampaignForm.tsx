@@ -34,14 +34,22 @@ const CampaignForm: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
-    // Load campaign data
-    const campaigns = getCampaigns();
-    const foundCampaign = campaigns.find(c => c.id === id);
-    setCampaign(foundCampaign || null);
+    const loadData = async () => {
+      try {
+        // Load campaign data
+        const campaigns = await getCampaigns();
+        const foundCampaign = campaigns.find(c => c.id === id);
+        setCampaign(foundCampaign || null);
 
-    // Load form data
-    const formData = getCampaignForm(id);
-    setForm(formData);
+        // Load form data
+        const formData = await getCampaignForm(id);
+        setForm(formData);
+      } catch (error) {
+        console.error('Error loading campaign data:', error);
+      }
+    };
+
+    loadData();
   }, [id]);
 
   const handleSave = (updatedForm: CampaignFormType) => {
