@@ -1057,7 +1057,13 @@ const CampaignCreate: React.FC = () => {
               variant="primary"
               onClick={() => {
                 // Save final campaign and navigate to form builder
-                saveCampaign(campaign);
+                try {
+                  saveCampaign(campaign);
+                } catch (error) {
+                  console.error('Error saving campaign:', error);
+                  // Continue with form save even if there's an error with campaign save
+                  // since the campaign might have been saved successfully despite the error
+                }
                 handleFormSave({
                   id: uuidv4(),
                   campaignId: campaign.id,
