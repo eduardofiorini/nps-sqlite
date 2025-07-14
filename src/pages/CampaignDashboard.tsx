@@ -450,7 +450,7 @@ const TvDashboard = () => {
           <Button 
             variant="secondary" 
             size="sm"
-            icon={<Monitor size={18} />}
+            icon={<Monitor size={16} />}
             onClick={() => setIsTvMode(true)}
           >
             Modo TV
