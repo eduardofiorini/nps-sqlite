@@ -45,10 +45,9 @@ const CampaignShare: React.FC = () => {
       // Set default email content
       if (foundCampaign) {
         setEmailSubject(`Pesquisa de Satisfação - ${foundCampaign.name}`);
-        setEmailBody(`
-Olá {{nome}},
+        setEmailBody(`Olá {{nome}},
 
-Gostaríamos de convidar você a participar de nossa pesquisa de satisfação "${foundCampaign.name}".
+Gostaríamos de convidar você a participar de nossa pesquisa de satisfação "{{campanha}}".
 
 Sua opinião é muito importante para nós e nos ajudará a melhorar nossos produtos e serviços.
 
@@ -57,8 +56,7 @@ Para participar, basta clicar no link abaixo:
 
 A pesquisa leva apenas alguns minutos para ser concluída.
 
-Agradecemos sua participação!
-        `);
+Agradecemos sua participação!`);
       }
     };
 
