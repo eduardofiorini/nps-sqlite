@@ -133,8 +133,6 @@ const Overview: React.FC = () => {
       console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
-    } finally {
-      setIsLoading(false);
     }
   };
 
