@@ -24,6 +24,15 @@ try {
         debug: import.meta.env.DEV, // Enable debug logs in development
       }
     });
+    
+    // Test the connection by getting the session
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+      } else {
+        console.log('Session check successful:', data.session ? 'Session exists' : 'No session');
+      }
+    });
   } else {
     throw new Error('Empty Supabase URL');
   }

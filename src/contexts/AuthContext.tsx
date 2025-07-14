@@ -35,12 +35,29 @@ const processSupabaseUser = (supabaseUser: SupabaseUser | null): User | null => 
     id: supabaseUser.id,
     email: supabaseUser.email || '',
     name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+    role: 'user',
   };
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Load user from localStorage on initial render
+  useEffect(() => {
+    const loadUserFromStorage = () => {
+      try {
+        const storedUser = localStorage.getItem('nps_user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error('Error loading user from storage:', error);
+      }
+    };
+    
+    loadUserFromStorage();
+  }, []);
   
   useEffect(() => {
     // Only attempt to get session if Supabase is properly configured
@@ -55,7 +72,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         console.log('Initial auth session check:', session ? 'Session found' : 'No session');
-        setUser(processSupabaseUser(session?.user ?? null));
+        
+        const processedUser = processSupabaseUser(session?.user ?? null);
+        setUser(processedUser);
+        
+        // Store user in localStorage for persistence
+        if (processedUser) {
+          localStorage.setItem('nps_user', JSON.stringify(processedUser));
+        }
       } catch (error) {
         console.error('Error getting auth session:', error);
       } finally {
@@ -68,7 +92,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('Auth state changed:', _event, session ? 'Session exists' : 'No session');
-      setUser(processSupabaseUser(session?.user ?? null));
+      
+      const processedUser = processSupabaseUser(session?.user ?? null);
+      setUser(processedUser);
+      
+      // Update localStorage when auth state changes
+      if (processedUser) {
+        localStorage.setItem('nps_user', JSON.stringify(processedUser));
+      } else {
+        localStorage.removeItem('nps_user');
+      }
+      
       setLoading(false);
     });
 
@@ -93,6 +127,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: 'user'
         };
         setUser(mockUser);
+        
+        // Store mock user in localStorage
+        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        
         return { success: true };
       }
       
@@ -119,6 +157,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               role: 'user'
             };
             setUser(mockUser);
+            
+            // Store mock user in localStorage
+            localStorage.setItem('nps_user', JSON.stringify(mockUser));
+            
             return { success: true };
           }
         }
@@ -133,7 +175,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (data.user) {
-        setUser(processSupabaseUser(data.user));
+        const processedUser = processSupabaseUser(data.user);
+        setUser(processedUser);
+        
+        // Store user in localStorage
+        if (processedUser) {
+          localStorage.setItem('nps_user', JSON.stringify(processedUser));
+        }
+        
         return { success: true };
       }
 
@@ -151,6 +200,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: 'user'
         };
         setUser(mockUser);
+        
+        // Store mock user in localStorage
+        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        
         return { success: true };
       }
       
@@ -176,6 +229,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: 'user'
         };
         setUser(mockUser);
+        
+        // Store mock user in localStorage
+        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        
         return true;
       }
       
@@ -224,7 +281,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (subscriptionError) {
           console.error('Error setting up trial subscription:', subscriptionError);
         }
-        setUser(processSupabaseUser(data.user));
+        
+        const processedUser = processSupabaseUser(data.user);
+        setUser(processedUser);
+        
+        // Store user in localStorage
+        if (processedUser) {
+          localStorage.setItem('nps_user', JSON.stringify(processedUser));
+        }
+        
         return true;
       }
 
@@ -238,10 +303,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
           name: name || email.split('@')[0] || 'User',
-          planId: planId || 'pro',
           role: 'user'
         };
         setUser(mockUser);
+        
+        // Store mock user in localStorage
+        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        
         return true;
       }
       
@@ -253,6 +321,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await supabase.auth.signOut();
       setUser(null);
+      
+      // Remove user from localStorage
+      localStorage.removeItem('nps_user');
     } catch (error) {
       console.error('Logout error:', error);
     }
