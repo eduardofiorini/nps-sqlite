@@ -186,15 +186,15 @@ const Settings: React.FC = () => {
       } else if (service === 'ZenVia SMS' || service === 'ZenVia WhatsApp') {
         // Get the current configuration
         const serviceType = service === 'ZenVia SMS' ? 'sms' : 'whatsapp';
-        const serviceConfig = service === 'ZenVia SMS' 
+        const currentServiceConfig = service === 'ZenVia SMS' 
           ? (serviceConfig || formData.integrations?.zenvia?.sms)
           : (serviceConfig || formData.integrations?.zenvia?.whatsapp);
         
-        if (!serviceConfig) {
+        if (!currentServiceConfig) {
           throw new Error(`${service} configuration is missing`);
         }
         
-        if (!serviceConfig.apiKey || !serviceConfig.from) {
+        if (!currentServiceConfig.apiKey || !currentServiceConfig.from) {
           throw new Error(`${service} configuration is incomplete. Please fill in all fields.`);
         }
         
@@ -224,7 +224,7 @@ const Settings: React.FC = () => {
           },
           body: JSON.stringify({ 
             serviceType: serviceType,
-            config: serviceConfig
+            config: currentServiceConfig
           })
         });
         
