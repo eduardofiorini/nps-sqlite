@@ -15,9 +15,13 @@ const CampaignShare: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
-    const campaigns = getCampaigns();
-    const foundCampaign = campaigns.find(c => c.id === id);
-    setCampaign(foundCampaign || null);
+    const loadCampaign = async () => {
+      const campaigns = await getCampaigns();
+      const foundCampaign = campaigns.find(c => c.id === id);
+      setCampaign(foundCampaign || null);
+    };
+
+    loadCampaign();
   }, [id]);
 
   const surveyUrl = `${window.location.origin}/survey/${id}`;
