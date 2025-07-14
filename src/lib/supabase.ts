@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Get environment variables with fallbacks for development
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://localhost:54321'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
 
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -11,16 +11,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Ensure we have a valid URL before creating the client
 let supabase;
 try {
-  // Test if the URL is valid
-  new URL(supabaseUrl);
+  // Test if the URL is valid and not empty
+  if (supabaseUrl) {
+    new URL(supabaseUrl);
   
-  supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      debug: import.meta.env.DEV, // Enable debug logs in development
-    }
-  });
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        debug: import.meta.env.DEV, // Enable debug logs in development
+      }
+    });
+  } else {
+    throw new Error('Empty Supabase URL');
+  }
 } catch (error) {
   console.error('Invalid Supabase URL:', error);
   // Create a dummy client that won't make actual API calls
@@ -49,7 +53,7 @@ export { supabase };
 export const isSupabaseConfigured = () => {
   // Check if we have real Supabase credentials (not demo/placeholder values)
   try {
-    // Test if the URL is valid
+    // Test if the URL is valid and not empty
     new URL(supabaseUrl);
     
     const hasRealUrl = supabaseUrl && 
@@ -64,6 +68,7 @@ export const isSupabaseConfigured = () => {
     return hasRealUrl && hasRealKey;
   } catch (error) {
     // If URL is invalid, Supabase is not configured
-    return false;
+    console.warn('Supabase not configured:', error);
+    return false; 
   }
 }

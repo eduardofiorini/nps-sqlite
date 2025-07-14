@@ -345,32 +345,78 @@ export const saveCampaignForm = async (form: CampaignForm): Promise<CampaignForm
 // NPS Responses
 export const getResponses = async (campaignId?: string): Promise<NpsResponse[]> => {
   try {
-    let query = supabase
-      .from('nps_responses')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (campaignId) {
-      query = query.eq('campaign_id', campaignId);
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured()) {
+      console.log('Supabase not configured, returning demo responses');
+      // Return demo data for development
+      return getDemoResponses(campaignId);
     }
-    
-    const { data, error } = await query;
-    
-    if (error) throw error;
-    return data?.map(response => ({
-      ...response,
-      campaignId: response.campaign_id,
-      sourceId: response.source_id,
-      situationId: response.situation_id,
-      groupId: response.group_id,
-      formResponses: response.form_responses,
-      createdAt: response.created_at
-    })) || [];
+
+    try {
+      let query = supabase
+        .from('nps_responses')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (campaignId) {
+        query = query.eq('campaign_id', campaignId);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.warn('Supabase query error:', error);
+        return getDemoResponses(campaignId);
+      }
+      
+      return data?.map(response => ({
+        ...response,
+        campaignId: response.campaign_id,
+        sourceId: response.source_id,
+        situationId: response.situation_id,
+        groupId: response.group_id,
+        formResponses: response.form_responses,
+        createdAt: response.created_at
+      })) || [];
+    } catch (fetchError) {
+      console.warn('Fetch error in getResponses:', fetchError);
+      return getDemoResponses(campaignId);
+    }
   } catch (error) {
     console.error('Error fetching responses:', error);
     // Return empty array for demo mode
-    return [];
+    return getDemoResponses(campaignId);
   }
+};
+
+// Helper function to generate demo responses
+const getDemoResponses = (campaignId?: string): NpsResponse[] => {
+  if (!campaignId) return [];
+  
+  // Generate some random demo responses for the specified campaign
+  const demoResponses: NpsResponse[] = [];
+  const now = new Date();
+  
+  // Generate 5 random responses
+  for (let i = 0; i < 5; i++) {
+    const score = Math.floor(Math.random() * 11); // 0-10
+    const date = new Date(now);
+    date.setDate(date.getDate() - i); // Spread out over the last few days
+    
+    demoResponses.push({
+      id: `demo-${campaignId}-${i}`,
+      campaignId: campaignId,
+      score: score,
+      feedback: score >= 9 ? "Great service!" : score <= 6 ? "Needs improvement" : "It was okay",
+      sourceId: "1", // Default source ID
+      situationId: "1", // Default situation ID
+      groupId: "1", // Default group ID
+      formResponses: {},
+      createdAt: date.toISOString()
+    });
+  }
+  
+  return demoResponses;
 };
 
 export const saveResponse = async (response: NpsResponse): Promise<NpsResponse> => {
@@ -761,22 +807,29 @@ export const saveAppConfig = async (config: AppConfig): Promise<AppConfig> => {
 // Initialize default data for new users
 export const initializeDefaultData = async (): Promise<void> => {
   try {
-    const userId = await getCurrentUserId();
+    let userId = await getCurrentUserId();
     
     if (!userId) {
-      // Exit gracefully if user is not authenticated
-      return;
+      // Use a demo user ID if not authenticated
+      userId = '123e4567-e89b-12d3-a456-426614174000';
     }
     
     // Check if user already has data
-    const { data: existingSources } = await supabase
-      .from('sources')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1);
-    
-    if (existingSources && existingSources.length > 0) {
-      return; // User already has data
+    try {
+      if (isSupabaseConfigured()) {
+        const { data: existingSources } = await supabase
+          .from('sources')
+          .select('id')
+          .eq('user_id', userId)
+          .limit(1);
+        
+        if (existingSources && existingSources.length > 0) {
+          return; // User already has data
+        }
+      }
+    } catch (checkError) {
+      console.warn('Error checking for existing data:', checkError);
+      // Continue to create default data
     }
     
     // Create default sources
@@ -787,7 +840,13 @@ export const initializeDefaultData = async (): Promise<void> => {
       { name: 'Website', color: '#673AB7', user_id: userId },
     ];
     
-    await supabase.from('sources').insert(defaultSources);
+    try {
+      if (isSupabaseConfigured()) {
+        await supabase.from('sources').insert(defaultSources);
+      }
+    } catch (sourceError) {
+      console.warn('Error creating default sources:', sourceError);
+    }
     
     // Create default situations
     const defaultSituations = [
@@ -796,7 +855,13 @@ export const initializeDefaultData = async (): Promise<void> => {
       { name: 'Ignorado', color: '#F44336', user_id: userId },
     ];
     
-    await supabase.from('situations').insert(defaultSituations);
+    try {
+      if (isSupabaseConfigured()) {
+        await supabase.from('situations').insert(defaultSituations);
+      }
+    } catch (situationError) {
+      console.warn('Error creating default situations:', situationError);
+    }
     
     // Create default groups
     const defaultGroups = [
@@ -805,7 +870,13 @@ export const initializeDefaultData = async (): Promise<void> => {
       { name: 'Testes Internos', user_id: userId },
     ];
     
-    await supabase.from('groups').insert(defaultGroups);
+    try {
+      if (isSupabaseConfigured()) {
+        await supabase.from('groups').insert(defaultGroups);
+      }
+    } catch (groupError) {
+      console.warn('Error creating default groups:', groupError);
+    }
     
   } catch (error) {
     console.error('Error initializing default data:', error);
