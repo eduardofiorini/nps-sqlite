@@ -45,18 +45,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Only attempt to get session if Supabase is properly configured
     if (!isSupabaseConfigured()) {
+      console.log('Supabase not configured, skipping auth session check');
       setLoading(false);
       return;
     }
     
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(processSupabaseUser(session?.user ?? null));
-      setLoading(false);
-    });
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial auth session check:', session ? 'Session found' : 'No session');
+        setUser(processSupabaseUser(session?.user ?? null));
+      } catch (error) {
+        console.error('Error getting auth session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed:', _event, session ? 'Session exists' : 'No session');
       setUser(processSupabaseUser(session?.user ?? null));
       setLoading(false);
     });

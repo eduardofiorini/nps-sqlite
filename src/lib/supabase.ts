@@ -19,6 +19,8 @@ try {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
+        storageKey: 'nps_supabase_auth',
+        storage: localStorage,
         debug: import.meta.env.DEV, // Enable debug logs in development
       }
     });
