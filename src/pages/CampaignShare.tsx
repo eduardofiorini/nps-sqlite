@@ -213,6 +213,15 @@ const CampaignShare: React.FC = () => {
     );
   }
 
+  // Dummy contact for preview
+  const dummyContact = {
+    name: 'Nome do Contato',
+    email: 'email@exemplo.com',
+    phone: '',
+    company: '',
+    position: ''
+  };
+
   return (
     <div className="space-y-6">
       <div className="mb-6">
@@ -510,18 +519,10 @@ const CampaignShare: React.FC = () => {
             </div>
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
               <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                {emailSubject
-                  .replace(/\{\{nome\}\}/g, 'Nome do Contato')
-                  .replace(/\{\{email\}\}/g, 'email@exemplo.com')
-                  .replace(/\{\{campanha\}\}/g, campaign.name)
-                  .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
+                {personalizeContent(emailSubject, dummyContact)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-                {emailBody
-                  .replace(/\{\{nome\}\}/g, 'Nome do Contato')
-                  .replace(/\{\{email\}\}/g, 'email@exemplo.com')
-                  .replace(/\{\{campanha\}\}/g, campaign.name)
-                  .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
+                {personalizeContent(emailBody, dummyContact)}
               </div>
             </div>
           </div>
