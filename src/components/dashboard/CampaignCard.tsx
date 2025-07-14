@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Campaign } from '../../types';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/Card';
