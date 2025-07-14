@@ -329,7 +329,7 @@ const Overview: React.FC = () => {
                   Crie sua primeira campanha NPS para começar a coletar feedback.
                 </p>
                 <Link to="/campaigns/new">
-                  <Button variant="primary" icon={<Plus size={16} />}>
+                  <Button variant="outline" size="sm" icon={<ArrowRight size={16} />} className="text-gray-700 dark:text-gray-300">
                     Criar Primeira Campanha
                   </Button>
                 </Link>

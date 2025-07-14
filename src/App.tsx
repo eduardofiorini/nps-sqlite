@@ -7,6 +7,8 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
+import ForgotPasswordForm from './components/auth/ForgotPasswordForm';
+import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import Dashboard from './pages/Dashboard';
 import Overview from './pages/Overview';
 import Reports from './pages/Reports';
@@ -57,6 +59,8 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordForm />} />
+                  <Route path="/reset-password" element={<ResetPasswordForm />} />
                   
                   {/* Public survey route */}
                   <Route path="/survey/:id" element={<Survey />} />

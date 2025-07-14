@@ -264,8 +264,37 @@ const Contacts: React.FC = () => {
       reader.onload = (e) => {
         try {
           const text = e.target?.result as string;
-          const lines = text.split('\n');
-          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+          const cleanText = text.replace(/^\uFEFF/, ''); // Remove BOM
+          const lines = cleanText.split(/\r?\n/);
+          
+          const parseCSVLine = (line: string) => {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              const nextChar = line[i + 1];
+              
+              if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                  current += '"';
+                  i++; // Skip next quote
+                } else {
+                  inQuotes = !inQuotes;
+                }
+              } else if (char === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            result.push(current.trim());
+            return result;
+          };
+          
+          const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
           
           let successCount = 0;
           let errorCount = 0;
@@ -274,7 +303,7 @@ const Contacts: React.FC = () => {
             if (!line.trim()) return;
 
             try {
-              const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+              const values = parseCSVLine(line);
               const row: any = {};
               headers.forEach((header, index) => {
                 row[header] = values[index] || '';
@@ -326,7 +355,7 @@ const Contacts: React.FC = () => {
         }
       };
 
-      reader.readAsText(importFile);
+      reader.readAsText(importFile, 'UTF-8');
     } catch (error) {
       setImportStatus('error');
       setImportMessage('Erro ao processar o arquivo.');

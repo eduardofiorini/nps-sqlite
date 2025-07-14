@@ -19,6 +19,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import TermsModal from './TermsModal';
 
 interface Plan {
   id: string;
@@ -44,6 +45,8 @@ const RegisterForm: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -113,6 +116,10 @@ const RegisterForm: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    if (!acceptedTerms) {
+      setError('Você deve aceitar os Termos de Uso e Política de Privacidade para continuar');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       setError('As senhas não coincidem');
       return;
@@ -141,6 +148,10 @@ const RegisterForm: React.FC = () => {
     }
   };
 
+  const handleAcceptTerms = () => {
+    setAcceptedTerms(true);
+    setShowTermsModal(false);
+  };
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -354,11 +365,31 @@ const RegisterForm: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="accept-terms"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] mt-0.5"
+                  />
+                  <label htmlFor="accept-terms" className="text-sm text-gray-600 dark:text-gray-400">
+                    Eu aceito os{' '}
+                    <button
+                      type="button"
+                      onClick={() => setShowTermsModal(true)}
+                      className="text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] underline"
+                    >
+                      Termos de Uso e Política de Privacidade
+                    </button>
+                  </label>
+                </div>
                 <Button
                   type="submit"
                   variant="primary"
                   fullWidth
                   isLoading={isLoading}
+                  disabled={!acceptedTerms}
                   className="h-12 text-base font-medium bg-[#073143] hover:bg-[#0a4a5c] focus:ring-[#073143]"
                   icon={<ArrowRight size={18} />}
                 >
@@ -380,7 +411,7 @@ const RegisterForm: React.FC = () => {
 
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                  Ao se registrar, você concorda com nossos Termos de Serviço e Política de Privacidade
+                  Seus dados estão protegidos e serão usados conforme nossa Política de Privacidade
                 </p>
               </div>
             </div>
@@ -437,6 +468,12 @@ const RegisterForm: React.FC = () => {
           </div>
         </motion.div>
       </div>
+      
+      <TermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        onAccept={handleAcceptTerms}
+      />
     </div>
   );
 };

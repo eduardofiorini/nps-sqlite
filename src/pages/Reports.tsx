@@ -244,20 +244,41 @@ const Reports: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Campanha
+                Campanhas
               </label>
-              <select
-                value={selectedCampaign}
-                onChange={(e) => setSelectedCampaign(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="all">Todas as campanhas</option>
-                {campaigns.map(campaign => (
-                  <option key={campaign.id} value={campaign.id}>
-                    {campaign.name}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="select-all-campaigns"
+                    checked={selectedCampaigns.length === campaigns.length && campaigns.length > 0}
+                    onChange={handleSelectAllCampaigns}
+                    className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143]"
+                  />
+                  <label htmlFor="select-all-campaigns" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {selectedCampaigns.length === campaigns.length ? 'Desmarcar todas' : 'Selecionar todas'}
+                  </label>
+                </div>
+                <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700">
+                  {campaigns.map(campaign => (
+                    <div key={campaign.id} className="flex items-center py-1">
+                      <input
+                        type="checkbox"
+                        id={`campaign-${campaign.id}`}
+                        checked={selectedCampaigns.includes(campaign.id)}
+                        onChange={() => handleCampaignToggle(campaign.id)}
+                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143]"
+                      />
+                      <label htmlFor={`campaign-${campaign.id}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        {campaign.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {selectedCampaigns.length} de {campaigns.length} campanhas selecionadas
+                </div>
+              </div>
             </div>
 
             <div>

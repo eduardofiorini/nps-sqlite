@@ -453,18 +453,92 @@ const Profile: React.FC = () => {
 
           {/* Quick Actions */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Ações Rápidas" />
+            <CardHeader title="Preferências" />
             <CardContent>
-              <div className="space-y-3">
-                <Button variant="outline" fullWidth icon={<Settings size={16} />}>
-                  Configurações Avançadas
-                </Button>
-                <Button variant="outline" fullWidth icon={<Shield size={16} />}>
-                  Segurança da Conta
-                </Button>
-                <Button variant="outline" fullWidth icon={<Mail size={16} />}>
-                  Suporte Técnico
-                </Button>
+              <div className="space-y-4">
+                {/* Language Preference */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Globe size={16} className="inline mr-2" />
+                    Idioma Preferido
+                  </label>
+                  <select
+                    value={profile.preferences.language}
+                    onChange={(e) => handleInputChange('preferences.language', e.target.value)}
+                    disabled={!isEditing}
+                    className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="en">🇺🇸 English</option>
+                    <option value="pt-BR">🇧🇷 Português (Brasil)</option>
+                  </select>
+                </div>
+
+                {/* Theme Preference */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tema da Interface
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {isDark ? '🌙 Modo Escuro' : '☀️ Modo Claro'}
+                    </span>
+                    {isEditing && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={toggleTheme}
+                      >
+                        Alternar Tema
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Email Notifications */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <Bell size={16} className="inline mr-2" />
+                    Notificações por Email
+                  </label>
+                  <div className="space-y-3">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={profile.preferences.emailNotifications.newResponses}
+                        onChange={(e) => handleNotificationChange('newResponses', e.target.checked)}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                      />
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                        Novas respostas NPS
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={profile.preferences.emailNotifications.weeklyReports}
+                        onChange={(e) => handleNotificationChange('weeklyReports', e.target.checked)}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                      />
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                        Relatórios semanais
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={profile.preferences.emailNotifications.productUpdates}
+                        onChange={(e) => handleNotificationChange('productUpdates', e.target.checked)}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                      />
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                        Atualizações do produto
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

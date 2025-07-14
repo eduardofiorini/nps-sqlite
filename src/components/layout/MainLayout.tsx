@@ -449,8 +449,16 @@ const MainLayout: React.FC = () => {
                 <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                   {user && (
                     <div className="flex items-center mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="w-10 h-10 rounded-full bg-[#073143] text-white flex items-center justify-center mr-3 text-sm font-medium">
-                        {user.name.charAt(0).toUpperCase()}
+                      <div className="w-10 h-10 rounded-full bg-[#073143] text-white flex items-center justify-center mr-3 text-sm font-medium overflow-hidden">
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          user.name.charAt(0).toUpperCase()
+                        )}
                       </div>
                       <div>
                         <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
