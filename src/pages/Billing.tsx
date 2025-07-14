@@ -22,11 +22,7 @@ import {
 import { motion } from 'framer-motion';
 import { useSubscription } from '../hooks/useSubscription';
 import { STRIPE_PRODUCTS, formatPrice } from '../stripe-config';
-import type { Plan } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
-
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
 
 const Billing: React.FC = () => {
   const { 
@@ -106,11 +102,12 @@ const Billing: React.FC = () => {
     try {
       // Check if Supabase is configured - if not, simulate demo checkout
       if (!isSupabaseConfigured()) {
-        // Simulate loading time for demo
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Redirect to success page in demo mode
-        window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
+        console.log('Running in demo mode - simulating checkout');
+        setCheckoutLoading(true);
+        setTimeout(() => {
+          setCheckoutLoading(false);
+          window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
+        }, 1500);
         return;
       }
       
@@ -132,8 +129,8 @@ const Billing: React.FC = () => {
       if (!response.ok) {
         let errorMessage = `Server error: ${response.status} ${response.statusText}`;
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          const errorData = await response.json().catch(() => ({}));
+          errorMessage = errorData?.error || errorMessage;
         } catch {
           // If we can't parse JSON, use the status text
         }
@@ -141,12 +138,14 @@ const Billing: React.FC = () => {
       }
       
       const { url, error } = await response.json();
-      
+
       if (error) {
         throw new Error(error);
       }
       
-      if (url) {
+      // In demo mode or when URL is available, redirect
+      if (url || !isSupabaseConfigured()) {
+        const redirectUrl = url || `${window.location.origin}/billing?success=true&demo=true`;
         window.location.href = url;
       } else {
         throw new Error(error || 'No checkout URL returned from server');
