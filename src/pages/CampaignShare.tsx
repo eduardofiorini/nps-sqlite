@@ -76,15 +76,27 @@ const CampaignShare: React.FC = () => {
     }
   };
 
+  const personalizeContent = (content: string, contact: any): string => {
+    if (!contact) return content;
+    
+    const surveyLink = `${window.location.origin}/survey/${id}`;
+    
+    return content
+      .replace(/\{\{nome\}\}/g, contact.name)
+      .replace(/\{\{email\}\}/g, contact.email)
+      .replace(/\{\{campanha\}\}/g, campaign.name)
+      .replace(/\{\{link_pesquisa\}\}/g, surveyLink);
+  };
+
   const handleSendEmails = async () => {
     if (!campaign || selectedContacts.length === 0) return;
     
-    setIsSending(true);
-    setSendingStatus('sending');
-    setSendingTotal(selectedContacts.length);
-    setSendingProgress(0);
-    
     try {
+      setIsSending(true);
+      setSendingStatus('sending');
+      setSendingTotal(selectedContacts.length);
+      setSendingProgress(0);
+    
       // Get selected contacts
       const selectedContactsData = contacts.filter(c => selectedContacts.includes(c.id));
       
@@ -115,7 +127,7 @@ const CampaignShare: React.FC = () => {
       // Process queue with batching (5 at a time)
       const batchSize = 5;
       let processed = 0;
-      
+
       for (let i = 0; i < emailQueue.length; i += batchSize) {
         const batch = emailQueue.slice(i, i + batchSize);
         
@@ -161,7 +173,7 @@ const CampaignShare: React.FC = () => {
   const handleToggleContact = (contactId: string) => {
     setSelectedContacts(prev => 
       prev.includes(contactId)
-        ? prev.filter(id => id !== contactId)
+        ? prev.filter(cid => cid !== contactId)
         : [...prev, contactId]
     );
   };
@@ -504,13 +516,15 @@ const CampaignShare: React.FC = () => {
             </div>
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
               <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                {emailSubject.replace(/\{\{nome\}\}/g, 'Nome do Contato')
+                {emailSubject
+                  .replace(/\{\{nome\}\}/g, 'Nome do Contato')
                   .replace(/\{\{email\}\}/g, 'email@exemplo.com')
                   .replace(/\{\{campanha\}\}/g, campaign.name)
                   .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-                {emailBody.replace(/\{\{nome\}\}/g, 'Nome do Contato')
+                {emailBody
+                  .replace(/\{\{nome\}\}/g, 'Nome do Contato')
                   .replace(/\{\{email\}\}/g, 'email@exemplo.com')
                   .replace(/\{\{campanha\}\}/g, campaign.name)
                   .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
