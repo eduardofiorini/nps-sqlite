@@ -14,29 +14,36 @@ const Dashboard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { t, language } = useLanguage();
   
-  const loadCampaigns = async () => {
-    try {
-      // Initialize default data if first time
-      await initializeDefaultData();
-      
-      // Load campaigns
-      const loadedCampaigns = await getCampaigns();
-      setCampaigns(loadedCampaigns);
-    } catch (error) {
-      console.error('Error loading campaigns:', error);
-    }
-  };
-  
   useEffect(() => {
-    loadCampaigns();
-    setIsLoading(false);
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        // Initialize default data if first time
+        await initializeDefaultData();
+        
+        // Load campaigns
+        const loadedCampaigns = await getCampaigns();
+        setCampaigns(loadedCampaigns);
+      } catch (error) {
+        console.error('Error loading campaigns:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
   }, []);
 
   const handleCampaignDeleted = () => {
     setIsRefreshing(true);
     // Reload campaigns after deletion
     setTimeout(async () => {
-      loadCampaigns();
+      try {
+        const loadedCampaigns = await getCampaigns();
+        setCampaigns(loadedCampaigns);
+      } catch (error) {
+        console.error('Error loading campaigns:', error);
+      }
       setIsRefreshing(false);
     }, 500);
   };
@@ -44,7 +51,12 @@ const Dashboard: React.FC = () => {
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(async () => {
-      loadCampaigns();
+      try {
+        const loadedCampaigns = await getCampaigns();
+        setCampaigns(loadedCampaigns);
+      } catch (error) {
+        console.error('Error loading campaigns:', error);
+      }
       setIsRefreshing(false);
     }, 500);
   };
