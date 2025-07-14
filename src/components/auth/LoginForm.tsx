@@ -193,7 +193,7 @@ const LoginForm: React.FC = () => {
                   />
                   <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Lembrar de mim</span>
                 </label>
-                <a href="#" className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff]">
+                <a href="/forgot-password" className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff]">
                   Esqueceu a senha?
                 </a>
               </div>
@@ -219,22 +219,7 @@ const LoginForm: React.FC = () => {
                   Criar conta
                 </Link>
               </div>
-              
-              <div className="text-center">
-                <Link 
-                  to="/forgot-password" 
-                  className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff]"
-                >
-                  Esqueceu a senha?
-                </Link>
-              </div>
             </form>
-            
-            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                Para demonstração, digite qualquer email e senha
-              </p>
-            </div>
           </div>
         </motion.div>
       </div>
