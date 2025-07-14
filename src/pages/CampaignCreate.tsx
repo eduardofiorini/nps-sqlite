@@ -35,7 +35,7 @@ const CampaignCreate: React.FC = () => {
   const [sources, setSources] = useState<Source[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [campaign, setCampaign] = useState<Campaign>({
-    id: uuidv4(),
+    id: '',
     name: '',
     startDate: new Date().toISOString().split('T')[0],
     endDate: null,
