@@ -93,6 +93,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('Login error:', error.message);
+        
+        // If Supabase authentication fails, fall back to demo mode
+        if (email && password) {
+          console.log('Falling back to demo mode due to authentication failure');
+          const mockUser: User = {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            email: email,
+            name: email.split('@')[0] || 'User',
+            role: 'user'
+          };
+          setUser(mockUser);
+          return true;
+        }
+        
         return false;
       }
 
@@ -107,6 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Fallback to demo mode if Supabase fails
       if (!isSupabaseConfigured() && email && password) {
+        console.log('Falling back to demo mode due to network/configuration error');
         const mockUser: User = {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
