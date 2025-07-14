@@ -7,30 +7,8 @@ import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { AppConfig } from '../types';
-import { 
-  Save, 
-  Globe, 
-  Moon, 
-  Sun, 
-  BarChart, 
-  Users, 
-  Tag,
-  Building,
-  FileText,
-  Phone,
-  Mail,
-  MapPin,
-  Hash,
-  Server,
-  MessageSquare,
-  Smartphone,
-  Shield,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  AlertTriangle,
-  Zap
-} from 'lucide-react';
+import { getSources, getSituations, getGroups } from '../utils/supabaseStorage';
+import { Save, Globe, Moon, Sun, BarChart, Users, Tag, Building, FileText, Phone, Mail, MapPin, Hash, Server, MessageSquare, Smartphone, Shield, Eye, EyeOff, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
 
 const Settings: React.FC = () => {
   const { config, updateConfig } = useConfig();

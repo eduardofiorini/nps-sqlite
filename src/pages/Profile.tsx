@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getUserProfile, saveUserProfile } from '../utils/localStorage';
+import { getUserProfile, saveUserProfile } from '../utils/supabaseStorage';
 import type { UserProfile } from '../types';
 
 const Profile: React.FC = () => {
@@ -37,12 +38,22 @@ const Profile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const userProfile = getUserProfile();
-    if (userProfile) {
-      setProfile(userProfile);
-      setAvatarPreview(userProfile.avatar || '');
+    const loadProfile = async () => {
+      try {
+        const userProfile = await getUserProfile();
+        if (userProfile) {
+          setProfile(userProfile);
+          setAvatarPreview(userProfile.avatar || '');
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProfile();
     }
-    setIsLoading(false);
   }, []);
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -112,7 +123,7 @@ const Profile: React.FC = () => {
       }
       
       // Save profile
-      const savedProfile = saveUserProfile(profile);
+      const savedProfile = await saveUserProfile(profile);
       setProfile(savedProfile);
       
       setSaveMessage('Perfil salvo com sucesso!');
@@ -133,11 +144,19 @@ const Profile: React.FC = () => {
 
   const handleCancel = () => {
     // Reload profile from storage
-    const userProfile = getUserProfile();
-    if (userProfile) {
-      setProfile(userProfile);
-      setAvatarPreview(userProfile.avatar || '');
-    }
+    const loadProfile = async () => {
+      try {
+        const userProfile = await getUserProfile();
+        if (userProfile) {
+          setProfile(userProfile);
+          setAvatarPreview(userProfile.avatar || '');
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+    
+    loadProfile();
     setIsEditing(false);
   };
 

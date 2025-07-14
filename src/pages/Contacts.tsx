@@ -7,7 +7,7 @@ import {
   getGroups, 
   searchContacts,
   getContactsByGroup 
-} from '../utils/localStorage';
+} from '../utils/supabaseStorage';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -74,13 +74,18 @@ const Contacts: React.FC = () => {
     filterContacts();
   }, [contacts, searchQuery, selectedGroup, selectedTags]);
 
-  const loadData = () => {
-    const loadedContacts = getContacts();
-    const loadedGroups = getGroups();
-    
-    setContacts(loadedContacts);
-    setGroups(loadedGroups);
-    setIsLoading(false);
+  const loadData = async () => {
+    try {
+      const loadedContacts = await getContacts();
+      const loadedGroups = await getGroups();
+      
+      setContacts(loadedContacts);
+      setGroups(loadedGroups);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filterContacts = () => {
@@ -109,32 +114,37 @@ const Contacts: React.FC = () => {
     setCurrentPage(1); // Reset to first page when filters change
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!currentContact.name || !currentContact.email || !currentContact.phone) {
       alert('Nome, email e telefone são obrigatórios');
       return;
     }
 
-    const contactToSave: Contact = {
-      id: currentContact.id || '',
-      name: currentContact.name,
-      email: currentContact.email,
-      phone: currentContact.phone,
-      groupIds: currentContact.groupIds || [],
-      company: currentContact.company || '',
-      position: currentContact.position || '',
-      tags: currentContact.tags || [],
-      notes: currentContact.notes || '',
-      lastContactDate: currentContact.lastContactDate,
-      createdAt: currentContact.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      const contactToSave: Contact = {
+        id: currentContact.id || '',
+        name: currentContact.name,
+        email: currentContact.email,
+        phone: currentContact.phone,
+        groupIds: currentContact.groupIds || [],
+        company: currentContact.company || '',
+        position: currentContact.position || '',
+        tags: currentContact.tags || [],
+        notes: currentContact.notes || '',
+        lastContactDate: currentContact.lastContactDate,
+        createdAt: currentContact.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    saveContact(contactToSave);
-    loadData();
-    setModalOpen(false);
-    setCurrentContact({});
-    setIsEditing(false);
+      await saveContact(contactToSave);
+      await loadData();
+      setModalOpen(false);
+      setCurrentContact({});
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving contact:', error);
+      alert('Erro ao salvar contato. Tente novamente.');
+    }
   };
 
   const handleEdit = (contact: Contact) => {
@@ -146,10 +156,15 @@ const Contacts: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este contato?')) {
-      deleteContact(id);
-      loadData();
+      try {
+        await deleteContact(id);
+        await loadData();
+      } catch (error) {
+        console.error('Error deleting contact:', error);
+        alert('Erro ao excluir contato. Tente novamente.');
+      }
     }
   };
 
@@ -805,7 +820,7 @@ const Contacts: React.FC = () => {
         size="lg"
         footer={
           <div className="flex justify-end space-x-3">
-            <Button variant="outline\" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleSave}>

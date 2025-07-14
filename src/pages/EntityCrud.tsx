@@ -15,7 +15,7 @@ import {
   getGroups,
   saveGroup,
   deleteGroup,
-} from '../utils/localStorage';
+} from '../utils/supabaseStorage';
 import { useLanguage } from '../contexts/LanguageContext';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -63,21 +63,27 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
     }
   };
   
-  const loadEntities = () => {
-    let loadedEntities;
-    
-    switch (entityType) {
-      case 'sources':
-        loadedEntities = getSources();
-        break;
-      case 'situations':
-        loadedEntities = getSituations();
-        break;
-      case 'groups':
-        loadedEntities = getGroups();
-        break;
-      default:
-        loadedEntities = [];
+  const loadEntities = async () => {
+    try {
+      let loadedEntities;
+      
+      switch (entityType) {
+        case 'sources':
+          loadedEntities = await getSources();
+          break;
+        case 'situations':
+          loadedEntities = await getSituations();
+          break;
+        case 'groups':
+          loadedEntities = await getGroups();
+          break;
+        default:
+          loadedEntities = [];
+      }
+      
+      setEntities(loadedEntities);
+    } catch (error) {
+      console.error('Error loading entities:', error);
     }
     
     setEntities(loadedEntities);
@@ -87,26 +93,34 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
     loadEntities();
   }, [entityType]);
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!currentEntity.name) {
       alert('Name is required');
       return;
     }
     
-    let saveResult;
-    
-    switch (entityType) {
-      case 'sources':
-        saveResult = saveSource(currentEntity as Source);
-        break;
-      case 'situations':
-        saveResult = saveSituation(currentEntity as Situation);
-        break;
-      case 'groups':
-        saveResult = saveGroup(currentEntity as Group);
-        break;
-      default:
-        return;
+    try {
+      switch (entityType) {
+        case 'sources':
+          await saveSource(currentEntity as Source);
+          break;
+        case 'situations':
+          await saveSituation(currentEntity as Situation);
+          break;
+        case 'groups':
+          await saveGroup(currentEntity as Group);
+          break;
+        default:
+          return;
+      }
+      
+      await loadEntities();
+      setModalOpen(false);
+      setCurrentEntity({});
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving entity:', error);
+      alert('Error saving. Please try again.');
     }
     
     loadEntities();
@@ -121,26 +135,27 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
     setModalOpen(true);
   };
   
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
-      let deleteResult;
-      
-      switch (entityType) {
-        case 'sources':
-          deleteResult = deleteSource(id);
-          break;
-        case 'situations':
-          deleteResult = deleteSituation(id);
-          break;
-        case 'groups':
-          deleteResult = deleteGroup(id);
-          break;
-        default:
-          return;
-      }
-      
-      if (deleteResult) {
-        loadEntities();
+      try {
+        switch (entityType) {
+          case 'sources':
+            await deleteSource(id);
+            break;
+          case 'situations':
+            await deleteSituation(id);
+            break;
+          case 'groups':
+            await deleteGroup(id);
+            break;
+          default:
+            return;
+        }
+        
+        await loadEntities();
+      } catch (error) {
+        console.error('Error deleting entity:', error);
+        alert('Error deleting. Please try again.');
       }
     }
   };
@@ -322,13 +337,6 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
               onChange={(e) => setCurrentEntity({ ...currentEntity, description: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter a description"
-              rows={3}
-            />
-          </div>
-        </div>
-      </Modal>
-    </div>
-  );
 };
 
 export default EntityCrud;

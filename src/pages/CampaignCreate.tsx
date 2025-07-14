@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveCampaign, saveCampaignForm, getSources, getGroups } from '../utils/localStorage';
+import { saveCampaign, saveCampaignForm, getSources, getGroups } from '../utils/supabaseStorage';
 import { Campaign, CampaignForm, SurveyCustomization, CampaignAutomation, Source, Group } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -60,20 +61,28 @@ const CampaignCreate: React.FC = () => {
   });
 
   useEffect(() => {
-    // Load sources and groups
-    const loadedSources = getSources();
-    const loadedGroups = getGroups();
-    
-    setSources(loadedSources);
-    setGroups(loadedGroups);
+    const loadData = async () => {
+      try {
+        // Load sources and groups
+        const loadedSources = await getSources();
+        const loadedGroups = await getGroups();
+        
+        setSources(loadedSources);
+        setGroups(loadedGroups);
 
-    // Set default selections if available
-    if (loadedSources.length > 0 && !campaign.defaultSourceId) {
-      setCampaign(prev => ({ ...prev, defaultSourceId: loadedSources[0].id }));
-    }
-    if (loadedGroups.length > 0 && !campaign.defaultGroupId) {
-      setCampaign(prev => ({ ...prev, defaultGroupId: loadedGroups[0].id }));
-    }
+        // Set default selections if available
+        if (loadedSources.length > 0 && !campaign.defaultSourceId) {
+          setCampaign(prev => ({ ...prev, defaultSourceId: loadedSources[0].id }));
+        }
+        if (loadedGroups.length > 0 && !campaign.defaultGroupId) {
+          setCampaign(prev => ({ ...prev, defaultGroupId: loadedGroups[0].id }));
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+    
+    loadData();
   }, []);
   
   const handleCampaignChange = (field: keyof Campaign, value: string | boolean | null) => {
@@ -134,12 +143,12 @@ const CampaignCreate: React.FC = () => {
     
     if (currentStep === 2) {
       // Save campaign with customization
-      saveCampaign(campaign);
+      saveCampaign(campaign).catch(console.error);
     }
 
     if (currentStep === 3) {
       // Save campaign with automation
-      saveCampaign(campaign);
+      saveCampaign(campaign).catch(console.error);
     }
     
     setCurrentStep(currentStep + 1);
@@ -149,11 +158,16 @@ const CampaignCreate: React.FC = () => {
     setCurrentStep(currentStep - 1);
   };
   
-  const handleFormSave = (form: CampaignForm) => {
-    saveCampaignForm(form);
-    
-    // Navigate to the campaign dashboard
-    navigate(`/campaigns/${campaign.id}`);
+  const handleFormSave = async (form: CampaignForm) => {
+    try {
+      await saveCampaignForm(form);
+      
+      // Navigate to the campaign dashboard
+      navigate(`/campaigns/${campaign.id}`);
+    } catch (error) {
+      console.error('Error saving form:', error);
+      alert('Erro ao salvar formulário. Tente novamente.');
+    }
   };
   
   const variants = {
