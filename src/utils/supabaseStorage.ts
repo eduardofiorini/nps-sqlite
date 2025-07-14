@@ -858,13 +858,16 @@ export const saveAppConfig = async (config: AppConfig): Promise<AppConfig> => {
 // Initialize default data for new users
 export const initializeDefaultData = async (): Promise<void> => {
   try {
-    const userId = await getCurrentUserId();
+    // Get current user ID
+    let userId = await getCurrentUserId();
     
     // Only initialize data if we have a valid authenticated user and Supabase is configured
     if (!userId || !isSupabaseConfigured()) {
       console.log('Skipping default data initialization - no authenticated user or Supabase not configured');
       return;
     }
+
+    console.log('Initializing default data for user:', userId);
     
     // Check if user already has data
     const { data: existingSources } = await supabase
@@ -874,6 +877,7 @@ export const initializeDefaultData = async (): Promise<void> => {
       .limit(1);
     
     if (existingSources && existingSources.length > 0) {
+      console.log('User already has data, skipping initialization');
       return; // User already has data
     }
     
@@ -885,6 +889,7 @@ export const initializeDefaultData = async (): Promise<void> => {
       { name: 'Website', color: '#673AB7', user_id: userId },
     ];
     
+    console.log('Creating default sources');
     await supabase.from('sources').insert(defaultSources);
     
     // Create default situations
@@ -894,6 +899,7 @@ export const initializeDefaultData = async (): Promise<void> => {
       { name: 'Ignorado', color: '#F44336', user_id: userId },
     ];
     
+    console.log('Creating default situations');
     await supabase.from('situations').insert(defaultSituations);
     
     // Create default groups
@@ -903,8 +909,10 @@ export const initializeDefaultData = async (): Promise<void> => {
       { name: 'Testes Internos', user_id: userId },
     ];
     
+    console.log('Creating default groups');
     await supabase.from('groups').insert(defaultGroups);
     
+    console.log('Default data initialization complete');
   } catch (error) {
     console.error('Error initializing default data:', error);
   }

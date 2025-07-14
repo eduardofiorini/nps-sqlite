@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('Initial auth session check:', session ? 'Session found' : 'No session');
+        console.log('Initial auth session check:', session?.user?.email || 'No session');
         
         if (session?.user) {
           const processedUser = processSupabaseUser(session.user);
@@ -99,7 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event, session ? 'Session exists' : 'No session');
+      console.log('Auth state changed:', _event, session?.user?.email || 'No session');
       
       if (session?.user) {
         const processedUser = processSupabaseUser(session.user);
@@ -189,9 +189,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(processedUser);
         
         // Store user in localStorage
-        if (processedUser) {
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
-        }
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
         
         return { success: true };
       }
@@ -332,8 +330,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await supabase.auth.signOut();
       setUser(null);
       
-      // Clear user from localStorage
+      // Clear all auth data from localStorage
       localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem('nps_supabase_auth');
     } catch (error) {
       console.error('Logout error:', error);
     }

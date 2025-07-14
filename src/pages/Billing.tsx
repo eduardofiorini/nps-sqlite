@@ -106,11 +106,13 @@ const Billing: React.FC = () => {
     try {
       // Check if Supabase is configured - if not, simulate demo checkout
       if (!isSupabaseConfigured()) {
-        // Simulate loading time for demo
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Supabase not configured, simulating checkout in demo mode');
+        setCheckoutLoading(false);
         
-        // Redirect to success page in demo mode
-        window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
+        // Simulate successful checkout by redirecting to success page
+        setTimeout(() => {
+          window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
+        }, 1000);
         return;
       }
       
@@ -129,27 +131,32 @@ const Billing: React.FC = () => {
       });
       
       // Check if the response is successful
-      if (!response.ok) {
-        let errorMessage = `Server error: ${response.status} ${response.statusText}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          // If we can't parse JSON, use the status text
+      try {
+        if (!response.ok) {
+          let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            // If we can't parse JSON, use the status text
+          }
+          throw new Error(errorMessage);
         }
-        throw new Error(errorMessage);
-      }
-      
-      const { url, error } = await response.json();
-      
-      if (error) {
-        throw new Error(error);
-      }
-      
-      if (url) {
-        window.location.href = url;
-      } else {
-        throw new Error(error || 'No checkout URL returned from server');
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No checkout URL returned from server');
+        }
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        throw new Error(`Failed to process server response: ${parseError.message}`);
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
