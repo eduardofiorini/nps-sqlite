@@ -5,9 +5,11 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import { AppConfig } from '../types';
-import { getSources, getSituations, getGroups } from '../utils/supabaseStorage';
+import { getSources, getSituations, getGroups, getAppConfig } from '../utils/supabaseStorage';
+import { supabase } from '../lib/supabase';
 import { Save, Globe, Moon, Sun, BarChart, Users, Tag, Building, FileText, Phone, Mail, MapPin, Hash, Server, MessageSquare, Smartphone, Shield, Eye, EyeOff, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
 
 const Settings: React.FC = () => {
@@ -17,8 +19,14 @@ const Settings: React.FC = () => {
   const [formData, setFormData] = useState<AppConfig>(config);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [saveMessageType, setSaveMessageType] = useState<'success' | 'error'>('success');
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [testingConnection, setTestingConnection] = useState<Record<string, boolean>>({});
+  const [testEmailResult, setTestEmailResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+  const [showTestEmailModal, setShowTestEmailModal] = useState(false);
   
   useEffect(() => {
     setFormData(config);
@@ -71,15 +79,80 @@ const Settings: React.FC = () => {
     }));
   };
 
-  const testConnection = async (service: string) => {
+  const testConnection = async (service: string, config?: any) => {
     setTestingConnection(prev => ({ ...prev, [service]: true }));
     
-    // Simulate connection test
-    setTimeout(() => {
+    try {
+      if (service === 'SMTP') {
+        // Get the current SMTP configuration
+        const smtpConfig = config || formData.integrations?.smtp;
+        
+        if (!smtpConfig) {
+          throw new Error('SMTP configuration is missing');
+        }
+        
+        if (!smtpConfig.host || !smtpConfig.port || !smtpConfig.username || !smtpConfig.password || !smtpConfig.fromName || !smtpConfig.fromEmail) {
+          throw new Error('SMTP configuration is incomplete. Please fill in all fields.');
+        }
+        
+        // Call the Supabase Edge Function to send a test email
+        const { data: authData } = await supabase.auth.getSession();
+        const token = authData.session?.access_token;
+        
+        if (!token) {
+          throw new Error('Authentication token is missing. Please log in again.');
+        }
+        
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-test-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ smtpConfig })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to send test email');
+        }
+        
+        setTestEmailResult({
+          success: true,
+          message: `Email de teste enviado com sucesso para ${authData.session?.user?.email}`
+        });
+        
+        setShowTestEmailModal(true);
+        setSaveMessage('Email de teste enviado com sucesso!');
+        setSaveMessageType('success');
+      } else {
+        // For other services, just simulate a test
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setSaveMessage(`Conexão ${service} testada com sucesso!`);
+        setSaveMessageType('success');
+      }
+    } catch (error) {
+      console.error(`Error testing ${service} connection:`, error);
+      setTestEmailResult({
+        success: false,
+        message: error.message || `Falha ao testar conexão ${service}`
+      });
+      
+      if (service === 'SMTP') {
+        setShowTestEmailModal(true);
+      }
+      
+      setSaveMessage(`Erro ao testar conexão ${service}: ${error.message}`);
+      setSaveMessageType('error');
+    } finally {
       setTestingConnection(prev => ({ ...prev, [service]: false }));
-      setSaveMessage(`Conexão ${service} testada com sucesso!`);
-      setTimeout(() => setSaveMessage(''), 3000);
-    }, 2000);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => {
+        setSaveMessage('');
+      }, 5000);
+    }
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -130,7 +203,11 @@ const Settings: React.FC = () => {
       
       <form onSubmit={handleSubmit} className="space-y-8">
         {saveMessage && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-md border border-green-200 dark:border-green-800">
+          <div className={`p-3 ${
+            saveMessageType === 'success' 
+              ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800' 
+              : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800'
+          } rounded-md border`}>
             {saveMessage}
           </div>
         )}
@@ -311,7 +388,7 @@ const Settings: React.FC = () => {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => testConnection('SMTP')}
+                        onClick={() => testConnection('SMTP', formData.integrations?.smtp)}
                         isLoading={testingConnection.SMTP}
                         icon={<CheckCircle size={14} />}
                       >
@@ -635,6 +712,66 @@ const Settings: React.FC = () => {
           </Button>
         </div>
       </form>
+
+      {/* Test Email Modal */}
+      <Modal
+        isOpen={showTestEmailModal}
+        onClose={() => setShowTestEmailModal(false)}
+        title={testEmailResult?.success ? "Email de Teste Enviado" : "Erro ao Enviar Email"}
+        size="md"
+        footer={
+          <div className="flex justify-end">
+            <Button variant="primary" onClick={() => setShowTestEmailModal(false)}>
+              Fechar
+            </Button>
+          </div>
+        }
+      >
+        <div className={`p-4 rounded-lg ${
+          testEmailResult?.success 
+            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+            : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+        }`}>
+          <div className="flex items-start">
+            {testEmailResult?.success ? (
+              <CheckCircle className="text-green-500 mr-3 mt-0.5 flex-shrink-0" size={20} />
+            ) : (
+              <AlertTriangle className="text-red-500 mr-3 mt-0.5 flex-shrink-0" size={20} />
+            )}
+            <div>
+              <h3 className={`font-medium ${
+                testEmailResult?.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
+              }`}>
+                {testEmailResult?.success ? 'Sucesso' : 'Erro'}
+              </h3>
+              <p className={`mt-1 text-sm ${
+                testEmailResult?.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
+              }`}>
+                {testEmailResult?.message}
+              </p>
+              
+              {testEmailResult?.success && (
+                <div className="mt-3 text-sm text-green-700 dark:text-green-300">
+                  <p>Verifique sua caixa de entrada para confirmar o recebimento do email de teste.</p>
+                </div>
+              )}
+              
+              {!testEmailResult?.success && (
+                <div className="mt-3 text-sm text-red-700 dark:text-red-300">
+                  <p>Dicas para resolver problemas comuns:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>Verifique se o host e porta estão corretos</li>
+                    <li>Confirme se o usuário e senha estão corretos</li>
+                    <li>Verifique se a opção SSL/TLS está configurada corretamente</li>
+                    <li>Alguns provedores de email exigem uma "senha de aplicativo" específica</li>
+                    <li>Verifique se o provedor de email permite acesso SMTP</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
 
       {/* Gerenciamento de Dados */}
       <Card>
