@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Campaign, CampaignForm, NpsResponse } from '../types';
-import { getCampaigns, getCampaignForm, saveResponse, getSituations } from '../utils/supabaseStorage';
+import { getCampaigns, getCampaignForm, saveResponse, getSituations, isSupabaseConfigured } from '../utils/supabaseStorage';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -23,6 +23,7 @@ const Survey: React.FC = () => {
   const [webhookRetryCount, setWebhookRetryCount] = useState(0);
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Helper function to extract valid UUID from input string
   const extractValidUUID = (input: string): string | null => {
@@ -52,17 +53,22 @@ const Survey: React.FC = () => {
       try {
         setIsLoading(true);
         // Load campaign data
-        const campaigns = await getCampaigns();
-        const foundCampaign = campaigns.find(c => c.id === validUUID);
-        setCampaign(foundCampaign || null);
+        try {
+          const campaigns = await getCampaigns();
+          const foundCampaign = campaigns.find(c => c.id === validUUID);
+          setCampaign(foundCampaign || null);
 
-        // Load form data
-        const formData = await getCampaignForm(validUUID);
-        setForm(formData);
-        
-        // Load situations data
-        const situationsData = await getSituations();
-        setSituations(situationsData);
+          // Load form data
+          const formData = await getCampaignForm(validUUID);
+          setForm(formData);
+          
+          // Load situations data
+          const situationsData = await getSituations();
+          setSituations(situationsData);
+        } catch (fetchError) {
+          console.error('Error fetching campaign data:', fetchError);
+          setError('Erro ao carregar dados da pesquisa. Tente novamente mais tarde.');
+        }
       } catch (error) {
         console.error('Error loading survey data:', error);
         setCampaign(null);
@@ -329,7 +335,7 @@ A resposta da pesquisa foi salva com sucesso.`;
     setIsProcessing(false);
   };
 
-  if (isLoading) {
+  if (isLoading && !error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
         <div className="flex items-center justify-center">
@@ -339,12 +345,16 @@ A resposta da pesquisa foi salva com sucesso.`;
     );
   }
 
-  if (!isLoading && (!campaign || !form)) {
+  if ((!isLoading && (!campaign || !form)) || error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('survey.notFound')}</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">{t('survey.notFoundDesc')}</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {error || t('survey.notFound')}
+          </h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            {error ? 'Tente novamente mais tarde.' : t('survey.notFoundDesc')}
+          </p>
         </div>
       </div>
     );

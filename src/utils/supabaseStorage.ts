@@ -234,25 +234,67 @@ export const deleteGroup = async (id: string): Promise<boolean> => {
 export const getCampaigns = async (): Promise<Campaign[]> => {
   try {
     if (!isSupabaseConfigured()) {
+      console.log('Supabase not configured, returning demo campaigns');
       return getDemoCampaigns();
     }
     
-    const { data, error } = await supabase
-      .from('campaigns')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      // Try to get the current user ID
+      const userId = await getCurrentUserId();
+      
+      // If we have a user ID, get their campaigns
+      if (userId) {
+        const { data, error } = await supabase
+          .from('campaigns')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data?.map(campaign => ({
+          ...campaign,
+          startDate: campaign.start_date,
+          endDate: campaign.end_date,
+          defaultSourceId: campaign.default_source_id,
+          defaultGroupId: campaign.default_group_id,
+          surveyCustomization: campaign.survey_customization,
+          createdAt: campaign.created_at,
+          updatedAt: campaign.updated_at
+        })) || [];
+      } else {
+        // For public access (survey page), get campaign by ID from query param
+        const urlParams = new URLSearchParams(window.location.search);
+        const campaignId = window.location.pathname.split('/').pop();
+        
+        if (campaignId) {
+          const { data, error } = await supabase
+            .from('campaigns')
+            .select('*')
+            .eq('id', campaignId)
+            .single();
+          
+          if (error) throw error;
+          
+          return data ? [{
+            ...data,
+            startDate: data.start_date,
+            endDate: data.end_date,
+            defaultSourceId: data.default_source_id,
+            defaultGroupId: data.default_group_id,
+            surveyCustomization: data.survey_customization,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+          }] : [];
+        }
+      }
+      
+      // If we get here, return empty array
+      return [];
+    } catch (fetchError) {
+      console.warn('Fetch error in getCampaigns:', fetchError);
+      return getDemoCampaigns();
+    }
     
-    if (error) throw error;
-    return data?.map(campaign => ({
-      ...campaign,
-      startDate: campaign.start_date,
-      endDate: campaign.end_date,
-      defaultSourceId: campaign.default_source_id,
-      defaultGroupId: campaign.default_group_id,
-      surveyCustomization: campaign.survey_customization,
-      createdAt: campaign.created_at,
-      updatedAt: campaign.updated_at
-    })) || [];
   } catch (error) {
     console.error('Error fetching campaigns:', error);
     return getDemoCampaigns();
@@ -352,21 +394,92 @@ export const deleteCampaign = async (id: string): Promise<boolean> => {
 
 // Campaign Forms
 export const getCampaignForm = async (campaignId: string): Promise<CampaignForm | null> => {
-  const { data, error } = await supabase
-    .from('campaign_forms')
-    .select('*')
-    .eq('campaign_id', campaignId)
-    .single();
-  
-  if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
-  
-  if (!data) return null;
-  
-  return {
-    id: data.id,
-    campaignId: data.campaign_id,
-    fields: data.fields
-  };
+  try {
+    if (!isSupabaseConfigured()) {
+      // Return demo form for development
+      return {
+        id: 'demo-form',
+        campaignId,
+        fields: [
+          {
+            id: 'nps-field',
+            type: 'nps',
+            label: 'O quanto você recomendaria nosso serviço para um amigo ou colega?',
+            required: true,
+            order: 0,
+          },
+          {
+            id: 'feedback-field',
+            type: 'text',
+            label: 'Por favor, compartilhe seu feedback',
+            required: false,
+            order: 1,
+          }
+        ]
+      };
+    }
+    
+    const { data, error } = await supabase
+      .from('campaign_forms')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+    
+    if (!data) {
+      // If no form found, create a default one
+      return {
+        id: 'default-form',
+        campaignId,
+        fields: [
+          {
+            id: 'nps-field',
+            type: 'nps',
+            label: 'O quanto você recomendaria nosso serviço para um amigo ou colega?',
+            required: true,
+            order: 0,
+          },
+          {
+            id: 'feedback-field',
+            type: 'text',
+            label: 'Por favor, compartilhe seu feedback',
+            required: false,
+            order: 1,
+          }
+        ]
+      };
+    }
+    
+    return {
+      id: data.id,
+      campaignId: data.campaign_id,
+      fields: data.fields
+    };
+  } catch (error) {
+    console.error('Error fetching campaign form:', error);
+    // Return a default form in case of error
+    return {
+      id: 'default-form',
+      campaignId,
+      fields: [
+        {
+          id: 'nps-field',
+          type: 'nps',
+          label: 'O quanto você recomendaria nosso serviço para um amigo ou colega?',
+          required: true,
+          order: 0,
+        },
+        {
+          id: 'feedback-field',
+          type: 'text',
+          label: 'Por favor, compartilhe seu feedback',
+          required: false,
+          order: 1,
+        }
+      ]
+    };
+  }
 };
 
 export const saveCampaignForm = async (form: CampaignForm): Promise<CampaignForm> => {

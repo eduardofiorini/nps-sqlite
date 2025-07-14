@@ -79,9 +79,6 @@ function App() {
                     <Route path="/reset-password" element={<ResetPasswordForm />} />
                     <Route path="/trial-expired" element={<TrialExpired />} />
                     
-                    {/* Public survey route */}
-                    <Route path="/survey/:id" element={<Survey />} />
-                    
                     {/* Public email preview route */}
                     <Route path="/email-preview/:campaignId" element={<EmailPreview />} />
                     
@@ -113,6 +110,9 @@ function App() {
                       <Route path="settings/situations" element={<EntityCrud entityType="situations" />} />
                       <Route path="settings/groups" element={<EntityCrud entityType="groups" />} />
                     </Route>
+                    
+                    {/* Public survey route - moved outside protected routes */}
+                    <Route path="/survey/:id" element={<Survey />} />
                     
                     <Route path="*" element={<Navigate to="/overview" />} />
                   </Routes>
