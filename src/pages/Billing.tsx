@@ -117,6 +117,18 @@ const Billing: React.FC = () => {
         })
       });
       
+      // Check if the response is successful
+      if (!response.ok) {
+        let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If we can't parse JSON, use the status text
+        }
+        throw new Error(errorMessage);
+      }
+      
       const { url, error } = await response.json();
       
       if (error) {
