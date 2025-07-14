@@ -14,7 +14,7 @@ import {
 // Helper function to get current user ID
 const getCurrentUserId = async () => {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('User not authenticated');
+  if (!user) return null;
   return user.id;
 };
 
@@ -533,6 +533,51 @@ export const saveUserProfile = async (profile: UserProfile): Promise<UserProfile
 export const getAppConfig = async (): Promise<AppConfig> => {
   const userId = await getCurrentUserId();
   
+  if (!userId) {
+    // Return default config when user is not authenticated
+    return {
+      themeColor: '#073143',
+      language: 'pt-BR',
+      company: {
+        name: '',
+        document: '',
+        address: '',
+        email: '',
+        phone: '',
+      },
+      integrations: {
+        smtp: {
+          enabled: false,
+          host: '',
+          port: 587,
+          secure: false,
+          username: '',
+          password: '',
+          fromName: '',
+          fromEmail: '',
+        },
+        zenvia: {
+          email: {
+            enabled: false,
+            apiKey: '',
+            fromEmail: '',
+            fromName: '',
+          },
+          sms: {
+            enabled: false,
+            apiKey: '',
+            from: '',
+          },
+          whatsapp: {
+            enabled: false,
+            apiKey: '',
+            from: '',
+          },
+        },
+      },
+    };
+  }
+  
   const { data, error } = await supabase
     .from('app_configs')
     .select('*')
@@ -640,6 +685,11 @@ export const saveAppConfig = async (config: AppConfig): Promise<AppConfig> => {
 export const initializeDefaultData = async (): Promise<void> => {
   try {
     const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      // Exit gracefully if user is not authenticated
+      return;
+    }
     
     // Check if user already has data
     const { data: existingSources } = await supabase
