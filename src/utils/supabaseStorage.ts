@@ -20,14 +20,17 @@ const getCurrentUserId = async () => {
     return user.id;
   } catch (error) {
     console.error('Error getting current user:', error);
-    // Return a demo user ID for development
-    return '123e4567-e89b-12d3-a456-426614174000';
+    return null;
   }
 };
 
 // Sources
 export const getSources = async (): Promise<Source[]> => {
   try {
+    if (!isSupabaseConfigured()) {
+      return getDemoSources();
+    }
+    
     const { data, error } = await supabase
       .from('sources')
       .select('*')
@@ -37,17 +40,40 @@ export const getSources = async (): Promise<Source[]> => {
     return data || [];
   } catch (error) {
     console.error('Error fetching sources:', error);
-    // Return demo data
-    return [
-      { id: '1', name: 'Website', description: 'Website feedback', color: '#3B82F6', user_id: await getCurrentUserId() },
-      { id: '2', name: 'Email', description: 'Email campaigns', color: '#10B981', user_id: await getCurrentUserId() },
-      { id: '3', name: 'SMS', description: 'SMS surveys', color: '#8B5CF6', user_id: await getCurrentUserId() }
-    ];
+    return getDemoSources();
   }
 };
 
+// Demo data functions
+const getDemoSources = (): Source[] => [
+  { id: '1', name: 'Website', description: 'Website feedback', color: '#3B82F6', user_id: 'demo-user' },
+  { id: '2', name: 'Email', description: 'Email campaigns', color: '#10B981', user_id: 'demo-user' },
+  { id: '3', name: 'SMS', description: 'SMS surveys', color: '#8B5CF6', user_id: 'demo-user' }
+];
+
+const getDemoSituations = (): Situation[] => [
+  { id: '1', name: 'New Purchase', description: 'After a new purchase', color: '#10B981', user_id: 'demo-user' },
+  { id: '2', name: 'Support Interaction', description: 'After customer support', color: '#3B82F6', user_id: 'demo-user' },
+  { id: '3', name: 'Renewal', description: 'After subscription renewal', color: '#8B5CF6', user_id: 'demo-user' }
+];
+
+const getDemoGroups = (): Group[] => [
+  { id: '1', name: 'Premium Customers', description: 'High-value customers', user_id: 'demo-user' },
+  { id: '2', name: 'New Users', description: 'Users who joined in the last 30 days', user_id: 'demo-user' },
+  { id: '3', name: 'Enterprise', description: 'Enterprise customers', user_id: 'demo-user' }
+];
+
 export const saveSource = async (source: Omit<Source, 'id'> & { id?: string }): Promise<Source> => {
   const userId = await getCurrentUserId();
+  
+  if (!userId || !isSupabaseConfigured()) {
+    // Return the source with a generated ID for demo mode
+    return {
+      ...source,
+      id: source.id || `demo-${Date.now()}`,
+      user_id: 'demo-user'
+    };
+  }
   
   if (source.id) {
     const { data, error } = await supabase
@@ -83,6 +109,10 @@ export const deleteSource = async (id: string): Promise<boolean> => {
 // Situations
 export const getSituations = async (): Promise<Situation[]> => {
   try {
+    if (!isSupabaseConfigured()) {
+      return getDemoSituations();
+    }
+    
     const { data, error } = await supabase
       .from('situations')
       .select('*')
@@ -92,17 +122,20 @@ export const getSituations = async (): Promise<Situation[]> => {
     return data || [];
   } catch (error) {
     console.error('Error fetching situations:', error);
-    // Return demo data
-    return [
-      { id: '1', name: 'New Purchase', description: 'After a new purchase', color: '#10B981', user_id: await getCurrentUserId() },
-      { id: '2', name: 'Support Interaction', description: 'After customer support', color: '#3B82F6', user_id: await getCurrentUserId() },
-      { id: '3', name: 'Renewal', description: 'After subscription renewal', color: '#8B5CF6', user_id: await getCurrentUserId() }
-    ];
+    return getDemoSituations();
   }
 };
 
 export const saveSituation = async (situation: Omit<Situation, 'id'> & { id?: string }): Promise<Situation> => {
   const userId = await getCurrentUserId();
+  
+  if (!userId || !isSupabaseConfigured()) {
+    return {
+      ...situation,
+      id: situation.id || `demo-${Date.now()}`,
+      user_id: 'demo-user'
+    };
+  }
   
   if (situation.id) {
     const { data, error } = await supabase
@@ -138,6 +171,10 @@ export const deleteSituation = async (id: string): Promise<boolean> => {
 // Groups
 export const getGroups = async (): Promise<Group[]> => {
   try {
+    if (!isSupabaseConfigured()) {
+      return getDemoGroups();
+    }
+    
     const { data, error } = await supabase
       .from('groups')
       .select('*')
@@ -147,17 +184,20 @@ export const getGroups = async (): Promise<Group[]> => {
     return data || [];
   } catch (error) {
     console.error('Error fetching groups:', error);
-    // Return demo data
-    return [
-      { id: '1', name: 'Premium Customers', description: 'High-value customers', user_id: await getCurrentUserId() },
-      { id: '2', name: 'New Users', description: 'Users who joined in the last 30 days', user_id: await getCurrentUserId() },
-      { id: '3', name: 'Enterprise', description: 'Enterprise customers', user_id: await getCurrentUserId() }
-    ];
+    return getDemoGroups();
   }
 };
 
 export const saveGroup = async (group: Omit<Group, 'id'> & { id?: string }): Promise<Group> => {
   const userId = await getCurrentUserId();
+  
+  if (!userId || !isSupabaseConfigured()) {
+    return {
+      ...group,
+      id: group.id || `demo-${Date.now()}`,
+      user_id: 'demo-user'
+    };
+  }
   
   if (group.id) {
     const { data, error } = await supabase
@@ -193,6 +233,10 @@ export const deleteGroup = async (id: string): Promise<boolean> => {
 // Campaigns
 export const getCampaigns = async (): Promise<Campaign[]> => {
   try {
+    if (!isSupabaseConfigured()) {
+      return getDemoCampaigns();
+    }
+    
     const { data, error } = await supabase
       .from('campaigns')
       .select('*')
@@ -211,42 +255,48 @@ export const getCampaigns = async (): Promise<Campaign[]> => {
     })) || [];
   } catch (error) {
     console.error('Error fetching campaigns:', error);
-    // Return demo data
-    const userId = await getCurrentUserId();
-    const sources = await getSources();
-    const groups = await getGroups();
-    
-    return [
-      {
-        id: '1',
-        name: 'Customer Satisfaction Survey',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: null,
-        description: 'Measuring overall customer satisfaction',
-        active: true,
-        defaultSourceId: sources[0]?.id || '',
-        defaultGroupId: groups[0]?.id || '',
-        surveyCustomization: {
-          backgroundType: 'color',
-          backgroundColor: '#f8fafc',
-          primaryColor: '#073143',
-          textColor: '#1f2937'
-        },
-        automation: {
-          enabled: false,
-          action: 'return_only',
-          successMessage: 'Obrigado pelo seu feedback!',
-          errorMessage: 'Ocorreu um erro. Tente novamente.'
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    ];
+    return getDemoCampaigns();
   }
 };
 
+const getDemoCampaigns = (): Campaign[] => [
+  {
+    id: '1',
+    name: 'Customer Satisfaction Survey',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: null,
+    description: 'Measuring overall customer satisfaction',
+    active: true,
+    defaultSourceId: '1',
+    defaultGroupId: '1',
+    surveyCustomization: {
+      backgroundType: 'color',
+      backgroundColor: '#f8fafc',
+      primaryColor: '#073143',
+      textColor: '#1f2937'
+    },
+    automation: {
+      enabled: false,
+      action: 'return_only',
+      successMessage: 'Obrigado pelo seu feedback!',
+      errorMessage: 'Ocorreu um erro. Tente novamente.'
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
 export const saveCampaign = async (campaign: Campaign): Promise<Campaign> => {
   const userId = await getCurrentUserId();
+  
+  if (!userId || !isSupabaseConfigured()) {
+    return {
+      ...campaign,
+      id: campaign.id || `demo-${Date.now()}`,
+      createdAt: campaign.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  }
   
   const campaignData = {
     name: campaign.name,
@@ -808,25 +858,57 @@ export const saveAppConfig = async (config: AppConfig): Promise<AppConfig> => {
 // Initialize default data for new users
 export const initializeDefaultData = async (): Promise<void> => {
   try {
-    let userId = await getCurrentUserId();
+    const userId = await getCurrentUserId();
     
-    if (!userId) {
-      // Use a demo user ID if not authenticated
-      userId = '123e4567-e89b-12d3-a456-426614174000';
+    // Only initialize data if we have a valid authenticated user and Supabase is configured
+    if (!userId || !isSupabaseConfigured()) {
+      console.log('Skipping default data initialization - no authenticated user or Supabase not configured');
+      return;
     }
     
     // Check if user already has data
-    try {
-      if (isSupabaseConfigured()) {
-        const { data: existingSources } = await supabase
-          .from('sources')
-          .select('id')
-          .eq('user_id', userId)
-          .limit(1);
-        
-        if (existingSources && existingSources.length > 0) {
-          return; // User already has data
-        }
+    const { data: existingSources } = await supabase
+      .from('sources')
+      .select('id')
+      .eq('user_id', userId)
+      .limit(1);
+    
+    if (existingSources && existingSources.length > 0) {
+      return; // User already has data
+    }
+    
+    // Create default sources
+    const defaultSources = [
+      { name: 'WhatsApp', color: '#25D366', user_id: userId },
+      { name: 'Email', color: '#4285F4', user_id: userId },
+      { name: 'Telefone', color: '#FF9800', user_id: userId },
+      { name: 'Website', color: '#673AB7', user_id: userId },
+    ];
+    
+    await supabase.from('sources').insert(defaultSources);
+    
+    // Create default situations
+    const defaultSituations = [
+      { name: 'Respondido', color: '#4CAF50', user_id: userId },
+      { name: 'Pendente', color: '#FFC107', user_id: userId },
+      { name: 'Ignorado', color: '#F44336', user_id: userId },
+    ];
+    
+    await supabase.from('situations').insert(defaultSituations);
+    
+    // Create default groups
+    const defaultGroups = [
+      { name: 'Clientes Premium', user_id: userId },
+      { name: 'Clientes Regulares', user_id: userId },
+      { name: 'Testes Internos', user_id: userId },
+    ];
+    
+    await supabase.from('groups').insert(defaultGroups);
+    
+  } catch (error) {
+    console.error('Error initializing default data:', error);
+  }
+};
       }
     } catch (checkError) {
       console.warn('Error checking for existing data:', checkError);
