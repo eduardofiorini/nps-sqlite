@@ -224,17 +224,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, name: string, planId?: string): Promise<boolean> => {
     try {
       // Check if Supabase is configured first
-      if (!isSupabaseConfigured()) {
+      if (!isSupabaseConfigured() || !email || !password || !name) {
         console.log('Supabase not configured, using demo mode');
         return createDemoUser(email, password, name);
-      }
-      
-      if (!email || !password || !name) {
-        // Demo mode - create mock user if credentials provided
-        if (!email || !password || !name) {
-          console.error('Registration error: Email and password are required');
-          return false;
-        }
       }
       
       // Only attempt Supabase registration if properly configured
@@ -246,7 +238,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             data: {
               name,
               planId,
-            }
+            },
+            emailRedirectTo: `${window.location.origin}/login`
           }
         });
 
@@ -254,20 +247,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Handle database errors by falling back to demo mode
           if (error.message?.includes('Database error updating user') || error.message?.includes('unexpected_failure')) {
             console.warn('Database error detected during registration, falling back to demo mode');
-            if (email && password && name) {
-              const mockUser: User = {
-                id: '123e4567-e89b-12d3-a456-426614174000',
-                email: email,
-                name: name,
-                role: 'user'
-              };
-              setUser(mockUser);
-              
-              // Store mock user in localStorage
-              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-              
-              return true;
-            }
+            return createDemoUser(email, password, name);
           }
           
           console.error('Registration error:', error.message);
@@ -275,6 +255,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         if (data?.user) {
+          console.log('User registered successfully:', data.user);
           const processedUser = processSupabaseUser(data.user);
           setUser(processedUser);
           
@@ -318,18 +299,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('Supabase registration error:', supabaseError);
         
         // Fall back to demo mode if Supabase fails
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: name || email.split('@')[0] || 'User',
-          role: 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return true;
+        return createDemoUser(email, password, name);
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -340,6 +310,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Helper function to create a demo user
   const createDemoUser = (email: string, password: string, name: string): boolean => {
     if (!email || !password || !name) {
+      console.error('Registration error: Email, password, and name are required');
       return false;
     }
     
@@ -348,7 +319,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const mockUser: User = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         email: email,
-        name: name || email.split('@')[0] || 'User',
+        name: name,
         role: 'user'
       };
       setUser(mockUser);
