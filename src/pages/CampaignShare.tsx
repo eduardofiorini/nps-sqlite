@@ -6,7 +6,7 @@ import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
-import { ChevronLeft, Copy, Link as LinkIcon, QrCode, Mail, Users, Send, Check, AlertCircle, X } from 'lucide-react';
+import { ChevronLeft, Copy, Link as LinkIcon, QrCode, Mail, Users, Send, Check, AlertCircle, X, Eye } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const CampaignShare: React.FC = () => {
@@ -84,7 +84,10 @@ const CampaignShare: React.FC = () => {
     return content
       .replace(/\{\{nome\}\}/g, contact.name)
       .replace(/\{\{email\}\}/g, contact.email)
-      .replace(/\{\{campanha\}\}/g, campaign.name)
+      .replace(/\{\{telefone\}\}/g, contact.phone || '')
+      .replace(/\{\{empresa\}\}/g, contact.company || '')
+      .replace(/\{\{cargo\}\}/g, contact.position || '')
+      .replace(/\{\{campanha\}\}/g, campaign?.name || '')
       .replace(/\{\{link_pesquisa\}\}/g, surveyLink);
   };
 
@@ -103,17 +106,8 @@ const CampaignShare: React.FC = () => {
       // Create email queue
       const emailQueue = selectedContactsData.map(contact => {
         // Personalize email content
-        const personalizedSubject = emailSubject
-          .replace(/\{\{nome\}\}/g, contact.name)
-          .replace(/\{\{email\}\}/g, contact.email)
-          .replace(/\{\{campanha\}\}/g, campaign.name)
-          .replace(/\{\{link_pesquisa\}\}/g, surveyUrl);
-        
-        const personalizedBody = emailBody
-          .replace(/\{\{nome\}\}/g, contact.name)
-          .replace(/\{\{email\}\}/g, contact.email)
-          .replace(/\{\{campanha\}\}/g, campaign.name)
-          .replace(/\{\{link_pesquisa\}\}/g, surveyUrl);
+        const personalizedSubject = personalizeContent(emailSubject, contact);
+        const personalizedBody = personalizeContent(emailBody, contact);
         
         return {
           to: contact.email,
