@@ -362,7 +362,19 @@ const Contacts: React.FC = () => {
 
           setImportStatus('success');
           setImportMessage(`Importação concluída! ${successCount} contatos importados com sucesso. ${errorCount > 0 ? `${errorCount} linhas com erro.` : ''}`);
-          loadData();
+          
+          // Reload contacts data after import
+          const loadContactsAfterImport = async () => {
+            try {
+              const loadedContacts = await getContacts();
+              setContacts(loadedContacts);
+              setFilteredContacts(loadedContacts);
+            } catch (error) {
+              console.error('Error loading contacts after import:', error);
+            }
+          };
+          
+          loadContactsAfterImport();
           
           setTimeout(() => {
             setImportModalOpen(false);
@@ -376,7 +388,9 @@ const Contacts: React.FC = () => {
           setImportStatus('error');
           setImportMessage('Erro ao processar o arquivo. Verifique o formato.');
         } finally {
-          setIsImporting(false);
+          setTimeout(() => {
+            setIsImporting(false);
+          }, 500);
         }
       };
 
@@ -385,7 +399,9 @@ const Contacts: React.FC = () => {
     } catch (error) {
       setImportStatus('error');
       setImportMessage('Erro ao processar o arquivo.');
-      setIsImporting(false);
+      setTimeout(() => {
+        setIsImporting(false);
+      }, 500);
     }
   };
 
