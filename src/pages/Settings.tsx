@@ -6,11 +6,12 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
+import Badge from '../components/ui/Badge';
 import Input from '../components/ui/Input';
 import { AppConfig } from '../types';
 import { getSources, getSituations, getGroups, getAppConfig } from '../utils/supabaseStorage';
 import { supabase } from '../lib/supabase';
-import { Save, Globe, Moon, Sun, BarChart, Users, Tag, Building, FileText, Phone, Mail, MapPin, Hash, Server, MessageSquare, Smartphone, Shield, Eye, EyeOff, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
+import { Save, Globe, Moon, Sun, BarChart, Users, Tag, Building, FileText, Phone, Mail, MapPin, Hash, Server, MessageSquare, Smartphone, Shield, Eye, EyeOff, CheckCircle, AlertTriangle, Zap, Info } from 'lucide-react';
 
 const Settings: React.FC = () => {
   const { config, updateConfig } = useConfig();
@@ -25,8 +26,16 @@ const Settings: React.FC = () => {
   const [testEmailResult, setTestEmailResult] = useState<{
     success: boolean;
     message: string;
+    details?: any;
   } | null>(null);
   const [showTestEmailModal, setShowTestEmailModal] = useState(false);
+  const [showZenviaTestModal, setShowZenviaTestModal] = useState(false);
+  const [zenviaTestResult, setZenviaTestResult] = useState<{
+    success: boolean;
+    message: string;
+    details?: any;
+    service?: string;
+  } | null>(null);
   
   useEffect(() => {
     setFormData(config);
@@ -79,13 +88,13 @@ const Settings: React.FC = () => {
     }));
   };
 
-  const testConnection = async (service: string, config?: any) => {
+  const testConnection = async (service: string, serviceConfig?: any) => {
     setTestingConnection(prev => ({ ...prev, [service]: true }));
     
     try {
       if (service === 'SMTP') {
         // Get the current SMTP configuration
-        const smtpConfig = config || formData.integrations?.smtp;
+        const smtpConfig = serviceConfig || formData.integrations?.smtp;
         
         if (!smtpConfig) {
           throw new Error('SMTP configuration is missing');
@@ -126,10 +135,114 @@ const Settings: React.FC = () => {
         setShowTestEmailModal(true);
         setSaveMessage('Email de teste enviado com sucesso!');
         setSaveMessageType('success');
-      } else {
-        // For other services, just simulate a test
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setSaveMessage(`Conexão ${service} testada com sucesso!`);
+      } else if (service === 'ZenVia E-mail') {
+        // Get the current ZenVia Email configuration
+        const emailConfig = serviceConfig || formData.integrations?.zenvia?.email;
+        
+        if (!emailConfig) {
+          throw new Error('ZenVia Email configuration is missing');
+        }
+        
+        if (!emailConfig.apiKey || !emailConfig.fromName || !emailConfig.fromEmail) {
+          throw new Error('ZenVia Email configuration is incomplete. Please fill in all fields.');
+        }
+        
+        // Call the Supabase Edge Function to send a test email via ZenVia
+        const { data: authData } = await supabase.auth.getSession();
+        const token = authData.session?.access_token;
+        
+        if (!token) {
+          throw new Error('Authentication token is missing. Please log in again.');
+        }
+        
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zenvia-test`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            serviceType: 'email',
+            config: emailConfig
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to send test email via ZenVia');
+        }
+        
+        setZenviaTestResult({
+          success: true,
+          message: result.message || `Email de teste enviado com sucesso para ${authData.session?.user?.email}`,
+          details: result.details,
+          service: 'email'
+        });
+        
+        setShowZenviaTestModal(true);
+        setSaveMessage('Email de teste ZenVia enviado com sucesso!');
+        setSaveMessageType('success');
+      } else if (service === 'ZenVia SMS' || service === 'ZenVia WhatsApp') {
+        // Get the current configuration
+        const serviceType = service === 'ZenVia SMS' ? 'sms' : 'whatsapp';
+        const serviceConfig = service === 'ZenVia SMS' 
+          ? (serviceConfig || formData.integrations?.zenvia?.sms)
+          : (serviceConfig || formData.integrations?.zenvia?.whatsapp);
+        
+        if (!serviceConfig) {
+          throw new Error(`${service} configuration is missing`);
+        }
+        
+        if (!serviceConfig.apiKey || !serviceConfig.from) {
+          throw new Error(`${service} configuration is incomplete. Please fill in all fields.`);
+        }
+        
+        // Get user profile to check if phone number is set
+        const { data: userProfile } = await supabase
+          .from('user_profiles')
+          .select('phone')
+          .single();
+          
+        if (!userProfile?.phone) {
+          throw new Error(`Seu perfil não tem um número de telefone configurado. Por favor, atualize seu perfil com um número de telefone válido para testar o serviço de ${serviceType === 'sms' ? 'SMS' : 'WhatsApp'}.`);
+        }
+        
+        // Call the Supabase Edge Function
+        const { data: authData } = await supabase.auth.getSession();
+        const token = authData.session?.access_token;
+        
+        if (!token) {
+          throw new Error('Authentication token is missing. Please log in again.');
+        }
+        
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zenvia-test`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            serviceType: serviceType,
+            config: serviceConfig
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error(result.error || `Failed to send test ${serviceType}`);
+        }
+        
+        setZenviaTestResult({
+          success: true,
+          message: result.message || `${serviceType === 'sms' ? 'SMS' : 'WhatsApp'} de teste enviado com sucesso para ${userProfile.phone}`,
+          details: result.details,
+          service: serviceType
+        });
+        
+        setShowZenviaTestModal(true);
+        setSaveMessage(`${service} testado com sucesso!`);
         setSaveMessageType('success');
       }
     } catch (error) {
@@ -143,13 +256,17 @@ const Settings: React.FC = () => {
         setShowTestEmailModal(true);
       }
       
+      if (service === 'ZenVia E-mail' || service === 'ZenVia SMS' || service === 'ZenVia WhatsApp') {
+        setShowZenviaTestModal(true);
+      }
+      
       setSaveMessage(`Erro ao testar conexão ${service}: ${error.message}`);
       setSaveMessageType('error');
     } finally {
       setTestingConnection(prev => ({ ...prev, [service]: false }));
       
       // Clear message after 5 seconds
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         setSaveMessage('');
       }, 5000);
     }
@@ -497,6 +614,7 @@ const Settings: React.FC = () => {
                     {formData.integrations?.zenvia?.email?.enabled && (
                       <Button
                         type="button"
+                        className="whitespace-nowrap"
                         variant="outline"
                         size="sm"
                         onClick={() => testConnection('ZenVia E-mail')}
@@ -580,6 +698,7 @@ const Settings: React.FC = () => {
                     {formData.integrations?.zenvia?.sms?.enabled && (
                       <Button
                         type="button"
+                        className="whitespace-nowrap"
                         variant="outline"
                         size="sm"
                         onClick={() => testConnection('ZenVia SMS')}
@@ -644,6 +763,7 @@ const Settings: React.FC = () => {
                     {formData.integrations?.zenvia?.whatsapp?.enabled && (
                       <Button
                         type="button"
+                        className="whitespace-nowrap"
                         variant="outline"
                         size="sm"
                         onClick={() => testConnection('ZenVia WhatsApp')}
@@ -765,6 +885,89 @@ const Settings: React.FC = () => {
                     <li>Verifique se a opção SSL/TLS está configurada corretamente</li>
                     <li>Alguns provedores de email exigem uma "senha de aplicativo" específica</li>
                     <li>Verifique se o provedor de email permite acesso SMTP</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ZenVia Test Modal */}
+      <Modal
+        isOpen={showZenviaTestModal}
+        onClose={() => setShowZenviaTestModal(false)}
+        title={zenviaTestResult?.success 
+          ? zenviaTestResult.service === 'email' 
+            ? "Email de Teste ZenVia Enviado" 
+            : zenviaTestResult.service === 'sms'
+              ? "SMS de Teste ZenVia Enviado"
+              : "WhatsApp de Teste ZenVia Enviado"
+          : "Erro ao Enviar Mensagem de Teste"
+        }
+        size="md"
+        footer={
+          <div className="flex justify-end">
+            <Button variant="primary" onClick={() => setShowZenviaTestModal(false)}>
+              Fechar
+            </Button>
+          </div>
+        }
+      >
+        <div className={`p-4 rounded-lg ${
+          zenviaTestResult?.success 
+            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+            : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+        }`}>
+          <div className="flex items-start">
+            {zenviaTestResult?.success ? (
+              <CheckCircle className="text-green-500 mr-3 mt-0.5 flex-shrink-0" size={20} />
+            ) : (
+              <AlertTriangle className="text-red-500 mr-3 mt-0.5 flex-shrink-0" size={20} />
+            )}
+            <div>
+              <h3 className={`font-medium ${
+                zenviaTestResult?.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
+              }`}>
+                {zenviaTestResult?.success ? 'Sucesso' : 'Erro'}
+              </h3>
+              <p className={`mt-1 text-sm ${
+                zenviaTestResult?.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
+              }`}>
+                {zenviaTestResult?.message}
+              </p>
+              
+              {zenviaTestResult?.success && zenviaTestResult.details && (
+                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded border border-green-200 dark:border-green-800">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Detalhes do Envio:</h4>
+                  <div className="space-y-1 text-sm">
+                    {Object.entries(zenviaTestResult.details).map(([key, value]) => (
+                      <div key={key} className="flex">
+                        <span className="font-medium text-gray-700 dark:text-gray-300 w-24">{key}:</span>
+                        <span className="text-gray-600 dark:text-gray-400">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {!zenviaTestResult?.success && (
+                <div className="mt-3 text-sm text-red-700 dark:text-red-300">
+                  <p>Dicas para resolver problemas comuns:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>Verifique se a API key está correta</li>
+                    <li>Confirme se o serviço está ativo na sua conta ZenVia</li>
+                    {zenviaTestResult?.service === 'sms' || zenviaTestResult?.service === 'whatsapp' ? (
+                      <>
+                        <li>Verifique se o número de telefone do remetente está no formato correto</li>
+                        <li>Confirme se você tem um número de telefone válido no seu perfil</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>Verifique se o email do remetente está correto</li>
+                        <li>Confirme se o domínio do email está configurado na ZenVia</li>
+                      </>
+                    )}
                   </ul>
                 </div>
               )}
