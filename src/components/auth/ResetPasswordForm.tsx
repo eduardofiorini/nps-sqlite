@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
@@ -16,14 +17,46 @@ const ResetPasswordForm: React.FC = () => {
   const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [hasValidToken, setHasValidToken] = useState(false);
 
   useEffect(() => {
     // Check if we have the required tokens
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
+    const type = searchParams.get('type');
+    const accessToken = searchParams.get('access_token') || searchParams.get('token');
+    const refreshToken = searchParams.get('refresh_token') || searchParams.get('refresh_token');
     
-    if (!accessToken || !refreshToken) {
-      setError('Link de recuperação inválido ou expirado.');
+    if (type === 'recovery' && accessToken) {
+      setHasValidToken(true);
+      
+      // Set the session with the recovery token
+      const setSession = async () => {
+        try {
+          if (isSupabaseConfigured()) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || '',
+            });
+            
+            if (error) {
+              console.error('Error setting session:', error);
+              setError('Link de recuperação inválido ou expirado.');
+              setHasValidToken(false);
+            }
+          } else {
+            // In demo mode, just pretend we have a valid token
+            console.log('Demo mode: simulating valid recovery token');
+          }
+        } catch (err) {
+          console.error('Error setting session:', err);
+          setError('Ocorreu um erro ao processar o link de recuperação.');
+          setHasValidToken(false);
+        }
+      };
+      
+      setSession();
+    } else {
+      setError('Link de recuperação inválido ou expirado. Solicite um novo link.');
+      setHasValidToken(false);
     }
   }, [searchParams]);
 
@@ -44,13 +77,26 @@ const ResetPasswordForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
-
-      if (error) {
-        setError('Erro ao redefinir senha. Tente novamente.');
+      let success = false;
+      
+      if (isSupabaseConfigured()) {
+        const { error } = await supabase.auth.updateUser({
+          password: password
+        });
+        
+        if (error) {
+          setError('Erro ao redefinir senha. Tente novamente.');
+          throw error;
+        }
+        
+        success = true;
       } else {
+        // Demo mode - simulate success
+        console.log('Demo mode: simulating password reset success');
+        success = true;
+      }
+
+      if (success) {
         setIsSuccess(true);
         // Redirect to login after 3 seconds
         setTimeout(() => {
@@ -269,7 +315,7 @@ const ResetPasswordForm: React.FC = () => {
               </div>
               
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                A senha deve ter pelo menos 6 caracteres
+                A senha deve ter pelo menos 6 caracteres e incluir letras e números
               </div>
               
               <Button
@@ -279,8 +325,20 @@ const ResetPasswordForm: React.FC = () => {
                 isLoading={isLoading}
                 className="h-12 text-base font-medium bg-[#073143] hover:bg-[#0a4a5c] focus:ring-[#073143]"
               >
-                Redefinir Senha
+                {hasValidToken ? 'Redefinir Senha' : 'Voltar ao Login'}
               </Button>
+              
+              {!hasValidToken && (
+                <div className="mt-4 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/forgot-password')}
+                    fullWidth
+                  >
+                    Solicitar Novo Link
+                  </Button>
+                </div>
+              )}
             </form>
           </div>
         </motion.div>
