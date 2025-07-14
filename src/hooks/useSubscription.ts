@@ -15,6 +15,7 @@ export function useSubscription() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
   const [trialExpired, setTrialExpired] = useState<boolean>(false)
+  const [daysLeftInTrial, setDaysLeftInTrial] = useState<number | null>(null)
   const [orders, setOrders] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -45,16 +46,30 @@ export function useSubscription() {
             setTrialExpired(true);
           } else {
             setTrialExpired(false);
+            
+            // Calculate days left in trial
+            const trialEndDate = new Date(data.current_period_end * 1000);
+            const today = new Date();
+            const diffTime = trialEndDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            setDaysLeftInTrial(diffDays > 0 ? diffDays : 0);
           }
+        } else if (data.subscription_status === 'trialing') {
+          // If we don't have an end date but status is trialing, set a default
+          setDaysLeftInTrial(7);
+          setTrialExpired(false);
         }
       }
 
       // Also fetch order history
       try {
-        const { data: orderData } = await supabase
+        const { data: orderData, error: orderError } = await supabase
           .from('stripe_user_orders')
           .select('*')
           .order('order_date', { ascending: false });
+          
+        if (orderError) throw orderError;
         setOrders(orderData || []);
       } catch (orderError) {
         console.error('Error fetching order history:', orderError);
@@ -93,6 +108,7 @@ export function useSubscription() {
     error,
     orders,
     trialExpired,
+    daysLeftInTrial,
     refetch: fetchSubscription,
     isTrialing,
     plan: getSubscriptionPlan(),
