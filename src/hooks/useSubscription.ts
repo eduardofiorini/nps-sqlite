@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { getProductByPriceId } from '../stripe-config'
+import { getProductByPriceId, STRIPE_PRODUCTS } from '../stripe-config'
 
 interface Subscription {
   subscription_status: string
@@ -15,6 +15,7 @@ export function useSubscription() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
   const [trialExpired, setTrialExpired] = useState<boolean>(false)
+  const [orders, setOrders] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function useSubscription() {
       setError(null)
 
       const { data, error } = await supabase
+        .from('stripe_user_subscriptions')
         .from('stripe_user_subscriptions')
         .select('*')
         .maybeSingle()
@@ -48,6 +50,17 @@ export function useSubscription() {
         }
       }
 
+      // Also fetch order history
+      try {
+        const { data: orderData } = await supabase
+          .from('stripe_user_orders')
+          .select('*')
+          .order('order_date', { ascending: false });
+        setOrders(orderData || []);
+      } catch (orderError) {
+        console.error('Error fetching order history:', orderError);
+      }
+
       setSubscription(data)
     } catch (err) {
       console.error('Error fetching subscription:', err)
@@ -59,7 +72,15 @@ export function useSubscription() {
 
   const getSubscriptionPlan = () => {
     if (!subscription?.price_id) return null
-    return getProductByPriceId(subscription.price_id)
+    
+    const plan = getProductByPriceId(subscription.price_id)
+    
+    // If no plan found by price ID, return the first product as fallback
+    if (!plan && STRIPE_PRODUCTS.length > 0) {
+      return STRIPE_PRODUCTS[0]
+    }
+    
+    return plan
   }
 
   const isActive = subscription?.subscription_status === 'active'
@@ -71,6 +92,7 @@ export function useSubscription() {
     subscription,
     loading,
     error,
+    orders,
     trialExpired,
     refetch: fetchSubscription,
     isTrialing,

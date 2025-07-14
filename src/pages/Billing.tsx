@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { supabase } from '../lib/supabase';
 import { 
   CreditCard, 
@@ -24,7 +24,7 @@ import { getSubscription, saveSubscription } from '../utils/localStorage';
 import { useSubscription } from '../hooks/useSubscription';
 import { useSubscriptionContext } from '../contexts/SubscriptionContext'; 
 import { STRIPE_PRODUCTS, formatPrice } from '../stripe-config';
-import type { Subscription, Plan } from '../types';
+import type { Subscription, Plan, UserProfile } from '../types';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
@@ -32,8 +32,15 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
 const Billing: React.FC = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [billingHistory, setBillingHistory] = useState<any[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<any>(null);
+  const [usageStats, setUsageStats] = useState<any>({
+    responses: { used: 0, limit: 0 },
+    campaigns: { used: 0, limit: 0 },
+    users: { used: 0, limit: 0 }
+  });
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-  const { subscription: dbSubscription, isActive, plan, loading: subLoading } = useSubscription();
+  const { subscription: dbSubscription, isActive, plan, loading: subLoading, refetch } = useSubscription();
   const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
 
   const plans: Plan[] = [
@@ -111,50 +118,117 @@ const Billing: React.FC = () => {
   // Use the plan from the subscription hook if available, otherwise fall back to localStorage
   const currentPlan = plan || plans.find(p => p.id === subscription?.planId) || plans[1];
 
-  const billingHistory = [
-    {
-      id: '1',
-      date: '2025-01-15',
-      amount: 79,
-      status: 'paid',
-      description: 'Plano Profissional - Janeiro 2025',
-      invoice: 'INV-2025-001'
-    },
-    {
-      id: '2',
-      date: '2024-12-15',
-      amount: 79,
-      status: 'paid',
-      description: 'Plano Profissional - Dezembro 2024',
-      invoice: 'INV-2024-012'
-    },
-    {
-      id: '3',
-      date: '2024-11-15',
-      amount: 79,
-      status: 'paid',
-      description: 'Plano Profissional - Novembro 2024',
-      invoice: 'INV-2024-011'
-    }
-  ];
-
-  const usageStats = {
-    responses: { used: 1247, limit: 2500 },
-    campaigns: { used: 8, limit: 'unlimited' },
-    users: { used: 3, limit: 10 }
-  };
-
   useEffect(() => {
-    // If we have a subscription from the database, use that
-    if (!subLoading && dbSubscription) {
-      setIsLoading(false);
-    } else {
-      // Otherwise fall back to localStorage
-      const sub = getSubscription();
-      setSubscription(sub);
-      setIsLoading(false);
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // If we have a subscription from the database, use that
+        if (!subLoading && dbSubscription) {
+          // Load payment method if available
+          if (dbSubscription.payment_method_brand && dbSubscription.payment_method_last4) {
+            setPaymentMethod({
+              brand: dbSubscription.payment_method_brand,
+              last4: dbSubscription.payment_method_last4
+            });
+          }
+          
+          // Load billing history from Supabase
+          try {
+            const { data: orders } = await supabase
+              .from('stripe_user_orders')
+              .select('*')
+              .order('order_date', { ascending: false });
+              
+            if (orders) {
+              setBillingHistory(orders.map(order => ({
+                id: order.order_id,
+                date: order.order_date,
+                amount: order.amount_total / 100, // Convert from cents
+                status: order.payment_status,
+                description: `Plano ${currentPlan.name}`,
+                invoice: order.payment_intent_id
+              })));
+            }
+          } catch (error) {
+            console.error('Error loading billing history:', error);
+          }
+          
+          // Load usage statistics
+          try {
+            // Get campaign count
+            const { data: campaigns } = await supabase
+              .from('campaigns')
+              .select('id, active');
+              
+            // Get response count
+            const { count: responseCount } = await supabase
+              .from('nps_responses')
+              .select('id', { count: 'exact', head: true });
+              
+            // Get user profile count (team members)
+            const { count: userCount } = await supabase
+              .from('user_profiles')
+              .select('id', { count: 'exact', head: true });
+              
+            // Set usage stats based on current plan
+            const activeCampaigns = campaigns?.filter(c => c.active).length || 0;
+            
+            setUsageStats({
+              responses: { 
+                used: responseCount || 0, 
+                limit: currentPlan.limits.responses 
+              },
+              campaigns: { 
+                used: activeCampaigns, 
+                limit: currentPlan.limits.campaigns 
+              },
+              users: { 
+                used: userCount || 1, 
+                limit: currentPlan.limits.users 
+              }
+            });
+          } catch (error) {
+            console.error('Error loading usage statistics:', error);
+          }
+        } else if (!subLoading) {
+          // Otherwise fall back to localStorage
+          const sub = getSubscription();
+          setSubscription(sub);
+          
+          // Set demo billing history
+          setBillingHistory([
+            {
+              id: '1',
+              date: new Date().toISOString(),
+              amount: currentPlan.price,
+              status: 'paid',
+              description: `Plano ${currentPlan.name} - ${new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`,
+              invoice: 'INV-DEMO-001'
+            }
+          ]);
+          
+          // Set demo payment method
+          setPaymentMethod({
+            brand: 'visa',
+            last4: '4242'
+          });
+          
+          // Set demo usage stats
+          setUsageStats({
+            responses: { used: 247, limit: currentPlan.limits.responses },
+            campaigns: { used: 3, limit: currentPlan.limits.campaigns },
+            users: { used: 1, limit: currentPlan.limits.users }
+          });
+        }
+      } catch (error) {
+        console.error('Error loading billing data:', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [subLoading, dbSubscription]);
+    
+    loadData();
+  }, [subLoading, dbSubscription, currentPlan]);
 
   const handlePlanChange = (planId: string) => {
     if (!subscription) return;
@@ -205,7 +279,8 @@ const Billing: React.FC = () => {
   const handleCheckout = async (priceId: string) => {
     setIsCheckoutLoading(true);
     try {
-      if (!import.meta.env.VITE_SUPABASE_URL) {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) {
         console.warn('Supabase URL not found, using demo mode');
         // Demo mode - simulate successful checkout
         setTimeout(() => {
@@ -216,7 +291,7 @@ const Billing: React.FC = () => {
       }
 
       // Call our Supabase Edge Function to create a checkout session
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -237,6 +312,9 @@ const Billing: React.FC = () => {
       } else {
         throw new Error('Failed to create checkout session: No URL returned');
       }
+      
+      // Refresh subscription data after successful checkout
+      refetch();
     } catch (error) {
       console.error('Error creating checkout session:', error instanceof Error ? error.message : error);
       
@@ -262,6 +340,17 @@ const Billing: React.FC = () => {
     }
   };
 
+  // Helper function to format card brand
+  const formatCardBrand = (brand: string) => {
+    if (!brand) return '';
+    const brands: Record<string, string> = {
+      visa: 'Visa',
+      mastercard: 'Mastercard',
+      amex: 'American Express',
+    };
+    return brands[brand.toLowerCase()] || brand;
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -269,6 +358,14 @@ const Billing: React.FC = () => {
       </div>
     );
   }
+  
+  // Format the next billing date
+  const getNextBillingDate = () => {
+    if (daysLeftInTrial !== null && daysLeftInTrial > 0) {
+      return new Date(Date.now() + daysLeftInTrial * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR');
+    }
+    return dbSubscription?.current_period_end ? new Date(dbSubscription.current_period_end * 1000).toLocaleDateString('pt-BR') : 'N/A';
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -294,7 +391,7 @@ const Billing: React.FC = () => {
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${currentPlan.color} flex items-center justify-center text-white mr-4`}>
                     {getIconComponent(currentPlan.icon)}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                       {plan?.name || currentPlan.name}
                     </h3>
@@ -310,7 +407,7 @@ const Billing: React.FC = () => {
                   ) : (
                     getStatusBadge(dbSubscription?.subscription_status || subscription?.status || 'active')
                   )}
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap">
                     Próxima cobrança: {
                       dbSubscription?.current_period_end 
                         ? new Date(dbSubscription.current_period_end * 1000).toLocaleDateString('pt-BR')
@@ -323,7 +420,7 @@ const Billing: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentPlan.features.slice(0, 6).map((feature, index) => (
+                {(plan?.features || currentPlan.features).slice(0, 6).map((feature, index) => (
                   <div key={index} className="flex items-center text-sm">
                     <Check size={14} className="text-green-500 mr-2 flex-shrink-0" />
                     <span className="text-gray-600 dark:text-gray-400">{feature}</span>
@@ -335,7 +432,7 @@ const Billing: React.FC = () => {
                 <Button 
                   variant="primary" 
                   icon={isTrialExpired ? <ArrowRight size={16} /> : <CreditCard size={16} />}
-                  onClick={() => handleCheckout(STRIPE_PRODUCTS.find(p => p.id === `prod_${currentPlan.id.charAt(0).toUpperCase() + currentPlan.id.slice(1)}`)?.priceId || '')}
+                  onClick={() => handleCheckout(STRIPE_PRODUCTS.find(p => p.name.includes(currentPlan.name))?.priceId || '')}
                   isLoading={isCheckoutLoading}
                 >
                   {isTrialExpired ? 'Assinar Agora' : 'Atualizar Método de Pagamento'}
@@ -362,7 +459,7 @@ const Billing: React.FC = () => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Respostas este mês</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {usageStats.responses.used.toLocaleString()} / {usageStats.responses.limit.toLocaleString()}
+                      {usageStats.responses.used.toLocaleString()} / {usageStats.responses.limit === 'unlimited' ? '∞' : usageStats.responses.limit.toLocaleString()}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
@@ -371,7 +468,7 @@ const Billing: React.FC = () => {
                       style={{ width: `${getUsagePercentage(usageStats.responses.used, usageStats.responses.limit)}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
                     {Math.round(getUsagePercentage(usageStats.responses.used, usageStats.responses.limit))}% utilizado
                   </p>
                 </div>
@@ -390,7 +487,7 @@ const Billing: React.FC = () => {
                       style={{ width: usageStats.campaigns.limit === 'unlimited' ? '100%' : `${getUsagePercentage(usageStats.campaigns.used, usageStats.campaigns.limit as number)}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
                     {usageStats.campaigns.limit === 'unlimited' ? 'Ilimitado' : `${Math.round(getUsagePercentage(usageStats.campaigns.used, usageStats.campaigns.limit as number))}% utilizado`}
                   </p>
                 </div>
@@ -409,7 +506,7 @@ const Billing: React.FC = () => {
                       style={{ width: `${getUsagePercentage(usageStats.users.used, usageStats.users.limit as number)}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
                     {Math.round(getUsagePercentage(usageStats.users.used, usageStats.users.limit as number))}% utilizado
                   </p>
                 </div>
@@ -420,7 +517,7 @@ const Billing: React.FC = () => {
                   <Calendar size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
                   <span className="text-sm text-blue-800 dark:text-blue-200">
                     {daysLeftInTrial !== null && daysLeftInTrial > 0 
-                      ? `Seu período de teste termina em ${daysLeftInTrial} ${daysLeftInTrial === 1 ? 'dia' : 'dias'}`
+                      ? `Seu período de teste termina em ${daysLeftInTrial} ${daysLeftInTrial === 1 ? 'dia' : 'dias'} (${getNextBillingDate()})`
                       : `Seu plano renova em ${subscription ? Math.ceil((new Date(subscription.currentPeriodEnd).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} dias`
                     }
                   </span>
@@ -463,22 +560,22 @@ const Billing: React.FC = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {billingHistory.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <tr key={item.id || item.invoice} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                          {new Date(item.date).toLocaleDateString('pt-BR')}
+                          {typeof item.date === 'string' ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {item.description}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          R${item.amount}
+                          R${item.amount.toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={item.status === 'paid' ? 'success' : 'warning'}>
-                            {item.status === 'paid' ? 'Pago' : 'Pendente'}
+                          <Badge variant={item.status === 'paid' || item.status === 'complete' ? 'success' : 'warning'}>
+                            {item.status === 'paid' || item.status === 'complete' ? 'Pago' : 'Pendente'}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                           <Button variant="ghost" size="sm" icon={<Download size={14} />}>
                             Baixar
                           </Button>
@@ -487,6 +584,11 @@ const Billing: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+              {billingHistory.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <p>Nenhum histórico de cobrança disponível</p>
+                </div>
+              )}
               </div>
             </CardContent>
           </Card>
@@ -502,10 +604,10 @@ const Billing: React.FC = () => {
                 <CreditCard size={24} className="text-gray-400 mr-3" />
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    •••• •••• •••• 4242
+                    {paymentMethod ? `•••• •••• •••• ${paymentMethod.last4}` : 'Nenhum cartão cadastrado'}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Visa • Expira 12/2027
+                    {paymentMethod ? `${formatCardBrand(paymentMethod.brand)} • Expira 12/2027` : 'Adicione um cartão para continuar'}
                   </p>
                 </div>
               </div>
@@ -514,14 +616,14 @@ const Billing: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-
+          <CardContent className="p-0">
           {/* Next Billing */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader title="Próxima Cobrança" />
             <CardContent>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                  {daysLeftInTrial !== null && daysLeftInTrial > 0
                     ? 'R$0'
                     : `R$${currentPlan.price}`
                   }
@@ -529,7 +631,7 @@ const Billing: React.FC = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                   {daysLeftInTrial !== null && daysLeftInTrial > 0 
                     ? new Date(Date.now() + daysLeftInTrial * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
-                    : subscription ? new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR') : 'N/A'
+                    : getNextBillingDate()
                   }
                 </p>
                 <div className="space-y-2">
@@ -646,7 +748,7 @@ const Billing: React.FC = () => {
                   variant={plan.id === subscription?.planId ? "outline" : "primary"}
                   fullWidth
                   disabled={plan.id === subscription?.planId || isCheckoutLoading}
-                  isLoading={isCheckoutLoading && plan.id !== subscription?.planId}
+                  isLoading={isCheckoutLoading && currentPlan.id !== plan.id}
                   onClick={() => {
                     if (plan.id !== subscription?.planId) {
                       // Find the corresponding Stripe product
@@ -654,7 +756,7 @@ const Billing: React.FC = () => {
                         p.id === `prod_${plan.id.charAt(0).toUpperCase() + plan.id.slice(1)}`
                       );
                       
-                      if (stripeProduct) {
+                      if (stripeProduct && stripeProduct.priceId) {
                         handleCheckout(stripeProduct.priceId);
                       } else {
                         handlePlanChange(plan.id);
@@ -664,7 +766,7 @@ const Billing: React.FC = () => {
                   icon={plan.id !== subscription?.planId ? <ArrowRight size={16} /> : undefined}
                 >
                   {plan.id === subscription?.planId 
-                    ? (daysLeftInTrial !== null && daysLeftInTrial > 0 ? 'Plano de Teste Atual' : 'Plano Atual') 
+                    ? (daysLeftInTrial !== null && daysLeftInTrial > 0 ? 'Plano de Teste Atual' : 'Plano Atual')
                     : (isTrialExpired ? 'Assinar Agora' : 'Selecionar Plano') 
                   }
                 </Button>
@@ -691,7 +793,7 @@ const Billing: React.FC = () => {
                 <Button 
                   variant="primary" 
                   onClick={() => handleCheckout(STRIPE_PRODUCTS.find(p => p.id === `prod_${currentPlan.id.charAt(0).toUpperCase() + currentPlan.id.slice(1)}`)?.priceId || '')}
-                  isLoading={isCheckoutLoading} 
+                  isLoading={isCheckoutLoading}
                   icon={<CreditCard size={16} />}
                 >
                   Assinar Agora
