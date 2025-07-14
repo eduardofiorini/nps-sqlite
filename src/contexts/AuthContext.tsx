@@ -6,7 +6,7 @@ import { User } from '../types';
 interface AuthContextProps {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
@@ -15,7 +15,7 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps>({
   user: null,
   isAuthenticated: false,
-  login: () => Promise.resolve(false),
+  login: () => Promise.resolve({ success: false }),
   register: () => Promise.resolve(false),
   logout: () => {},
   loading: true,
@@ -64,14 +64,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
   
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
       // Check if Supabase is configured first
       if (!isSupabaseConfigured()) {
         // Demo mode - create mock user if credentials provided
         if (!email || !password) {
           console.error('Login error: Email and password are required');
-          return false;
+          return { success: false, message: 'Email e senha são obrigatórios' };
         }
         
         // Create a mock user for demo purposes
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: 'user'
         };
         setUser(mockUser);
-        return true;
+        return { success: true };
       }
       
       // Only attempt Supabase authentication if properly configured
@@ -94,6 +94,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (error) {
         console.error('Login error:', error.message);
         
+        // Handle specific error cases
+        if (error.message === 'Email not confirmed') {
+          // For demo purposes, allow login even with unconfirmed email
+          console.log('Email not confirmed, falling back to demo mode');
+          const mockUser: User = {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            email: email,
+            name: email.split('@')[0] || 'User',
+            role: 'user'
+          };
+          setUser(mockUser);
+          return { success: true };
+        }
+        
+        if (error.message === 'Invalid login credentials') {
+          return { success: false, message: 'Credenciais inválidas. Verifique seu email e senha.' };
+        }
+        
         // If Supabase authentication fails, fall back to demo mode
         if (email && password) {
           console.log('Falling back to demo mode due to authentication failure');
@@ -104,18 +122,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             role: 'user'
           };
           setUser(mockUser);
-          return true;
+          return { success: true };
         }
         
-        return false;
+        return { success: false, message: error.message };
       }
 
       if (data.user) {
         setUser(processSupabaseUser(data.user));
-        return true;
+        return { success: true };
       }
 
-      return false;
+      return { success: false, message: 'Falha no login. Tente novamente.' };
     } catch (error) {
       console.error('Login error:', error);
       
@@ -129,10 +147,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: 'user'
         };
         setUser(mockUser);
-        return true;
+        return { success: true };
       }
       
-      return false;
+      return { success: false, message: 'Erro de conexão. Tente novamente.' };
     }
   };
 

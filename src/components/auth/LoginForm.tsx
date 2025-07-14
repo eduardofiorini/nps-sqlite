@@ -30,12 +30,12 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const success = await login(email, password);
+      const result = await login(email, password);
       
-      if (success) {
+      if (result.success) {
         navigate('/');
       } else {
-        setError('Credenciais inválidas. Por favor, tente novamente.');
+        setError(result.message || 'Erro no login. Tente novamente.');
       }
     } catch (err) {
       setError('Ocorreu um erro durante o login. Tente novamente.');
