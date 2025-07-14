@@ -24,47 +24,60 @@ const CampaignResponses: React.FC = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [responsesPerPage] = useState(10);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    const loadData = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      
+      try {
+        // Load campaign data
+        const campaigns = await getCampaigns();
+        const foundCampaign = campaigns.find(c => c.id === id);
+        setCampaign(foundCampaign || null);
 
-    // Load campaign data
-    const campaigns = getCampaigns();
-    const foundCampaign = campaigns.find(c => c.id === id);
-    setCampaign(foundCampaign || null);
+        // Load campaign form
+        const form = await getCampaignForm(id);
+        setCampaignForm(form);
 
-    // Load campaign form
-    const form = getCampaignForm(id);
-    setCampaignForm(form);
+        // Load responses and sort by date (newest first)
+        const campaignResponses = (await getResponses(id)).sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setResponses(campaignResponses);
+        setFilteredResponses(campaignResponses);
 
-    // Load responses and sort by date (newest first)
-    const campaignResponses = getResponses(id).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    setResponses(campaignResponses);
-    setFilteredResponses(campaignResponses);
+        // Load reference data
+        const allSources = await getSources();
+        const sourcesMap: Record<string, string> = {};
+        allSources.forEach(source => {
+          sourcesMap[source.id] = source.name;
+        });
+        setSources(sourcesMap);
 
-    // Load reference data
-    const allSources = getSources();
-    const sourcesMap: Record<string, string> = {};
-    allSources.forEach(source => {
-      sourcesMap[source.id] = source.name;
-    });
-    setSources(sourcesMap);
+        const allSituations = await getSituations();
+        const situationsMap: Record<string, string> = {};
+        allSituations.forEach(situation => {
+          situationsMap[situation.id] = situation.name;
+        });
+        setSituations(situationsMap);
 
-    const allSituations = getSituations();
-    const situationsMap: Record<string, string> = {};
-    allSituations.forEach(situation => {
-      situationsMap[situation.id] = situation.name;
-    });
-    setSituations(situationsMap);
+        const allGroups = await getGroups();
+        const groupsMap: Record<string, string> = {};
+        allGroups.forEach(group => {
+          groupsMap[group.id] = group.name;
+        });
+        setGroups(groupsMap);
+      } catch (error) {
+        console.error('Error loading campaign data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    const allGroups = getGroups();
-    const groupsMap: Record<string, string> = {};
-    allGroups.forEach(group => {
-      groupsMap[group.id] = group.name;
-    });
-    setGroups(groupsMap);
+    loadData();
   }, [id]);
 
   // Filter responses based on filters
