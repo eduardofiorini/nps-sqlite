@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Campaign, NpsResponse } from '../types';
-import { getCampaigns, getResponses, getSources, getSituations, getGroups } from '../utils/localStorage';
+import { getCampaigns, getResponses, getSources, getSituations, getGroups } from '../utils/supabaseStorage';
 import { calculateNPS, categorizeResponses } from '../utils/npsCalculator';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -50,52 +50,58 @@ const Overview: React.FC = () => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    // Load campaigns
-    const allCampaigns = getCampaigns();
-    setCampaigns(allCampaigns);
+  const loadData = async () => {
+    try {
+      // Load campaigns
+      const allCampaigns = await getCampaigns();
+      setCampaigns(allCampaigns);
 
-    // Calculate stats for each campaign
-    const stats: CampaignStats[] = allCampaigns.map(campaign => {
-      const responses = getResponses(campaign.id);
-      const npsScore = calculateNPS(responses);
-      const { promoters, passives, detractors } = categorizeResponses(responses);
-      
-      // Simple trend calculation (could be enhanced with historical data)
-      const trend: 'up' | 'down' | 'stable' = npsScore > 50 ? 'up' : npsScore < 0 ? 'down' : 'stable';
+      // Calculate stats for each campaign
+      const stats: CampaignStats[] = await Promise.all(
+        allCampaigns.map(async campaign => {
+          const responses = await getResponses(campaign.id);
+          const npsScore = calculateNPS(responses);
+          const { promoters, passives, detractors } = categorizeResponses(responses);
+          
+          // Simple trend calculation (could be enhanced with historical data)
+          const trend: 'up' | 'down' | 'stable' = npsScore > 50 ? 'up' : npsScore < 0 ? 'down' : 'stable';
 
-      return {
-        campaign,
-        responses,
-        npsScore,
-        totalResponses: responses.length,
-        promoters,
-        passives,
-        detractors,
-        trend
-      };
-    });
+          return {
+            campaign,
+            responses,
+            npsScore,
+            totalResponses: responses.length,
+            promoters,
+            passives,
+            detractors,
+            trend
+          };
+        })
+      );
 
-    setCampaignStats(stats);
+      setCampaignStats(stats);
 
-    // Calculate total stats
-    const totalResponses = stats.reduce((sum, stat) => sum + stat.totalResponses, 0);
-    const totalPromoters = stats.reduce((sum, stat) => sum + stat.promoters, 0);
-    const totalPassives = stats.reduce((sum, stat) => sum + stat.passives, 0);
-    const totalDetractors = stats.reduce((sum, stat) => sum + stat.detractors, 0);
-    const averageNPS = totalResponses > 0 ? Math.round(((totalPromoters - totalDetractors) / totalResponses) * 100) : 0;
+      // Calculate total stats
+      const totalResponses = stats.reduce((sum, stat) => sum + stat.totalResponses, 0);
+      const totalPromoters = stats.reduce((sum, stat) => sum + stat.promoters, 0);
+      const totalPassives = stats.reduce((sum, stat) => sum + stat.passives, 0);
+      const totalDetractors = stats.reduce((sum, stat) => sum + stat.detractors, 0);
+      const averageNPS = totalResponses > 0 ? Math.round(((totalPromoters - totalDetractors) / totalResponses) * 100) : 0;
 
-    setTotalStats({
-      totalCampaigns: allCampaigns.length,
-      activeCampaigns: allCampaigns.filter(c => c.active).length,
-      totalResponses,
-      averageNPS,
-      totalPromoters,
-      totalPassives,
-      totalDetractors
-    });
-
-    setIsLoading(false);
+      setTotalStats({
+        totalCampaigns: allCampaigns.length,
+        activeCampaigns: allCampaigns.filter(c => c.active).length,
+        totalResponses,
+        averageNPS,
+        totalPromoters,
+        totalPassives,
+        totalDetractors
+      });
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {

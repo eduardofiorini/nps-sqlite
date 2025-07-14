@@ -5,7 +5,7 @@ import Badge from '../components/ui/Badge';
 import { 
   BarChart3, 
   Calendar, 
-  Download, 
+} from '../utils/supabaseStorage';
   RefreshCw,
   Filter,
   X,
@@ -34,11 +34,15 @@ const Reports: React.FC = () => {
     }
   }, [selectedCampaigns, dateRange]);
 
-  const loadCampaigns = () => {
-    const campaignData = getCampaigns();
-    setCampaigns(campaignData);
-    // Auto-select all campaigns initially
-    setSelectedCampaigns(campaignData.map(c => c.id));
+  const loadCampaigns = async () => {
+    try {
+      const campaignData = await getCampaigns();
+      setCampaigns(campaignData);
+      // Auto-select all campaigns initially
+      setSelectedCampaigns(campaignData.map(c => c.id));
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
+    }
   };
 
   const handleCampaignToggle = (campaignId: string) => {
@@ -63,11 +67,11 @@ const Reports: React.FC = () => {
     setReportData(null);
   };
 
-  const loadReportData = () => {
+  const loadReportData = async () => {
     setIsLoading(true);
     
     try {
-      const allResponses = getResponses();
+      const allResponses = await getResponses();
       const filteredResponses = allResponses.filter(response => 
         selectedCampaigns.includes(response.campaignId)
       );

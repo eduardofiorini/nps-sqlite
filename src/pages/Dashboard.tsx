@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import CampaignCard from '../components/dashboard/CampaignCard';
 import Button from '../components/ui/Button';
 import { Campaign } from '../types';
-import { getCampaigns, initializeDefaultData } from '../utils/localStorage';
+import { getCampaigns, initializeDefaultData } from '../utils/supabaseStorage';
 import { useLanguage } from '../contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { Plus, RefreshCw } from 'lucide-react';
@@ -14,13 +14,17 @@ const Dashboard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { t, language } = useLanguage();
   
-  const loadCampaigns = () => {
-    // Initialize default data if first time
-    initializeDefaultData();
-    
-    // Load campaigns
-    const loadedCampaigns = getCampaigns();
-    setCampaigns(loadedCampaigns);
+  const loadCampaigns = async () => {
+    try {
+      // Initialize default data if first time
+      await initializeDefaultData();
+      
+      // Load campaigns
+      const loadedCampaigns = await getCampaigns();
+      setCampaigns(loadedCampaigns);
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
+    }
   };
   
   useEffect(() => {
@@ -31,7 +35,7 @@ const Dashboard: React.FC = () => {
   const handleCampaignDeleted = () => {
     setIsRefreshing(true);
     // Reload campaigns after deletion
-    setTimeout(() => {
+    setTimeout(async () => {
       loadCampaigns();
       setIsRefreshing(false);
     }, 500);
@@ -39,7 +43,7 @@ const Dashboard: React.FC = () => {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       loadCampaigns();
       setIsRefreshing(false);
     }, 500);
