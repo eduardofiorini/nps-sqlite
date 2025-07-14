@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { User } from '../types';
 
 interface AuthContextProps {
@@ -60,6 +60,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      // For demo purposes, allow login without actual Supabase connection
+      if (!isSupabaseConfigured() && email && password) {
+        // Create a mock user for demo purposes
+        const mockUser: User = {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          email: email,
+          name: email.split('@')[0] || 'User',
+          role: 'user'
+        };
+        setUser(mockUser);
+        return true;
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -84,6 +97,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
+      // For demo purposes, allow registration without actual Supabase connection
+      if (!isSupabaseConfigured() && email && password) {
+        // Create a mock user for demo purposes
+        const mockUser: User = {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          email: email,
+          name: name || email.split('@')[0] || 'User',
+          role: 'user'
+        };
+        setUser(mockUser);
+        return true;
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
