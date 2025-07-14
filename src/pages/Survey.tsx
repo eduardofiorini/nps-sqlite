@@ -381,7 +381,8 @@ A resposta da pesquisa foi salva com sucesso.`;
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center border border-gray-200"
+            className="bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center border border-gray-200"
+            style={{ backgroundColor: customization?.cardBackgroundColor || '#ffffff' }}
           >
             {customization?.logoImage && (
               <img
@@ -646,7 +647,8 @@ A resposta da pesquisa foi salva com sucesso.`;
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-200"
+          className="bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-200"
+          style={{ backgroundColor: customization?.cardBackgroundColor || '#ffffff' }}
         >
           <div className="p-8">
             {customization?.logoImage && (

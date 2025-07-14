@@ -38,6 +38,7 @@ export type SurveyCustomization = {
   logoImage?: string;
   primaryColor?: string;
   textColor?: string;
+  cardBackgroundColor?: string;
 };
 
 export type CampaignAutomation = {
