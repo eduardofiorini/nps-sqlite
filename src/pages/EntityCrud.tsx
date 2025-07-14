@@ -85,8 +85,6 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
     } catch (error) {
       console.error('Error loading entities:', error);
     }
-    
-    setEntities(loadedEntities);
   };
   
   useEffect(() => {
