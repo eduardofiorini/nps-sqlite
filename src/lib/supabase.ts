@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 // Get environment variables with fallbacks for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+const STORAGE_KEY = 'nps_supabase_auth'
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Missing Supabase environment variables, using fallback values for development')
@@ -18,9 +19,9 @@ try {
     supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
-        autoRefreshToken: true,
-        storageKey: 'nps_supabase_auth',
-        storage: localStorage,
+        autoRefreshToken: true, 
+        storageKey: STORAGE_KEY,
+        storage: window.localStorage,
         debug: import.meta.env.DEV, // Enable debug logs in development
       }
     });
@@ -28,7 +29,7 @@ try {
     // Test the connection by getting the session
     supabase.auth.getSession().then(({ data, error }) => {
       if (error) {
-        console.error('Error getting session:', error);
+        console.error('Error getting Supabase session:', error);
       } else {
         console.log('Session check successful:', data.session ? 'Session exists' : 'No session');
       }
@@ -36,7 +37,7 @@ try {
   } else {
     throw new Error('Empty Supabase URL');
   }
-} catch (error) {
+} catch (error: any) {
   console.error('Invalid Supabase URL:', error);
   
   // Create a comprehensive mock client for demo mode

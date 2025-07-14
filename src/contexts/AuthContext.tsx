@@ -3,6 +3,9 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { User } from '../types';
 
+// Key for storing user data in localStorage
+const USER_STORAGE_KEY = 'nps_user_data';
+
 interface AuthContextProps {
   user: User | null;
   isAuthenticated: boolean;
@@ -42,23 +45,21 @@ const processSupabaseUser = (supabaseUser: SupabaseUser | null): User | null => 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Load user from localStorage on initial render
+
+  // Load user from localStorage on component mount
   useEffect(() => {
-    const loadUserFromStorage = () => {
-      try {
-        const storedUser = localStorage.getItem('nps_user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.error('Error loading user from storage:', error);
+    try {
+      const storedUserData = localStorage.getItem(USER_STORAGE_KEY);
+      if (storedUserData) {
+        const parsedUser = JSON.parse(storedUserData);
+        console.log('Loaded user from localStorage:', parsedUser.email);
+        setUser(parsedUser);
       }
-    };
-    
-    loadUserFromStorage();
+    } catch (error) {
+      console.error('Error loading user from localStorage:', error);
+    }
   }, []);
-  
+
   useEffect(() => {
     // Only attempt to get session if Supabase is properly configured
     if (!isSupabaseConfigured()) {
@@ -73,12 +74,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const { data: { session } } = await supabase.auth.getSession();
         console.log('Initial auth session check:', session ? 'Session found' : 'No session');
         
-        const processedUser = processSupabaseUser(session?.user ?? null);
-        setUser(processedUser);
-        
-        // Store user in localStorage for persistence
-        if (processedUser) {
-          localStorage.setItem('nps_user', JSON.stringify(processedUser));
+        if (session?.user) {
+          const processedUser = processSupabaseUser(session.user);
+          setUser(processedUser);
+          
+          // Save to localStorage
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
+          console.log('Saved user to localStorage from session:', processedUser.email);
+        } else {
+          // Try to load from localStorage as fallback
+          const storedUserData = localStorage.getItem(USER_STORAGE_KEY);
+          if (!user && storedUserData) {
+            setUser(JSON.parse(storedUserData));
+          }
         }
       } catch (error) {
         console.error('Error getting auth session:', error);
@@ -93,14 +101,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('Auth state changed:', _event, session ? 'Session exists' : 'No session');
       
-      const processedUser = processSupabaseUser(session?.user ?? null);
-      setUser(processedUser);
-      
-      // Update localStorage when auth state changes
-      if (processedUser) {
-        localStorage.setItem('nps_user', JSON.stringify(processedUser));
-      } else {
-        localStorage.removeItem('nps_user');
+      if (session?.user) {
+        const processedUser = processSupabaseUser(session.user);
+        setUser(processedUser);
+        
+        // Update localStorage when auth state changes
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
+        console.log('Updated user in localStorage:', processedUser.email);
+      } 
+      else if (_event === 'SIGNED_OUT') {
+        localStorage.removeItem(USER_STORAGE_KEY);
       }
       
       setLoading(false);
@@ -129,7 +139,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(mockUser);
         
         // Store mock user in localStorage
-        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
         
         return { success: true };
       }
@@ -159,7 +169,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(mockUser);
             
             // Store mock user in localStorage
-            localStorage.setItem('nps_user', JSON.stringify(mockUser));
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
             
             return { success: true };
           }
@@ -180,7 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Store user in localStorage
         if (processedUser) {
-          localStorage.setItem('nps_user', JSON.stringify(processedUser));
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
         }
         
         return { success: true };
@@ -202,7 +212,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(mockUser);
         
         // Store mock user in localStorage
-        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
         
         return { success: true };
       }
@@ -231,7 +241,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(mockUser);
         
         // Store mock user in localStorage
-        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
         
         return true;
       }
@@ -287,7 +297,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Store user in localStorage
         if (processedUser) {
-          localStorage.setItem('nps_user', JSON.stringify(processedUser));
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
         }
         
         return true;
@@ -308,7 +318,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(mockUser);
         
         // Store mock user in localStorage
-        localStorage.setItem('nps_user', JSON.stringify(mockUser));
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
         
         return true;
       }
@@ -322,8 +332,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await supabase.auth.signOut();
       setUser(null);
       
-      // Remove user from localStorage
-      localStorage.removeItem('nps_user');
+      // Clear user from localStorage
+      localStorage.removeItem(USER_STORAGE_KEY);
     } catch (error) {
       console.error('Logout error:', error);
     }
