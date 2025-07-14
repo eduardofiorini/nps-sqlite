@@ -15,11 +15,13 @@ import {
   Download,
   AlertTriangle,
   ArrowRight,
-  Shield
+  Shield,
+  Clock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSubscription, saveSubscription } from '../utils/localStorage';
 import { useSubscription } from '../hooks/useSubscription';
+import { useSubscriptionContext } from '../contexts/SubscriptionContext';
 import { STRIPE_PRODUCTS, formatPrice } from '../stripe-config';
 import type { Subscription, Plan } from '../types';
 
@@ -31,6 +33,7 @@ const Billing: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const { subscription: dbSubscription, isActive, plan, loading: subLoading } = useSubscription();
+  const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
 
   const plans: Plan[] = [
     {
@@ -276,7 +279,11 @@ const Billing: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  {getStatusBadge(dbSubscription?.subscription_status || subscription?.status || 'active')}
+                  {daysLeftInTrial !== null && daysLeftInTrial > 0 ? (
+                    <Badge variant="warning">Período de Teste ({daysLeftInTrial} dias)</Badge>
+                  ) : (
+                    getStatusBadge(dbSubscription?.subscription_status || subscription?.status || 'active')
+                  )}
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Próxima cobrança: {
                       dbSubscription?.current_period_end 
@@ -301,18 +308,20 @@ const Billing: React.FC = () => {
               <div className="mt-6 flex space-x-3">
                 <Button 
                   variant="primary" 
-                  icon={<CreditCard size={16} />}
+                  icon={isTrialExpired ? <ArrowRight size={16} /> : <CreditCard size={16} />}
                   onClick={() => handleCheckout(STRIPE_PRODUCTS.find(p => p.id === `prod_${currentPlan.id.charAt(0).toUpperCase() + currentPlan.id.slice(1)}`)?.priceId || '')}
                   isLoading={isCheckoutLoading}
                 >
-                  Atualizar Método de Pagamento
+                  {isTrialExpired ? 'Assinar Agora' : 'Atualizar Método de Pagamento'}
                 </Button>
                 <Button variant="outline">
                   Alterar Plano
                 </Button>
-                <Button variant="outline">
-                  Cancelar Assinatura
-                </Button>
+                {!isTrialExpired && (
+                  <Button variant="outline">
+                    Cancelar Assinatura
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -384,7 +393,10 @@ const Billing: React.FC = () => {
                 <div className="flex items-center">
                   <Calendar size={16} className="text-blue-600 dark:text-blue-400 mr-2" />
                   <span className="text-sm text-blue-800 dark:text-blue-200">
-                    Seu plano renova em {subscription ? Math.ceil((new Date(subscription.currentPeriodEnd).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} dias
+                    {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                      ? `Seu período de teste termina em ${daysLeftInTrial} ${daysLeftInTrial === 1 ? 'dia' : 'dias'}`
+                      : `Seu plano renova em ${subscription ? Math.ceil((new Date(subscription.currentPeriodEnd).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} dias`
+                    }
                   </span>
                 </div>
               </div>
@@ -396,7 +408,7 @@ const Billing: React.FC = () => {
             <CardHeader 
               title="Histórico de Cobrança"
               action={
-                <Button variant="outline\" size="sm\" icon={<Download size={16} />}>
+                <Button variant="outline" size="sm" icon={<Download size={16} />}>
                   Exportar
                 </Button>
               }
@@ -483,15 +495,31 @@ const Billing: React.FC = () => {
             <CardContent>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  R${currentPlan.price}
+                  {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                    ? 'R$0'
+                    : `R$${currentPlan.price}`
+                  }
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  {subscription ? new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR') : 'N/A'}
+                  {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                    ? new Date(Date.now() + daysLeftInTrial * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
+                    : subscription ? new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR') : 'N/A'
+                  }
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Plano {currentPlan.name}:</span>
-                    <span className="text-gray-900 dark:text-white">R${currentPlan.price}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                        ? `Teste Gratuito (${currentPlan.name}):`
+                        : `Plano ${currentPlan.name}:`
+                      }
+                    </span>
+                    <span className="text-gray-900 dark:text-white">
+                      {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                        ? 'R$0'
+                        : `R$${currentPlan.price}`
+                      }
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Impostos:</span>
@@ -500,7 +528,12 @@ const Billing: React.FC = () => {
                   <hr className="border-gray-200 dark:border-gray-700" />
                   <div className="flex justify-between text-sm font-medium">
                     <span className="text-gray-900 dark:text-white">Total:</span>
-                    <span className="text-gray-900 dark:text-white">R${currentPlan.price}</span>
+                    <span className="text-gray-900 dark:text-white">
+                      {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                        ? 'R$0'
+                        : `R$${currentPlan.price}`
+                      }
+                    </span>
                   </div>
                 </div>
               </div>
@@ -604,13 +637,44 @@ const Billing: React.FC = () => {
                   }}
                   icon={plan.id !== subscription?.planId ? <ArrowRight size={16} /> : undefined}
                 >
-                  {plan.id === subscription?.planId ? 'Plano Atual' : 'Selecionar Plano'}
+                  {plan.id === subscription?.planId 
+                    ? (daysLeftInTrial !== null && daysLeftInTrial > 0 ? 'Plano de Teste Atual' : 'Plano Atual') 
+                    : (isTrialExpired ? 'Assinar Agora' : 'Selecionar Plano')
+                  }
                 </Button>
               </motion.div>
             ))}
           </div>
         </CardContent>
       </Card>
+      
+      {/* Trial Information */}
+      {daysLeftInTrial !== null && daysLeftInTrial > 0 && (
+        <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 mt-8">
+          <CardContent className="p-6">
+            <div className="flex items-start">
+              <Clock size={24} className="text-yellow-600 dark:text-yellow-400 mr-4 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                  Seu período de teste gratuito termina em {daysLeftInTrial} {daysLeftInTrial === 1 ? 'dia' : 'dias'}
+                </h3>
+                <p className="text-yellow-700 dark:text-yellow-300 mb-4">
+                  Para continuar utilizando o Meu NPS após o período de teste, escolha um plano de assinatura. 
+                  Caso contrário, seu acesso será bloqueado quando o período de teste expirar.
+                </p>
+                <Button 
+                  variant="primary" 
+                  onClick={() => handleCheckout(STRIPE_PRODUCTS.find(p => p.id === `prod_${currentPlan.id.charAt(0).toUpperCase() + currentPlan.id.slice(1)}`)?.priceId || '')}
+                  isLoading={isCheckoutLoading}
+                  icon={<CreditCard size={16} />}
+                >
+                  Assinar Agora
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
