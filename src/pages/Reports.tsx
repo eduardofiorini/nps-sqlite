@@ -30,6 +30,7 @@ const Reports: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sources, setSources] = useState<any[]>([]);
   const [situations, setSituations] = useState<any[]>([]);
+  const [allResponses, setAllResponses] = useState<NpsResponse[]>([]);
   const [responsesBySource, setResponsesBySource] = useState<any>({});
   const [responsesByDay, setResponsesByDay] = useState<any[]>([]);
   const [scoreDistribution, setScoreDistribution] = useState<any>({});
@@ -43,6 +44,14 @@ const Reports: React.FC = () => {
         
         // Auto-select all campaigns initially
         setSelectedCampaigns(campaignData.map(c => c.id));
+        
+        // Load all responses for all campaigns
+        const allResponsesData: NpsResponse[] = [];
+        for (const campaign of campaignData) {
+          const campaignResponses = await getResponses(campaign.id);
+          allResponsesData.push(...campaignResponses);
+        }
+        setAllResponses(allResponsesData);
         
         // Load sources and situations for reporting
         const sourcesData = await getSources();
@@ -92,19 +101,19 @@ const Reports: React.FC = () => {
     
     try {
       // Get responses for each selected campaign
-      let allResponses: NpsResponse[] = [];
+      let filteredResponses: NpsResponse[] = [];
       
-      for (const campaignId of selectedCampaigns) {
-        const campaignResponses = await getResponses(campaignId);
-        allResponses = [...allResponses, ...campaignResponses];
-      }
+      // Filter responses by selected campaigns
+      filteredResponses = allResponses.filter(response => 
+        selectedCampaigns.includes(response.campaignId)
+      );
 
       // Calculate date range
       const now = new Date();
       const daysAgo = new Date(now.getTime() - (parseInt(dateRange) * 24 * 60 * 60 * 1000));
       
-      const dateFilteredResponses = allResponses.filter(response => 
-        new Date(response.submittedAt) >= daysAgo
+      const dateFilteredResponses = filteredResponses.filter(response => 
+        new Date(response.createdAt) >= daysAgo
       );
 
       // Calculate metrics
@@ -774,7 +783,7 @@ const Reports: React.FC = () => {
                         <tr key={campaignId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                             {campaign.name}
-                          </td>
+                          </td> 
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {campaignResponses.length}
                           </td>
