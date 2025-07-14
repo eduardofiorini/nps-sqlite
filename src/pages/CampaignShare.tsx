@@ -94,11 +94,13 @@ const CampaignShare: React.FC = () => {
         const personalizedSubject = emailSubject
           .replace(/\{\{nome\}\}/g, contact.name)
           .replace(/\{\{email\}\}/g, contact.email)
+          .replace(/\{\{campanha\}\}/g, campaign.name)
           .replace(/\{\{link_pesquisa\}\}/g, surveyUrl);
         
         const personalizedBody = emailBody
           .replace(/\{\{nome\}\}/g, contact.name)
           .replace(/\{\{email\}\}/g, contact.email)
+          .replace(/\{\{campanha\}\}/g, campaign.name)
           .replace(/\{\{link_pesquisa\}\}/g, surveyUrl);
         
         return {
@@ -504,11 +506,13 @@ const CampaignShare: React.FC = () => {
               <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 {emailSubject.replace(/\{\{nome\}\}/g, 'Nome do Contato')
                   .replace(/\{\{email\}\}/g, 'email@exemplo.com')
+                  .replace(/\{\{campanha\}\}/g, campaign.name)
                   .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
                 {emailBody.replace(/\{\{nome\}\}/g, 'Nome do Contato')
                   .replace(/\{\{email\}\}/g, 'email@exemplo.com')
+                  .replace(/\{\{campanha\}\}/g, campaign.name)
                   .replace(/\{\{link_pesquisa\}\}/g, surveyUrl)}
               </div>
             </div>
