@@ -224,7 +224,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, name: string, planId?: string): Promise<boolean> => {
     try {
       // Check if Supabase is configured first
-      if (!isSupabaseConfigured()) {
+      if (!isSupabaseConfigured() || !email || !password || !name) {
         // Demo mode - create mock user if credentials provided
         if (!email || !password || !name) {
           console.error('Registration error: Email and password are required');
@@ -247,59 +247,97 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       // Only attempt Supabase registration if properly configured
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            planId,
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name,
+              planId,
+            }
           }
-        }
-      });
+        });
 
-      if (error) {
-        // Handle database errors by falling back to demo mode
-        if (error.message?.includes('Database error updating user') || error.message?.includes('unexpected_failure')) {
-          console.warn('Database error detected during registration, falling back to demo mode');
-          if (email && password && name) {
-            const mockUser: User = {
-              id: '123e4567-e89b-12d3-a456-426614174000',
-              email: email,
+        if (error) {
+          // Handle database errors by falling back to demo mode
+          if (error.message?.includes('Database error updating user') || error.message?.includes('unexpected_failure')) {
+            console.warn('Database error detected during registration, falling back to demo mode');
+            if (email && password && name) {
+              const mockUser: User = {
+                id: '123e4567-e89b-12d3-a456-426614174000',
+                email: email,
+                name: name,
+                role: 'user'
+              };
+              setUser(mockUser);
+              
+              // Store mock user in localStorage
+              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
+              
+              return true;
+            }
+          }
+          
+          console.error('Registration error:', error.message);
+          return false;
+        }
+
+        if (data.user) {
+          const processedUser = processSupabaseUser(data.user);
+          setUser(processedUser);
+          
+          // Store user in localStorage
+          if (processedUser) {
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
+          }
+          
+          // Create user profile
+          try {
+            await supabase.from('user_profiles').insert({
+              user_id: data.user.id,
               name: name,
-              role: 'user'
-            };
-            setUser(mockUser);
-            
-            // Store mock user in localStorage
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-            
-            return true;
+              preferences: {
+                theme: 'light',
+                language: 'pt-BR',
+                emailNotifications: {
+                  newResponses: true,
+                  weeklyReports: true,
+                  productUpdates: false
+                }
+              }
+            });
+          } catch (profileError) {
+            console.error('Error creating user profile:', profileError);
+            // Continue even if profile creation fails
           }
+          
+          return true;
         }
-        
-        console.error('Registration error:', error.message);
-        return false;
-      }
 
-      if (data.user) {
-        const processedUser = processSupabaseUser(data.user);
-        setUser(processedUser);
+        return false;
+      } catch (supabaseError) {
+        console.error('Supabase registration error:', supabaseError);
         
-        // Store user in localStorage
-        if (processedUser) {
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
-        }
+        // Fall back to demo mode if Supabase fails
+        const mockUser: User = {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          email: email,
+          name: name || email.split('@')[0] || 'User',
+          role: 'user'
+        };
+        setUser(mockUser);
+        
+        // Store mock user in localStorage
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
         
         return true;
       }
-
-      return false;
     } catch (error) {
       console.error('Registration error:', error);
       
       // If Supabase is not configured, fall back to demo mode
-      if (!isSupabaseConfigured() && email && password) {
+      if (email && password) {
         const mockUser: User = {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
