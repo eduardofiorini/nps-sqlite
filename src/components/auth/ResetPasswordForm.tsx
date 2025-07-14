@@ -18,14 +18,35 @@ const ResetPasswordForm: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [hasValidToken, setHasValidToken] = useState(false);
+  const [tokenChecked, setTokenChecked] = useState(false);
 
   useEffect(() => {
     // Check if we have the required tokens
-    const type = searchParams.get('type');
-    const accessToken = searchParams.get('access_token') || searchParams.get('token');
-    const refreshToken = searchParams.get('refresh_token') || searchParams.get('refresh_token');
+    // Supabase can send tokens in different ways depending on the flow
+    const type = searchParams.get('type'); // recovery or invite
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
     
-    if (type === 'recovery' && accessToken) {
+    // For email links, Supabase might use 'token' instead of 'access_token'
+    const token = searchParams.get('token');
+    
+    // Get the hash fragment if present (Supabase sometimes puts tokens there)
+    const hash = window.location.hash.substring(1);
+    const hashParams = new URLSearchParams(hash);
+    const hashToken = hashParams.get('access_token');
+    const hashRefreshToken = hashParams.get('refresh_token');
+    
+    // Use the first available token
+    const finalAccessToken = accessToken || token || hashToken || '';
+    const finalRefreshToken = refreshToken || hashRefreshToken || '';
+    
+    console.log('Token check:', { 
+      type, 
+      hasToken: !!finalAccessToken,
+      tokenLength: finalAccessToken?.length
+    });
+    
+    if (finalAccessToken) {
       setHasValidToken(true);
       
       // Set the session with the recovery token
@@ -33,8 +54,8 @@ const ResetPasswordForm: React.FC = () => {
         try {
           if (isSupabaseConfigured()) {
             const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken || '',
+              access_token: finalAccessToken,
+              refresh_token: finalRefreshToken,
             });
             
             if (error) {
@@ -46,17 +67,20 @@ const ResetPasswordForm: React.FC = () => {
             // In demo mode, just pretend we have a valid token
             console.log('Demo mode: simulating valid recovery token');
           }
+          setTokenChecked(true);
         } catch (err) {
           console.error('Error setting session:', err);
           setError('Ocorreu um erro ao processar o link de recuperação.');
           setHasValidToken(false);
+          setTokenChecked(true);
         }
       };
       
       setSession();
     } else {
-      setError('Link de recuperação inválido ou expirado. Solicite um novo link.');
+      setError('Link de recuperação inválido ou expirado. Verifique se você clicou no link completo do email ou solicite um novo link.');
       setHasValidToken(false);
+      setTokenChecked(true);
     }
   }, [searchParams]);
 
@@ -329,15 +353,19 @@ const ResetPasswordForm: React.FC = () => {
               </Button>
               
               {!hasValidToken && (
-                <div className="mt-4 text-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate('/forgot-password')}
-                    fullWidth
-                  >
-                    Solicitar Novo Link
-                  </Button>
-                </div>
+                <>
+                  {tokenChecked && (
+                    <div className="mt-4 text-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate('/forgot-password')}
+                        fullWidth
+                      >
+                        Solicitar Novo Link
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </form>
           </div>
