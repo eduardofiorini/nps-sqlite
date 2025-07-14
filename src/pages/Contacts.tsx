@@ -186,7 +186,8 @@ const Contacts: React.FC = () => {
   };
 
   const exportContacts = () => {
-    const csvContent = [
+    // Create CSV with proper UTF-8 encoding
+    const csvRows = [
       ['Nome', 'Email', 'Telefone', 'Empresa', 'Cargo', 'Grupos', 'Tags', 'Notas'].join(','),
       ...filteredContacts.map(contact => [
         `"${contact.name}"`,
@@ -198,9 +199,15 @@ const Contacts: React.FC = () => {
         `"${(contact.tags || []).join('; ')}"`,
         `"${contact.notes || ''}"`
       ].join(','))
-    ].join('\n');
+    ];
+    
+    // Add BOM for proper UTF-8 encoding in Excel
+    const BOM = '\uFEFF';
+    const csvContent = BOM + csvRows.join('\r\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvContent], { 
+      type: 'text/csv;charset=utf-8;' 
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `contatos-${new Date().toISOString().split('T')[0]}.csv`;
@@ -264,9 +271,10 @@ const Contacts: React.FC = () => {
       reader.onload = (e) => {
         try {
           const text = e.target?.result as string;
-          const cleanText = text.replace(/^\uFEFF/, ''); // Remove BOM
+          const cleanText = text.replace(/^\uFEFF/, ''); // Remove BOM if present
           const lines = cleanText.split(/\r?\n/);
           
+          // Improved CSV parser that handles UTF-8 properly
           const parseCSVLine = (line: string) => {
             const result = [];
             let current = '';
@@ -284,17 +292,17 @@ const Contacts: React.FC = () => {
                   inQuotes = !inQuotes;
                 }
               } else if (char === ',' && !inQuotes) {
-                result.push(current.trim());
+                result.push(current.trim().replace(/^"|"$/g, '')); // Remove surrounding quotes
                 current = '';
               } else {
                 current += char;
               }
             }
-            result.push(current.trim());
+            result.push(current.trim().replace(/^"|"$/g, '')); // Remove surrounding quotes
             return result;
           };
           
-          const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
+          const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
           
           let successCount = 0;
           let errorCount = 0;
@@ -306,7 +314,9 @@ const Contacts: React.FC = () => {
               const values = parseCSVLine(line);
               const row: any = {};
               headers.forEach((header, index) => {
-                row[header] = values[index] || '';
+                // Properly decode the value and handle UTF-8
+                const value = values[index] || '';
+                row[header] = value;
               });
 
               // Map common column names
@@ -318,7 +328,7 @@ const Contacts: React.FC = () => {
                 groupIds: groups.length > 0 ? [groups[0].id] : [], // Default to first group
                 company: row.empresa || row.company || '',
                 position: row.cargo || row.position || row.funcao || '',
-                tags: row.tags ? row.tags.split(';').map((t: string) => t.trim()) : [],
+                tags: row.tags ? row.tags.split(';').map((t: string) => t.trim()).filter(Boolean) : [],
                 notes: row.notas || row.notes || row.observacoes || '',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -355,6 +365,7 @@ const Contacts: React.FC = () => {
         }
       };
 
+      // Read with UTF-8 encoding explicitly
       reader.readAsText(importFile, 'UTF-8');
     } catch (error) {
       setImportStatus('error');
@@ -364,13 +375,19 @@ const Contacts: React.FC = () => {
   };
 
   const downloadTemplate = () => {
-    const template = [
+    const templateRows = [
       ['Nome', 'Email', 'Telefone', 'Empresa', 'Cargo', 'Tags', 'Notas'].join(','),
       ['João Silva', 'joao@email.com', '(11) 99999-9999', 'Tech Corp', 'Gerente', 'cliente;vip', 'Cliente importante'].join(','),
       ['Maria Santos', 'maria@empresa.com', '(11) 88888-8888', 'Marketing Pro', 'Diretora', 'parceiro', 'Contato de marketing'].join(',')
-    ].join('\n');
+    ];
+    
+    // Add BOM for proper UTF-8 encoding
+    const BOM = '\uFEFF';
+    const template = BOM + templateRows.join('\r\n');
 
-    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([template], { 
+      type: 'text/csv;charset=utf-8;' 
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'template-contatos.csv';
