@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Campaign, NpsResponse } from '../types';
 import { getCampaigns, getResponses, getSources, getSituations, getGroups } from '../utils/supabaseStorage';
 import { useSubscriptionContext } from '../contexts/SubscriptionContext';
+import { useSubscriptionContext } from '../contexts/SubscriptionContext';
 import { calculateNPS, categorizeResponses } from '../utils/npsCalculator';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -48,6 +49,7 @@ const Overview: React.FC = () => {
     totalDetractors: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
   const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
 
   useEffect(() => {
