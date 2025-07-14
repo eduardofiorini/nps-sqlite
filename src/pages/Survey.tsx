@@ -16,7 +16,7 @@ const Survey: React.FC = () => {
   const [form, setForm] = useState<CampaignForm | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [situations] = useState(getSituations());
+  const [situations, setSituations] = useState<any[]>([]);
   const [countdown, setCountdown] = useState(10);
   const [isProcessing, setIsProcessing] = useState(false);
   const [automationError, setAutomationError] = useState<string>('');
@@ -36,6 +36,10 @@ const Survey: React.FC = () => {
         // Load form data
         const formData = await getCampaignForm(id);
         setForm(formData);
+        
+        // Load situations data
+        const situationsData = await getSituations();
+        setSituations(situationsData);
       } catch (error) {
         console.error('Error loading survey data:', error);
       }
@@ -246,7 +250,7 @@ A resposta da pesquisa foi salva com sucesso.`;
         score: parseInt(formData[npsField.id], 10),
         feedback: formData['feedback'] || '', // Keep for backward compatibility
         sourceId: campaign.defaultSourceId || '',
-        situationId: situations[0]?.id || '', // Default to first situation (usually "Responded")
+        situationId: situations.length > 0 ? situations[0].id : null, // Default to first situation or null
         groupId: campaign.defaultGroupId || '',
         createdAt: new Date().toISOString(),
         formResponses: { ...formData } // Store all form responses
