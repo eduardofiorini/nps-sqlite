@@ -7,7 +7,7 @@ import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import Modal from '../ui/Modal';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { deleteCampaign, getResponses } from '../../utils/localStorage';
+import { deleteCampaign, getResponses } from '../../utils/supabaseStorage';
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -34,21 +34,10 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
     setIsDeleting(true);
     
     try {
-      // Get response count for confirmation
-      const responses = getResponses(campaign.id);
-      
       // Delete the campaign and all its data
-      const success = deleteCampaign(campaign.id);
+      const success = await deleteCampaign(campaign.id);
       
       if (success) {
-        // Clear campaign form data
-        localStorage.removeItem(`forms_${campaign.id}`);
-        
-        // Clear campaign responses
-        const allResponses = JSON.parse(localStorage.getItem('responses') || '[]');
-        const filteredResponses = allResponses.filter((r: any) => r.campaignId !== campaign.id);
-        localStorage.setItem('responses', JSON.stringify(filteredResponses));
-        
         setShowDeleteModal(false);
         onDelete?.();
       }
@@ -59,8 +48,20 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
     }
   };
 
-  const responses = getResponses(campaign.id);
-  const responseCount = responses.length;
+  const [responseCount, setResponseCount] = useState(0);
+  
+  useEffect(() => {
+    const loadResponseCount = async () => {
+      try {
+        const responses = await getResponses(campaign.id);
+        setResponseCount(responses.length);
+      } catch (error) {
+        console.error('Error loading response count:', error);
+      }
+    };
+    
+    loadResponseCount();
+  }, [campaign.id]);
   
   return (
     <>

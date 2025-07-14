@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppConfig } from '../types';
-import { getAppConfig, saveAppConfig } from '../utils/localStorage';
+import { getAppConfig, saveAppConfig } from '../utils/supabaseStorage';
 
 interface ConfigContextProps {
   config: AppConfig;
@@ -25,19 +25,73 @@ interface ConfigProviderProps {
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
   const [config, setConfig] = useState<AppConfig>(getAppConfig());
+  const [config, setConfig] = useState<AppConfig>({
+    themeColor: '#073143',
+    language: 'pt-BR',
+    company: {
+      name: '',
+      document: '',
+      address: '',
+      email: '',
+      phone: '',
+    },
+    integrations: {
+      smtp: {
+        enabled: false,
+        host: '',
+        port: 587,
+        secure: false,
+        username: '',
+        password: '',
+        fromName: '',
+        fromEmail: '',
+      },
+      zenvia: {
+        email: {
+          enabled: false,
+          apiKey: '',
+          fromEmail: '',
+          fromName: '',
+        },
+        sms: {
+          enabled: false,
+          apiKey: '',
+          from: '',
+        },
+        whatsapp: {
+          enabled: false,
+          apiKey: '',
+          from: '',
+        },
+      },
+    },
+  });
   
   useEffect(() => {
-    // Load configuration from localStorage
-    const storedConfig = getAppConfig();
-    if (storedConfig) {
-      setConfig(storedConfig);
-    }
+    // Load configuration from Supabase
+    const loadConfig = async () => {
+      try {
+        const storedConfig = await getAppConfig();
+        if (storedConfig) {
+          setConfig(storedConfig);
+        }
+      } catch (error) {
+        console.error('Error loading config:', error);
+      }
+    };
+    
+    loadConfig();
   }, []);
   
-  const updateConfig = (newConfig: Partial<AppConfig>) => {
+  const updateConfig = async (newConfig: Partial<AppConfig>) => {
     const updatedConfig = { ...config, ...newConfig };
     setConfig(updatedConfig);
-    saveAppConfig(updatedConfig);
+    
+    try {
+      await saveAppConfig(updatedConfig);
+    } catch (error) {
+      console.error('Error saving config:', error);
+    }
   };
   
   return (

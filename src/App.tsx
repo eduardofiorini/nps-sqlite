@@ -25,6 +25,7 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import Billing from './pages/Billing';
 import { initializeDefaultData } from './utils/localStorage';
+import { initializeDefaultData } from './utils/supabaseStorage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -42,7 +43,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
-    initializeDefaultData();
+    const initData = async () => {
+      try {
+        await initializeDefaultData();
+      } catch (error) {
+        console.error('Error initializing default data:', error);
+      }
+    };
+    
+    initData();
   }, []);
 
   return <>{children}</>;

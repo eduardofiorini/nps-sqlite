@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Campaign, CampaignForm, NpsResponse } from '../types';
-import { getCampaigns, getCampaignForm, saveResponse, getSituations } from '../utils/localStorage';
+import { getCampaigns, getCampaignForm, saveResponse, getSituations } from '../utils/supabaseStorage';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -26,14 +26,22 @@ const Survey: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
-    // Load campaign data
-    const campaigns = getCampaigns();
-    const foundCampaign = campaigns.find(c => c.id === id);
-    setCampaign(foundCampaign || null);
+    const loadData = async () => {
+      try {
+        // Load campaign data
+        const campaigns = await getCampaigns();
+        const foundCampaign = campaigns.find(c => c.id === id);
+        setCampaign(foundCampaign || null);
 
-    // Load form data
-    const formData = getCampaignForm(id);
-    setForm(formData);
+        // Load form data
+        const formData = await getCampaignForm(id);
+        setForm(formData);
+      } catch (error) {
+        console.error('Error loading survey data:', error);
+      }
+    };
+    
+    loadData();
   }, [id]);
 
   // Timer effect for countdown
@@ -230,33 +238,39 @@ A resposta da pesquisa foi salva com sucesso.`;
     const npsField = form.fields.find(f => f.type === 'nps');
     if (!npsField || !formData[npsField.id]) return;
 
-    // Create the response with campaign defaults and all form field data
-    const response: NpsResponse = {
-      id: uuidv4(),
-      campaignId: campaign.id,
-      score: parseInt(formData[npsField.id], 10),
-      feedback: formData['feedback'] || '', // Keep for backward compatibility
-      sourceId: campaign.defaultSourceId || '',
-      situationId: situations[0]?.id || '', // Default to first situation (usually "Responded")
-      groupId: campaign.defaultGroupId || '',
-      createdAt: new Date().toISOString(),
-      formResponses: { ...formData } // Store all form responses
-    };
+    try {
+      // Create the response with campaign defaults and all form field data
+      const response: NpsResponse = {
+        id: uuidv4(),
+        campaignId: campaign.id,
+        score: parseInt(formData[npsField.id], 10),
+        feedback: formData['feedback'] || '', // Keep for backward compatibility
+        sourceId: campaign.defaultSourceId || '',
+        situationId: situations[0]?.id || '', // Default to first situation (usually "Responded")
+        groupId: campaign.defaultGroupId || '',
+        createdAt: new Date().toISOString(),
+        formResponses: { ...formData } // Store all form responses
+      };
 
-    console.log('Saving response with form data:', response);
-    
-    // Always save the response first, regardless of webhook success
-    saveResponse(response);
+      console.log('Saving response with form data:', response);
+      
+      // Always save the response first, regardless of webhook success
+      await saveResponse(response);
 
-    // Execute webhook if configured
-    if (campaign.automation?.enabled && 
-        (campaign.automation.action === 'webhook_return' || campaign.automation.action === 'webhook_redirect')) {
-      await executeWebhook(response);
+      // Execute webhook if configured
+      if (campaign.automation?.enabled && 
+          (campaign.automation.action === 'webhook_return' || campaign.automation.action === 'webhook_redirect')) {
+        await executeWebhook(response);
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Error saving response:', error);
+      setAutomationError('Erro ao salvar resposta. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
+      setCountdown(10); // Reset countdown
     }
-
-    setSubmitted(true);
-    setIsProcessing(false);
-    setCountdown(10); // Reset countdown
   };
 
   const handleReturnToSurvey = () => {

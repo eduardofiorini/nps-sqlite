@@ -146,7 +146,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     saveFormWithFields(updatedFields);
   };
   
-  const saveFormWithFields = (fieldsToSave: FormField[]) => {
+  const saveFormWithFields = async (fieldsToSave: FormField[]) => {
     // Ensure all fields have correct sequential order
     const fieldsWithCorrectOrder = fieldsToSave.map((field, index) => ({
       ...field,
@@ -159,9 +159,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       fields: fieldsWithCorrectOrder,
     };
     
-    // Save to localStorage immediately
-    const formKey = `forms_${campaignId}`;
-    localStorage.setItem(formKey, JSON.stringify(form));
+    // Save to Supabase immediately
+    try {
+      const { saveCampaignForm } = await import('../../utils/supabaseStorage');
+      await saveCampaignForm(form);
+    } catch (error) {
+      console.error('Error saving form:', error);
+    }
     
     console.log('Form saved with fields:', fieldsWithCorrectOrder.map(f => ({ id: f.id, label: f.label, order: f.order })));
   };
