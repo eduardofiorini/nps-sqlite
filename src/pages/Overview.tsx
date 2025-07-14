@@ -188,7 +188,7 @@ const Overview: React.FC = () => {
       </div>
 
       {/* Trial Period Alert */}
-      {daysLeftInTrial !== null && daysLeftInTrial > 0 && (
+      {daysLeftInTrial !== null && daysLeftInTrial > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -212,10 +212,10 @@ const Overview: React.FC = () => {
             </CardContent>
           </Card>
         </motion.div>
-      )}
+      ) : null}
 
       {/* Trial Expiring Soon Warning */}
-      {daysLeftInTrial !== null && daysLeftInTrial <= 2 && daysLeftInTrial > 0 && (
+      {daysLeftInTrial !== null && daysLeftInTrial <= 2 && daysLeftInTrial > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -246,7 +246,7 @@ const Overview: React.FC = () => {
             </CardContent>
           </Card>
         </motion.div>
-      )}
+      ) : null}
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

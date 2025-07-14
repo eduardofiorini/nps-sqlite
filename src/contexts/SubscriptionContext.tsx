@@ -31,11 +31,14 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
   useEffect(() => {
     // Only check subscription if user is authenticated and not loading
     if (authLoading || !isAuthenticated) return;
+    
+    console.log("Checking subscription status:", { subLoading, subscription, trialExpired, isTrialing });
 
     // If subscription data is loaded
     if (!subLoading && subscription) {
       // Check if trial has expired
       if (trialExpired) {
+        console.log("Trial has expired");
         setIsTrialExpired(true);
         setDaysLeftInTrial(0);
         
@@ -53,6 +56,8 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
         const diffTime = trialEndDate.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
+        console.log("Trial days remaining:", diffDays, "Trial end date:", trialEndDate.toISOString());
+        
         setDaysLeftInTrial(diffDays > 0 ? diffDays : 0);
         setIsTrialExpired(diffDays <= 0);
         
@@ -67,7 +72,13 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
       } else {
         setIsTrialExpired(false);
         setDaysLeftInTrial(null);
+        console.log("No trial or active subscription");
       }
+    } else if (!subLoading) {
+      // If no subscription data but loading is complete, set default trial values for demo
+      console.log("No subscription data found, setting demo trial values");
+      setDaysLeftInTrial(7);
+      setIsTrialExpired(false);
     }
   }, [isAuthenticated, authLoading, subLoading, subscription, trialExpired, isTrialing, navigate]);
 
