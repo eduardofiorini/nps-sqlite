@@ -52,53 +52,87 @@ const Overview: React.FC = () => {
 
   const loadData = async () => {
     try {
-      // Load campaigns
-      const allCampaigns = await getCampaigns();
-      setCampaigns(allCampaigns);
+      setIsLoading(true);
+      
+      try {
+        // Load campaigns
+        const allCampaigns = await getCampaigns();
+        setCampaigns(allCampaigns);
 
-      // Calculate stats for each campaign
-      const stats: CampaignStats[] = await Promise.all(
-        allCampaigns.map(async campaign => {
-          const responses = await getResponses(campaign.id);
-          const npsScore = calculateNPS(responses);
-          const { promoters, passives, detractors } = categorizeResponses(responses);
-          
-          // Simple trend calculation (could be enhanced with historical data)
-          const trend: 'up' | 'down' | 'stable' = npsScore > 50 ? 'up' : npsScore < 0 ? 'down' : 'stable';
+        // Calculate stats for each campaign
+        const stats: CampaignStats[] = await Promise.all(
+          allCampaigns.map(async campaign => {
+            try {
+              const responses = await getResponses(campaign.id);
+              const npsScore = calculateNPS(responses);
+              const { promoters, passives, detractors } = categorizeResponses(responses);
+              
+              // Simple trend calculation (could be enhanced with historical data)
+              const trend: 'up' | 'down' | 'stable' = npsScore > 50 ? 'up' : npsScore < 0 ? 'down' : 'stable';
 
-          return {
-            campaign,
-            responses,
-            npsScore,
-            totalResponses: responses.length,
-            promoters,
-            passives,
-            detractors,
-            trend
-          };
-        })
-      );
+              return {
+                campaign,
+                responses,
+                npsScore,
+                totalResponses: responses.length,
+                promoters,
+                passives,
+                detractors,
+                trend
+              };
+            } catch (error) {
+              // If fetching responses fails for a campaign, return default values
+              return {
+                campaign,
+                responses: [],
+                npsScore: 0,
+                totalResponses: 0,
+                promoters: 0,
+                passives: 0,
+                detractors: 0,
+                trend: 'stable' as const
+              };
+            }
+          })
+        );
 
-      setCampaignStats(stats);
+        setCampaignStats(stats);
 
-      // Calculate total stats
-      const totalResponses = stats.reduce((sum, stat) => sum + stat.totalResponses, 0);
-      const totalPromoters = stats.reduce((sum, stat) => sum + stat.promoters, 0);
-      const totalPassives = stats.reduce((sum, stat) => sum + stat.passives, 0);
-      const totalDetractors = stats.reduce((sum, stat) => sum + stat.detractors, 0);
-      const averageNPS = totalResponses > 0 ? Math.round(((totalPromoters - totalDetractors) / totalResponses) * 100) : 0;
+        // Calculate total stats
+        const totalResponses = stats.reduce((sum, stat) => sum + stat.totalResponses, 0);
+        const totalPromoters = stats.reduce((sum, stat) => sum + stat.promoters, 0);
+        const totalPassives = stats.reduce((sum, stat) => sum + stat.passives, 0);
+        const totalDetractors = stats.reduce((sum, stat) => sum + stat.detractors, 0);
+        const averageNPS = totalResponses > 0 ? Math.round(((totalPromoters - totalDetractors) / totalResponses) * 100) : 0;
 
-      setTotalStats({
-        totalCampaigns: allCampaigns.length,
-        activeCampaigns: allCampaigns.filter(c => c.active).length,
-        totalResponses,
-        averageNPS,
-        totalPromoters,
-        totalPassives,
-        totalDetractors
-      });
+        setTotalStats({
+          totalCampaigns: allCampaigns.length,
+          activeCampaigns: allCampaigns.filter(c => c.active).length,
+          totalResponses,
+          averageNPS,
+          totalPromoters,
+          totalPassives,
+          totalDetractors
+        });
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Set default values for campaigns and stats
+        setCampaigns([]);
+        setCampaignStats([]);
+        setTotalStats({
+          totalCampaigns: 0,
+          activeCampaigns: 0,
+          totalResponses: 0,
+          averageNPS: 0,
+          totalPromoters: 0,
+          totalPassives: 0,
+          totalDetractors: 0
+        });
+      }
     } catch (error) {
       console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
