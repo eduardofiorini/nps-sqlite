@@ -26,10 +26,7 @@ import {
   Minus,
   ExternalLink,
   Settings,
-  ChevronRight,
-  X,
-  PieChart,
-  Maximize
+  ChevronRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -41,7 +38,6 @@ const CampaignDashboard: React.FC = () => {
   const [situations, setSituations] = useState<Situation[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isTvMode, setIsTvMode] = useState(false);
 
   // Calculate NPS metrics
   const npsScore = calculateNPS(responses);
@@ -50,21 +46,6 @@ const CampaignDashboard: React.FC = () => {
 
   // Get recent responses (last 5)
   const recentResponses = responses.slice(0, 5);
-
-  useEffect(() => {
-    // Add ESC key listener for TV mode
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isTvMode) {
-        setIsTvMode(false);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isTvMode]);
 
   useEffect(() => {
     if (!id) return;
@@ -159,170 +140,8 @@ const CampaignDashboard: React.FC = () => {
     );
   }
 
-  // Format dates for display
-  const startDate = new Date(campaign.startDate).toLocaleDateString('pt-BR');
-  const endDate = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString('pt-BR') : 'Presente';
-
-  // TV Mode Component
-  const TvDashboard = () => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white z-50 overflow-hidden"
-    >
-      {/* Exit Button */}
-      <button
-        onClick={() => setIsTvMode(false)}
-        className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200"
-      >
-        <X size={20} className="text-white" />
-      </button>
-
-      {/* Header - Compact */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">{campaign.name}</h1>
-            <div className="flex items-center space-x-3 text-gray-300">
-              <span className="text-sm">{startDate} até {endDate}</span>
-              {campaign.active ? (
-                <Badge variant="success" className="text-xs px-2 py-1">Ativa</Badge>
-              ) : (
-                <Badge variant="danger" className="text-xs px-2 py-1">Inativa</Badge>
-              )}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-xs text-gray-400">Última atualização</div>
-            <div className="text-sm text-white">{new Date().toLocaleTimeString()}</div>
-          </div>
-        </div>
-      </div>
-
-      {responses.length === 0 ? (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <PieChart size={48} className="text-gray-400 mx-auto mb-3" />
-            <h3 className="text-2xl font-semibold text-white mb-3">Nenhuma resposta ainda</h3>
-            <p className="text-lg text-gray-400">
-              Aguardando primeiras respostas da pesquisa NPS
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="p-4 h-[calc(100vh-120px)] flex flex-col">
-          {/* Main Metrics Row */}
-          <div className="grid grid-cols-12 gap-4 mb-4 flex-shrink-0">
-            {/* NPS Score - Compact */}
-            <div className="col-span-3">
-              <div className="bg-gray-800 rounded-xl p-4 h-full flex flex-col items-center justify-center border border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-300 mb-3">Pontuação NPS</h2>
-                <div className="flex justify-center mb-3">
-                  <NpsDoughnut npsScore={npsScore} width={160} height={160} />
-                </div>
-                <div className="text-center">
-                  <div className="text-sm text-gray-400">Baseado em</div>
-                  <div className="text-xl font-bold text-white">{responses.length} respostas</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Distribution - Compact */}
-            <div className="col-span-4">
-              <div className="bg-gray-800 rounded-xl p-4 h-full border border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-300 mb-3 text-center">Distribuição</h2>
-                <div className="h-32 mb-3">
-                  <NpsDistribution
-                    promoters={promoters}
-                    passives={passives}
-                    detractors={detractors}
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-red-900/30 p-2 rounded-lg text-center border border-red-800">
-                    <div className="text-xl font-bold text-red-400">{detractors}</div>
-                    <div className="text-xs text-red-300">Detratores</div>
-                  </div>
-                  <div className="bg-yellow-900/30 p-2 rounded-lg text-center border border-yellow-800">
-                    <div className="text-xl font-bold text-yellow-400">{passives}</div>
-                    <div className="text-xs text-yellow-300">Neutros</div>
-                  </div>
-                  <div className="bg-green-900/30 p-2 rounded-lg text-center border border-green-800">
-                    <div className="text-xl font-bold text-green-400">{promoters}</div>
-                    <div className="text-xs text-green-300">Promotores</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Trend - Compact */}
-            <div className="col-span-5">
-              <div className="bg-gray-800 rounded-xl p-4 h-full border border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-300 mb-3 text-center">Tendência NPS</h2>
-                <div className="h-40">
-                  <NpsTrend data={trendData} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Responses - Flexible Height */}
-          <div className="flex-1 min-h-0">
-            <div className="bg-gray-800 rounded-xl p-4 h-full border border-gray-700 flex flex-col">
-              <h2 className="text-lg font-semibold text-gray-300 mb-3">Últimas Respostas</h2>
-              <div className="flex-1 overflow-y-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-                  {responses.slice(0, 8).map((response) => (
-                    <div key={response.id} className="bg-gray-700 rounded-lg p-3 border border-gray-600 flex-shrink-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div 
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${
-                            response.score >= 9 
-                              ? 'bg-green-500 text-white' 
-                              : response.score <= 6 
-                              ? 'bg-red-500 text-white' 
-                              : 'bg-yellow-500 text-white'
-                          }`}
-                        >
-                          {response.score}
-                        </div>
-                        <div className="text-right flex-1 ml-2">
-                          <div className="text-sm font-medium text-white truncate">
-                            {getSourceName(response.sourceId)}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {new Date(response.createdAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </div>
-                      {response.feedback && (
-                        <div className="text-xs text-gray-300 bg-gray-600 p-2 rounded line-clamp-2">
-                          "{response.feedback}"
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Footer - Compact */}
-      <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center text-gray-400 text-xs">
-        <div>Pressione ESC para sair do modo TV</div>
-        <div>Atualização automática a cada 30 segundos</div>
-      </div>
-    </motion.div>
-  );
-
   return (
     <div className="space-y-8">
-      {/* TV Mode */}
-      {isTvMode && <TvDashboard />}
-      
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -355,15 +174,6 @@ const CampaignDashboard: React.FC = () => {
           <Link to={`/campaigns/${id}/share`}>
             <Button variant="primary" size="sm" icon={<Share2 size={16} />}>
               Compartilhar
-            </Button>
-          </Link>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            icon={<Maximize size={16} />}
-            onClick={() => setIsTvMode(true)}
-          >
-            Modo TV
             </Button>
           </Link>
         </div>
