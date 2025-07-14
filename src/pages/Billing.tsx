@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import { loadStripe } from '@stripe/stripe-js';
 import { 
   CreditCard, 
   Calendar, 
@@ -18,11 +19,18 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSubscription, saveSubscription } from '../utils/localStorage';
+import { useSubscription } from '../hooks/useSubscription';
+import { STRIPE_PRODUCTS, formatPrice } from '../stripe-config';
 import type { Subscription, Plan } from '../types';
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const Billing: React.FC = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const { subscription: dbSubscription, isActive, plan, loading: subLoading } = useSubscription();
 
   const plans: Plan[] = [
     {
@@ -96,7 +104,8 @@ const Billing: React.FC = () => {
     }
   ];
 
-  const currentPlan = plans.find(p => p.id === subscription?.planId) || plans[1];
+  // Use the plan from the subscription hook if available, otherwise fall back to localStorage
+  const currentPlan = plan || plans.find(p => p.id === subscription?.planId) || plans[1];
 
   const billingHistory = [
     {
@@ -132,10 +141,16 @@ const Billing: React.FC = () => {
   };
 
   useEffect(() => {
-    const sub = getSubscription();
-    setSubscription(sub);
-    setIsLoading(false);
-  }, []);
+    // If we have a subscription from the database, use that
+    if (!subLoading && dbSubscription) {
+      setIsLoading(false);
+    } else {
+      // Otherwise fall back to localStorage
+      const sub = getSubscription();
+      setSubscription(sub);
+      setIsLoading(false);
+    }
+  }, [subLoading, dbSubscription]);
 
   const handlePlanChange = (planId: string) => {
     if (!subscription) return;
@@ -183,6 +198,41 @@ const Billing: React.FC = () => {
     return Math.min((used / limit) * 100, 100);
   };
 
+  const handleCheckout = async (priceId: string) => {
+    setIsCheckoutLoading(true);
+    try {
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error('Stripe failed to load');
+
+      // Call our Supabase Edge Function to create a checkout session
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({
+          price_id: priceId,
+          success_url: `${window.location.origin}/billing?success=true`,
+          cancel_url: `${window.location.origin}/billing?canceled=true`,
+          mode: 'subscription'
+        })
+      });
+
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to redirect to checkout. Please try again.');
+    } finally {
+      setIsCheckoutLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -216,17 +266,25 @@ const Billing: React.FC = () => {
                     {getIconComponent(currentPlan.icon)}
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{currentPlan.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      {plan?.name || currentPlan.name}
+                    </h3>
                     <div className="text-2xl font-bold text-[#073143] dark:text-white">
-                      R${currentPlan.price}
+                      {plan ? formatPrice(plan.price) : `R$${currentPlan.price}`}
                       <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/{currentPlan.period === 'month' ? 'mês' : 'ano'}</span>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  {getStatusBadge(subscription?.status || 'active')}
+                  {getStatusBadge(dbSubscription?.subscription_status || subscription?.status || 'active')}
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Próxima cobrança: {subscription ? new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR') : 'N/A'}
+                    Próxima cobrança: {
+                      dbSubscription?.current_period_end 
+                        ? new Date(dbSubscription.current_period_end * 1000).toLocaleDateString('pt-BR')
+                        : subscription 
+                          ? new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR') 
+                          : 'N/A'
+                    }
                   </p>
                 </div>
               </div>
@@ -241,7 +299,12 @@ const Billing: React.FC = () => {
               </div>
 
               <div className="mt-6 flex space-x-3">
-                <Button variant="primary" icon={<CreditCard size={16} />}>
+                <Button 
+                  variant="primary" 
+                  icon={<CreditCard size={16} />}
+                  onClick={() => handleCheckout(STRIPE_PRODUCTS.find(p => p.id === `prod_${currentPlan.id.charAt(0).toUpperCase() + currentPlan.id.slice(1)}`)?.priceId || '')}
+                  isLoading={isCheckoutLoading}
+                >
                   Atualizar Método de Pagamento
                 </Button>
                 <Button variant="outline">
@@ -523,8 +586,22 @@ const Billing: React.FC = () => {
                 <Button
                   variant={plan.id === subscription?.planId ? "outline" : "primary"}
                   fullWidth
-                  disabled={plan.id === subscription?.planId}
-                  onClick={() => plan.id !== subscription?.planId && handlePlanChange(plan.id)}
+                  disabled={plan.id === subscription?.planId || isCheckoutLoading}
+                  isLoading={isCheckoutLoading && plan.id !== subscription?.planId}
+                  onClick={() => {
+                    if (plan.id !== subscription?.planId) {
+                      // Find the corresponding Stripe product
+                      const stripeProduct = STRIPE_PRODUCTS.find(p => 
+                        p.id === `prod_${plan.id.charAt(0).toUpperCase() + plan.id.slice(1)}`
+                      );
+                      
+                      if (stripeProduct) {
+                        handleCheckout(stripeProduct.priceId);
+                      } else {
+                        handlePlanChange(plan.id);
+                      }
+                    }
+                  }}
                   icon={plan.id !== subscription?.planId ? <ArrowRight size={16} /> : undefined}
                 >
                   {plan.id === subscription?.planId ? 'Plano Atual' : 'Selecionar Plano'}

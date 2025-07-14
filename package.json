@@ -12,6 +12,7 @@
   "dependencies": {
     "@codemirror/lang-html": "^6.4.9",
     "@codemirror/theme-one-dark": "^6.1.2",
+    "@stripe/stripe-js": "^2.4.0",
     "@supabase/supabase-js": "^2.50.5",
     "@uiw/react-codemirror": "^4.23.12",
     "axios": "^1.10.0",
