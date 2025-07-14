@@ -255,75 +255,152 @@ const Reports: React.FC = () => {
 
       {/* Filters */}
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-        <CardHeader title="Filtros" />
+        <CardHeader 
+          title="Filtros de Relatório"
+          description="Selecione as campanhas e período para análise"
+        />
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Campaigns Filter */}
+            <div className="lg:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Campanhas
+                <span className="flex items-center">
+                  <BarChart3 size={16} className="mr-2" />
+                  Selecionar Campanhas
+                </span>
               </label>
-              <div className="space-y-2">
-                <div className="flex items-center">
+              
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                <div className="flex items-center justify-between mb-3">
                   <input
                     type="checkbox"
                     id="select-all-campaigns"
                     checked={selectedCampaigns.length === campaigns.length && campaigns.length > 0}
                     onChange={handleSelectAllCampaigns}
-                    className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143]"
+                    className="w-4 h-4 text-[#073143] border-gray-300 dark:border-gray-500 rounded focus:ring-[#073143]"
                   />
-                  <label htmlFor="select-all-campaigns" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="select-all-campaigns" className="ml-2 text-sm font-medium text-gray-900 dark:text-white">
                     {selectedCampaigns.length === campaigns.length ? 'Desmarcar todas' : 'Selecionar todas'}
                   </label>
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedCampaigns.length} de {campaigns.length}
+                  </Badge>
                 </div>
-                <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700">
+                
+                <div className="max-h-40 overflow-y-auto space-y-2">
                   {campaigns.map(campaign => (
-                    <div key={campaign.id} className="flex items-center py-1">
-                      <input
-                        type="checkbox"
-                        id={`campaign-${campaign.id}`}
-                        checked={selectedCampaigns.includes(campaign.id)}
-                        onChange={() => handleCampaignToggle(campaign.id)}
-                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143]"
-                      />
-                      <label htmlFor={`campaign-${campaign.id}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        {campaign.name}
-                      </label>
+                    <div key={campaign.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <div className="flex items-center flex-1">
+                        <input
+                          type="checkbox"
+                          id={`campaign-${campaign.id}`}
+                          checked={selectedCampaigns.includes(campaign.id)}
+                          onChange={() => handleCampaignToggle(campaign.id)}
+                          className="w-4 h-4 text-[#073143] border-gray-300 dark:border-gray-500 rounded focus:ring-[#073143]"
+                        />
+                        <label htmlFor={`campaign-${campaign.id}`} className="ml-3 flex-1 cursor-pointer">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {campaign.name}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(campaign.startDate).toLocaleDateString('pt-BR')}
+                          </div>
+                        </label>
+                      </div>
+                      <Badge variant={campaign.active ? "success" : "secondary"} className="text-xs">
+                        {campaign.active ? 'Ativa' : 'Inativa'}
+                      </Badge>
                     </div>
                   ))}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {selectedCampaigns.length} de {campaigns.length} campanhas selecionadas
-                </div>
+                
+                {campaigns.length === 0 && (
+                  <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                    <BarChart3 size={24} className="mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Nenhuma campanha encontrada</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Período
-              </label>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="7">Últimos 7 dias</option>
-                <option value="30">Últimos 30 dias</option>
-                <option value="90">Últimos 90 dias</option>
-                <option value="365">Último ano</option>
-              </select>
-            </div>
+            {/* Period and Actions */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <span className="flex items-center">
+                    <Calendar size={16} className="mr-2" />
+                    Período de Análise
+                  </span>
+                </label>
+                <select
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="7">Últimos 7 dias</option>
+                  <option value="30">Últimos 30 dias</option>
+                  <option value="90">Últimos 90 dias</option>
+                  <option value="365">Último ano</option>
+                </select>
+              </div>
 
-            <div className="flex items-end">
-              <Button
-                variant="outline"
-                icon={<Filter size={16} />}
-                onClick={loadReportData}
-                fullWidth
-              >
-                Aplicar Filtros
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  variant="primary"
+                  icon={<Filter size={16} />}
+                  onClick={loadReportData}
+                  fullWidth
+                  className="bg-[#073143] hover:bg-[#0a4a5c]"
+                >
+                  Aplicar Filtros
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  icon={<RefreshCw size={16} />}
+                  onClick={() => {
+                    setSelectedCampaigns([]);
+                    setDateRange('30');
+                    loadReportData();
+                  }}
+                  fullWidth
+                >
+                  Limpar Filtros
+                </Button>
+              </div>
+
+              {/* Filter Summary */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                  Resumo dos Filtros
+                </h4>
+                <div className="space-y-1 text-xs text-blue-700 dark:text-blue-300">
+                  <div className="flex justify-between">
+                    <span>Campanhas:</span>
+                    <span className="font-medium">
+                      {selectedCampaigns.length === 0 ? 'Todas' : `${selectedCampaigns.length} selecionadas`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Período:</span>
+                    <span className="font-medium">
+                      {dateRange === '7' ? 'Últimos 7 dias' :
+                       dateRange === '30' ? 'Últimos 30 dias' :
+                       dateRange === '90' ? 'Últimos 90 dias' : 'Último ano'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Total de dados:</span>
+                    <span className="font-medium">
+                      {reportData.reduce((sum, data) => sum + data.totalResponses, 0)} respostas
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
         </CardContent>
       </Card>
 

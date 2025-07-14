@@ -34,6 +34,7 @@ const Profile: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const userProfile = getUserProfile();
@@ -41,7 +42,12 @@ const Profile: React.FC = () => {
       setProfile(userProfile);
       setAvatarPreview(userProfile.avatar || '');
     }
+    setIsLoading(false);
+    setIsLoading(false);
   }, []);
+
+  // Add loading state for initial load
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     if (!profile) return;
@@ -140,6 +146,14 @@ const Profile: React.FC = () => {
   };
 
   if (!user || !profile) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
