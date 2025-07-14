@@ -3,9 +3,9 @@ import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
 // Use environment variables with fallbacks for development
-const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY') ?? 'sk_test_placeholder';
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY') || 'sk_test_placeholder';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const stripe = new Stripe(stripeSecret, { 
