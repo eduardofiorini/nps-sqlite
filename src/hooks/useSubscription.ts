@@ -38,7 +38,7 @@ export function useSubscription() {
 
       // Get subscription data
       const { data, error } = await supabase
-        .from('stripe_user_subscriptions')
+        .from('user_subscriptions')
         .select('*')
         .maybeSingle()
 
@@ -81,7 +81,7 @@ export function useSubscription() {
       // Also fetch order history
       try {
         const { data: orderData, error: orderError } = await supabase
-          .from('stripe_user_orders')
+          .from('user_orders')
           .select('*')
           .order('order_date', { ascending: false })
           
