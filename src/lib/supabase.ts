@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // Get environment variables with fallbacks for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 const STORAGE_KEY = 'nps_supabase_auth'
 
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -19,9 +19,9 @@ try {
     supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
-        autoRefreshToken: true, 
+        autoRefreshToken: true,
         storageKey: STORAGE_KEY,
-        storage: window.localStorage,
+        storage: localStorage,
         debug: import.meta.env.DEV, // Enable debug logs in development
       }
     });
@@ -29,7 +29,7 @@ try {
     // Test the connection by getting the session
     supabase.auth.getSession().then(({ data, error }) => {
       if (error) {
-        console.error('Error getting Supabase session:', error);
+        console.error('Error getting Supabase session:', error.message);
       } else {
         console.log('Session check successful:', data.session ? 'Session exists' : 'No session');
       }
@@ -87,19 +87,39 @@ export { supabase };
 export const isSupabaseConfigured = () => {
   // Check if we have real Supabase credentials (not demo/placeholder values)
   try {
-    // Test if the URL is valid and not empty
-    new URL(supabaseUrl);
-    
-    const hasRealUrl = supabaseUrl && 
-                       supabaseUrl !== 'https://localhost:54321' && 
-                       supabaseUrl !== 'YOUR_SUPABASE_URL' &&
-                       supabaseUrl.includes('.supabase.co');
-                       
-    const hasRealKey = supabaseAnonKey && 
-                       supabaseAnonKey !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' &&
-                       supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY';
-                       
-    return hasRealUrl && hasRealKey;
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.log('Supabase URL or key is missing');
+      return false;
+    }
+
+    // Test if URL is valid
+    try {
+      new URL(supabaseUrl);
+    } catch (e) {
+      console.log('Invalid Supabase URL format');
+      return false;
+    }
+
+    // Check for placeholder values
+    if (
+      supabaseUrl === 'https://localhost:54321' || 
+      supabaseUrl === 'YOUR_SUPABASE_URL' ||
+      !supabaseUrl.includes('.supabase.co')
+    ) {
+      console.log('Supabase URL appears to be a placeholder');
+      return false;
+    }
+
+    // Check for placeholder or demo key
+    if (
+      supabaseAnonKey === 'YOUR_SUPABASE_ANON_KEY' ||
+      supabaseAnonKey.includes('supabase-demo')
+    ) {
+      console.log('Supabase key appears to be a placeholder');
+      return false;
+    }
+
+    return true;
   } catch (error) {
     // If URL is invalid, Supabase is not configured
     console.warn('Supabase not configured:', error);
