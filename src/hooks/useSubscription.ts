@@ -29,7 +29,6 @@ export function useSubscription() {
 
       const { data, error } = await supabase
         .from('stripe_user_subscriptions')
-        .from('stripe_user_subscriptions')
         .select('*')
         .maybeSingle()
 
