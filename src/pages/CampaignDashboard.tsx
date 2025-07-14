@@ -432,14 +432,6 @@ const TvDashboard = () => {
         </div>
         
         <div className="flex space-x-3">
-          <Button 
-            variant="secondary" 
-            icon={<Monitor size={16} />}
-            onClick={() => setIsTvMode(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
-          >
-            Modo TV
-          </Button>
           <Link to={`/campaigns/${id}/responses`}>
             <Button variant="outline" size="sm" icon={<Eye size={16} />}>
               Ver Respostas
@@ -455,6 +447,14 @@ const TvDashboard = () => {
               Compartilhar
             </Button>
           </Link>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            icon={<Monitor size={18} />}
+            onClick={() => setIsTvMode(true)}
+          >
+            Modo TV
+          </Button>
         </div>
       </div>
 
