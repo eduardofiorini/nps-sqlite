@@ -92,12 +92,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (error) {
-        console.error('Login error:', error.message);
-        
         // Handle specific error cases
         if (error.message === 'Email not confirmed') {
           // For demo purposes, allow login even with unconfirmed email
-          console.log('Email not confirmed, falling back to demo mode');
+          console.warn('Email not confirmed, falling back to demo mode');
           const mockUser: User = {
             id: '123e4567-e89b-12d3-a456-426614174000',
             email: email,
@@ -107,6 +105,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(mockUser);
           return { success: true };
         }
+        
+        console.error('Login error:', error.message);
         
         if (error.message === 'Invalid login credentials') {
           return { success: false, message: 'Credenciais inválidas. Verifique seu email e senha.' };
