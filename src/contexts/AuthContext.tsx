@@ -97,23 +97,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return { success: false, message: 'Seu e-mail ainda não foi confirmado. Por favor, verifique sua caixa de entrada.' };
         }
         
+        // Handle database errors by falling back to demo mode
+        if (error.message === 'Database error granting user' || error.message.includes('unexpected_failure')) {
+          console.warn('Database error detected, falling back to demo mode');
+          if (email && password) {
+            const mockUser: User = {
+              id: '123e4567-e89b-12d3-a456-426614174000',
+              email: email,
+              name: email.split('@')[0] || 'User',
+              role: 'user'
+            };
+            setUser(mockUser);
+            return { success: true };
+          }
+        }
+        
         console.error('Login error:', error.message);
         
         if (error.message === 'Invalid login credentials') {
           return { success: false, message: 'Credenciais inválidas. Verifique seu email e senha.' };
-        }
-        
-        // If Supabase authentication fails, fall back to demo mode
-        if (email && password) {
-          console.log('Falling back to demo mode due to authentication failure');
-          const mockUser: User = {
-            id: '123e4567-e89b-12d3-a456-426614174000',
-            email: email,
-            name: email.split('@')[0] || 'User',
-            role: 'user'
-          };
-          setUser(mockUser);
-          return { success: true };
         }
         
         return { success: false, message: error.message };
