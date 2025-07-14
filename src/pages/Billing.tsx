@@ -23,6 +23,7 @@ import { motion } from 'framer-motion';
 import { useSubscription } from '../hooks/useSubscription';
 import { STRIPE_PRODUCTS, formatPrice } from '../stripe-config';
 import type { Plan } from '../types';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
@@ -103,6 +104,16 @@ const Billing: React.FC = () => {
     setCheckoutError(null);
     
     try {
+      // Check if Supabase is configured - if not, simulate demo checkout
+      if (!isSupabaseConfigured()) {
+        // Simulate loading time for demo
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Redirect to success page in demo mode
+        window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
+        return;
+      }
+      
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
