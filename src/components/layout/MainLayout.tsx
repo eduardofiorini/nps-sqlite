@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useSubscriptionContext } from '../../contexts/SubscriptionContext';
 import { 
   LayoutGrid, 
   BarChart, 
@@ -21,7 +22,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   FileText,
-  Users
+  Users,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -32,6 +34,7 @@ const MainLayout: React.FC = () => {
   const { config } = useConfig();
   const { theme, toggleTheme, isDark } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -132,6 +135,14 @@ const MainLayout: React.FC = () => {
                   <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Plataforma de Gestão de NPS</span>
                 </div>
               </Link>
+              
+              {/* Trial Days Indicator */}
+              {daysLeftInTrial !== null && daysLeftInTrial > 0 && (
+                <div className="ml-4 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full text-xs font-medium flex items-center">
+                  <Clock size={12} className="mr-1" />
+                  {daysLeftInTrial} {daysLeftInTrial === 1 ? 'dia' : 'dias'} restantes no teste
+                </div>
+              )}
             </div>
 
             {/* Desktop Navigation */}
@@ -199,10 +210,14 @@ const MainLayout: React.FC = () => {
                         <Link
                           to="/billing"
                           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          onClick={() => setIsUserDropdownOpen(false)}
+                          onClick={() => {
+                            setIsUserDropdownOpen(false);
+                          }}
                         >
                           <CreditCard size={16} className="mr-2" />
-                          Assinatura e Cobrança
+                          {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                            ? `Assinatura (${daysLeftInTrial} dias restantes)` 
+                            : 'Assinatura e Cobrança'}
                         </Link>
                         <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                         <button 
@@ -393,6 +408,14 @@ const MainLayout: React.FC = () => {
                       <X size={24} />
                     </button>
                   </div>
+                  
+                  {/* Mobile Trial Days Indicator */}
+                  {daysLeftInTrial !== null && daysLeftInTrial > 0 && (
+                    <div className="mb-4 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full text-xs font-medium flex items-center justify-center">
+                      <Clock size={12} className="mr-1" />
+                      {daysLeftInTrial} {daysLeftInTrial === 1 ? 'dia' : 'dias'} restantes no teste
+                    </div>
+                  )}
 
                   {/* Mobile Language Selector */}
                   <div className="mb-4">
@@ -481,7 +504,9 @@ const MainLayout: React.FC = () => {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <CreditCard size={16} className="mr-2" />
-                      Assinatura e Cobrança
+                      {daysLeftInTrial !== null && daysLeftInTrial > 0 
+                        ? `Assinatura (${daysLeftInTrial} dias restantes)` 
+                        : 'Assinatura e Cobrança'}
                     </Link>
                     <Button
                       variant="outline"
