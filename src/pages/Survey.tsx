@@ -22,6 +22,7 @@ const Survey: React.FC = () => {
   const [automationError, setAutomationError] = useState<string>('');
   const [webhookRetryCount, setWebhookRetryCount] = useState(0);
   const { t } = useLanguage();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Helper function to validate UUID format
   const isValidUUID = (uuid: string): boolean => {
@@ -46,6 +47,7 @@ const Survey: React.FC = () => {
 
     const loadData = async () => {
       try {
+        setIsLoading(true);
         // Load campaign data
         const campaigns = await getCampaigns();
         const foundCampaign = campaigns.find(c => c.id === id);
@@ -62,6 +64,8 @@ const Survey: React.FC = () => {
         console.error('Error loading survey data:', error);
         setCampaign(null);
         setForm(null);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -322,7 +326,17 @@ A resposta da pesquisa foi salva com sucesso.`;
     setIsProcessing(false);
   };
 
-  if (!campaign || !form) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoading && (!campaign || !form)) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
         <div className="text-center">
