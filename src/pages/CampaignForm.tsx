@@ -491,6 +491,62 @@ const CampaignForm: React.FC = () => {
                 )}
               </div>
 
+              {/* Card Background Color */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Cor de Fundo do Cartão
+                </label>
+                <div className="flex items-center mb-3">
+                  <input
+                    type="color"
+                    value={campaign.surveyCustomization?.cardBackgroundColor || '#ffffff'}
+                    onChange={(e) => handleCustomizationChange('cardBackgroundColor', e.target.value)}
+                    className="w-12 h-10 p-0 border-0 rounded mr-3"
+                  />
+                  <Input
+                    value={campaign.surveyCustomization?.cardBackgroundColor || '#ffffff'}
+                    onChange={(e) => handleCustomizationChange('cardBackgroundColor', e.target.value)}
+                    placeholder="#ffffff"
+                    className="flex-1"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCustomizationChange('cardBackgroundColor', '#ffffff')}
+                    className="flex items-center p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-colors"
+                  >
+                    <div
+                      className="w-6 h-6 rounded mr-2"
+                      style={{ backgroundColor: '#ffffff' }}
+                    />
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Branco</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCustomizationChange('cardBackgroundColor', '#f3f4f6')}
+                    className="flex items-center p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-colors"
+                  >
+                    <div
+                      className="w-6 h-6 rounded mr-2"
+                      style={{ backgroundColor: '#f3f4f6' }}
+                    />
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Cinza Claro</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCustomizationChange('cardBackgroundColor', '#eff6ff')}
+                    className="flex items-center p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-colors"
+                  >
+                    <div
+                      className="w-6 h-6 rounded mr-2"
+                      style={{ backgroundColor: '#eff6ff' }}
+                    />
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Azul Claro</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Primary Color */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -593,7 +649,10 @@ const CampaignForm: React.FC = () => {
                     O quanto você recomendaria nosso serviço para um amigo ou colega?
                   </p>
                   
-                  <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-lg p-6 shadow-lg">
+                  <div 
+                    className="bg-opacity-95 backdrop-blur-sm rounded-lg p-6 shadow-lg"
+                    style={{ backgroundColor: campaign.surveyCustomization?.cardBackgroundColor || '#ffffff' }}
+                  >
                     <div className="flex items-center justify-between text-xs mb-4" style={{ color: '#6b7280' }}>
                       <span>Nada provável</span>
                       <span>Extremamente provável</span>
