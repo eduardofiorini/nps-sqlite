@@ -758,7 +758,7 @@ const Reports: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {selectedCampaigns.map(async (campaignId) => {
+                    {selectedCampaigns.map((campaignId) => {
                       const campaign = campaigns.find(c => c.id === campaignId);
                       if (!campaign) return null;
                       
