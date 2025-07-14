@@ -337,6 +337,12 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
               onChange={(e) => setCurrentEntity({ ...currentEntity, description: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter a description"
+            />
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
 };
 
 export default EntityCrud;
