@@ -711,7 +711,7 @@ const CampaignCreate: React.FC = () => {
 
             <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
               <div
-                className="p-8 min-h-[400px] flex flex-col items-center justify-center relative"
+                className="min-h-[400px] flex flex-col items-center justify-center relative"
                 style={{
                   backgroundColor: campaign.surveyCustomization?.backgroundType === 'color' 
                     ? campaign.surveyCustomization?.backgroundColor 
@@ -727,13 +727,12 @@ const CampaignCreate: React.FC = () => {
                 {campaign.surveyCustomization?.backgroundType === 'image' && campaign.surveyCustomization?.backgroundImage && (
                   <div className="absolute inset-0 bg-black bg-opacity-20"></div>
                 )}
-                
-                <div className="relative z-10 text-center max-w-md w-full">
+                <div className="relative z-10 text-center max-w-lg w-full p-8">
                   {campaign.surveyCustomization?.logoImage && (
                     <img
                       src={campaign.surveyCustomization.logoImage}
                       alt="Logo"
-                      className="w-16 h-16 object-contain mx-auto mb-6"
+                      className="w-16 h-16 object-contain mx-auto mb-4"
                     />
                   )}
                   
@@ -745,16 +744,16 @@ const CampaignCreate: React.FC = () => {
                     O quanto você recomendaria nosso serviço para um amigo ou colega?
                   </p>
                   
-                  <div className="bg-white bg-opacity-90 rounded-lg p-6 shadow-lg">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-sm text-gray-600">Nada provável</span>
-                      <span className="text-sm text-gray-600">Extremamente provável</span>
+                  <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-lg p-6 shadow-lg">
+                    <div className="flex items-center justify-between text-xs mb-4" style={{ color: '#6b7280' }}>
+                      <span>Nada provável</span>
+                      <span>Extremamente provável</span>
                     </div>
-                    <div className="flex justify-between space-x-1">
+                    <div className="flex justify-between space-x-1 mb-6">
                       {Array.from({ length: 11 }, (_, i) => (
                         <div
                           key={i}
-                          className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-medium cursor-pointer hover:scale-110 transition-transform"
+                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-sm font-medium cursor-pointer hover:scale-110 transition-transform"
                           style={{
                             borderColor: campaign.surveyCustomization?.primaryColor,
                             color: campaign.surveyCustomization?.primaryColor
@@ -765,7 +764,7 @@ const CampaignCreate: React.FC = () => {
                       ))}
                     </div>
                     <button
-                      className="w-full mt-6 py-2 px-4 rounded-md text-white font-medium transition-colors"
+                      className="w-full py-3 px-6 rounded-lg text-white font-medium transition-colors hover:shadow-lg"
                       style={{ backgroundColor: campaign.surveyCustomization?.primaryColor }}
                     >
                       Enviar Feedback
