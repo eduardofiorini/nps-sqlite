@@ -1069,7 +1069,13 @@ Equipe ${campaign?.name || 'Nossa Equipe'}`);
                   {previewContact ? (
                     emailType === 'html' ? (
                       <div 
-                        className="prose prose-sm max-w-none"
+                        className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900 prose-em:text-gray-600 prose-code:text-gray-800 prose-code:bg-gray-100 prose-pre:bg-gray-100 prose-blockquote:text-gray-600 prose-hr:border-gray-300 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700"
+                        style={{
+                          isolation: 'isolate',
+                          contain: 'layout style',
+                          position: 'relative',
+                          zIndex: 1
+                        }}
                         dangerouslySetInnerHTML={{ 
                           __html: personalizeContent(emailBody, previewContact) 
                         }}
