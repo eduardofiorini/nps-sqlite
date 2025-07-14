@@ -321,6 +321,7 @@ const Contacts: React.FC = () => {
           
           let successCount = 0;
           let errorCount = 0;
+          const newContacts = [];
 
           lines.slice(1).forEach(line => {
             if (!line.trim()) return;
@@ -350,7 +351,8 @@ const Contacts: React.FC = () => {
               };
 
               if (contact.name && contact.email && contact.phone) {
-                saveContact(contact);
+                // Add to array for batch processing
+                newContacts.push(contact);
                 successCount++;
               } else {
                 errorCount++;
@@ -360,21 +362,23 @@ const Contacts: React.FC = () => {
             }
           });
 
-          setImportStatus('success');
-          setImportMessage(`Importação concluída! ${successCount} contatos importados com sucesso. ${errorCount > 0 ? `${errorCount} linhas com erro.` : ''}`);
-          
-          // Reload contacts data after import
-          const loadContactsAfterImport = async () => {
-            try {
-              const loadedContacts = await getContacts();
-              setContacts(loadedContacts);
-              setFilteredContacts(loadedContacts);
-            } catch (error) {
-              console.error('Error loading contacts after import:', error);
+          // Save all contacts and update state
+          const saveAllContacts = async () => {
+            for (const contact of newContacts) {
+              await saveContact(contact);
             }
+            
+            // Reload contacts after all saves are complete
+            const loadedContacts = await getContacts();
+            setContacts(loadedContacts);
+            setFilteredContacts(loadedContacts);
           };
           
-          loadContactsAfterImport();
+          // Execute the save operation
+          saveAllContacts();
+
+          setImportStatus('success');
+          setImportMessage(`Importação concluída! ${successCount} contatos importados com sucesso. ${errorCount > 0 ? `${errorCount} linhas com erro.` : ''}`);
           
           setTimeout(() => {
             setImportModalOpen(false);
@@ -387,6 +391,7 @@ const Contacts: React.FC = () => {
         } catch (error) {
           setImportStatus('error');
           setImportMessage('Erro ao processar o arquivo. Verifique o formato.');
+          console.error('Error processing import:', error);
         } finally {
           setTimeout(() => {
             setIsImporting(false);
@@ -399,6 +404,7 @@ const Contacts: React.FC = () => {
     } catch (error) {
       setImportStatus('error');
       setImportMessage('Erro ao processar o arquivo.');
+      console.error('Error reading file:', error);
       setTimeout(() => {
         setIsImporting(false);
       }, 500);
