@@ -60,8 +60,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // For demo purposes, allow login without actual Supabase connection
-      if (!isSupabaseConfigured() && email && password) {
+      // Check if Supabase is configured first
+      if (!isSupabaseConfigured()) {
+        // Demo mode - create mock user if credentials provided
+        if (!email || !password) {
+          console.error('Login error: Email and password are required');
+          return false;
+        }
+        
         // Create a mock user for demo purposes
         const mockUser: User = {
           id: '123e4567-e89b-12d3-a456-426614174000',
@@ -73,6 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return true;
       }
       
+      // Only attempt Supabase authentication if properly configured
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -91,18 +98,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     } catch (error) {
       console.error('Login error:', error);
+      
+      // Fallback to demo mode if Supabase fails
+      if (!isSupabaseConfigured() && email && password) {
+        const mockUser: User = {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          email: email,
+          name: email.split('@')[0] || 'User',
+          role: 'user'
+        };
+        setUser(mockUser);
+        return true;
+      }
+      
       return false;
     }
   };
 
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
-      // For demo purposes, allow registration without actual Supabase connection
+      // Check if Supabase is configured first
       if (!isSupabaseConfigured()) {
-        if (!email || !password) {
+        // Demo mode - create mock user if credentials provided
+        if (!email || !password || !name) {
           console.error('Registration error: Email and password are required');
           return false;
         }
+        
         // Create a mock user for demo purposes
         const mockUser: User = {
           id: '123e4567-e89b-12d3-a456-426614174000',
