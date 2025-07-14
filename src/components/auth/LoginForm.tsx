@@ -35,12 +35,10 @@ const LoginForm: React.FC = () => {
       if (success) {
         navigate('/');
       } else {
-        // For demo purposes, we'll allow any login
-        navigate('/');
-        return;
+        setError('Credenciais inválidas. Por favor, tente novamente.');
       }
     } catch (err) {
-      setError('Ocorreu um erro durante o login. Para fins de demonstração, você pode usar qualquer email e senha.');
+      setError('Ocorreu um erro durante o login. Tente novamente.');
       console.error(err);
     } finally {
       setIsLoading(false);
