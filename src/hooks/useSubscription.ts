@@ -53,29 +53,95 @@ export function useSubscription() {
         
         // If subscription status is 'trialing' and current_period_end is in the past
         if (data.subscription_status === 'trialing' && data.current_period_end) {
+          const trialEndDate = new Date(data.current_period_end * 1000);
+          const now = new Date();
+          
           // Check if trial has expired
-          if (new Date(data.current_period_end * 1000) < new Date()) {
+          if (trialEndDate < now) {
             setTrialExpired(true)
+            setDaysLeftInTrial(0)
           } else {
             setTrialExpired(false)
             
             // Calculate days left in trial
-            const trialEndDate = new Date(data.current_period_end * 1000)
-            const today = new Date()
-            const diffTime = trialEndDate.getTime() - today.getTime()
+            const diffTime = trialEndDate.getTime() - now.getTime()
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
             
             setDaysLeftInTrial(diffDays > 0 ? diffDays : 0)
           }
+        } else if (data.subscription_status === 'active') {
+          // Active subscription
+          setTrialExpired(false)
+          setDaysLeftInTrial(null)
         } else if (data.subscription_status === 'trialing') {
-          // If we don't have an end date but status is trialing, set a default
+          // Trialing without end date - set default 7 days
           setDaysLeftInTrial(7)
           setTrialExpired(false)
+        } else {
+          // Other statuses (canceled, past_due, etc.)
+          setTrialExpired(true)
+          setDaysLeftInTrial(0)
         }
       } else {
-        // If no subscription data, set default trial values for demo
-        setDaysLeftInTrial(7)
-        setTrialExpired(false)
+        // If no subscription data, create a trial subscription
+        console.log('No subscription found, creating trial subscription')
+        
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user) {
+            // Calculate trial end date (7 days from now)
+            const trialEndDate = new Date();
+            trialEndDate.setDate(trialEndDate.getDate() + 7);
+            
+            // Check if customer record exists
+            const { data: existingCustomer } = await supabase
+              .from('stripe_customers')
+              .select('customer_id')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            
+            if (!existingCustomer) {
+              // Create customer record
+              await supabase
+                .from('stripe_customers')
+                .insert({
+                  user_id: user.id,
+                  customer_id: user.id
+                });
+            }
+            
+            // Create trial subscription
+            const { data: newSubscription, error: subscriptionError } = await supabase
+              .from('stripe_subscriptions')
+              .insert({
+                customer_id: user.id,
+                subscription_status: 'trialing',
+                price_id: 'price_pro',
+                current_period_start: Math.floor(Date.now() / 1000),
+                current_period_end: Math.floor(trialEndDate.getTime() / 1000),
+                cancel_at_period_end: false,
+                status: 'trialing'
+              })
+              .select()
+              .single();
+            
+            if (!subscriptionError && newSubscription) {
+              setSubscription(newSubscription);
+              setDaysLeftInTrial(7);
+              setTrialExpired(false);
+            } else {
+              console.error('Error creating trial subscription:', subscriptionError);
+              // Set demo values as fallback
+              setDaysLeftInTrial(7);
+              setTrialExpired(false);
+            }
+          }
+        } catch (error) {
+          console.error('Error creating trial subscription:', error);
+          // Set demo values as fallback
+          setDaysLeftInTrial(7);
+          setTrialExpired(false);
+        }
       }
 
       // Also fetch order history

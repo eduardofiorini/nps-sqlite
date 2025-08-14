@@ -54,6 +54,28 @@ const Billing: React.FC = () => {
   });
   
   useEffect(() => {
+    // Check for success/demo parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const demo = urlParams.get('demo');
+    
+    if (success === 'true') {
+      if (demo === 'true') {
+        // Demo mode - simulate successful subscription
+        console.log('Demo checkout success detected');
+        // You could show a success message or update the UI here
+      } else {
+        // Real Stripe success - refresh subscription data
+        console.log('Real Stripe checkout success detected');
+        setTimeout(() => {
+          refetch();
+        }, 2000); // Give Stripe webhook time to process
+      }
+      
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     // Fetch usage stats
     const fetchUsageStats = async () => {
       try {
@@ -110,8 +132,10 @@ const Billing: React.FC = () => {
         console.log('Supabase not configured, simulating checkout in demo mode');
         
         // Create a mock checkout URL that opens in a new tab
-        const mockCheckoutUrl = `https://checkout.stripe.com/c/pay/demo#fidkdWxOYHwnPyd1blpxYHZxWjA0TjE0PW1%2FYzVTM2FHNjQzQTVgYzY0YGRmZ01hNWg1NmNgM2Y2MzQyM2EyYGdnQTZhMWRmNzVgNTU0MzVhPScpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl`;
-        window.open(mockCheckoutUrl, '_blank');
+        // Simulate successful checkout by redirecting to success page
+        setTimeout(() => {
+          window.location.href = `${window.location.origin}/billing?success=true&demo=true`;
+        }, 1000);
         setCheckoutLoading(false);
         return;
       }

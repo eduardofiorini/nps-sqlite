@@ -74,11 +74,63 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
         setDaysLeftInTrial(null);
         console.log("No trial or active subscription");
       }
-    } else if (!subLoading) {
+    } else if (!subLoading && isAuthenticated) {
       // If no subscription data but loading is complete, set default trial values for demo
-      console.log("No subscription data found, setting demo trial values");
-      setDaysLeftInTrial(7);
-      setIsTrialExpired(false);
+      console.log("No subscription data found, creating trial subscription");
+      
+      // Create a trial subscription for the user
+      const createTrialSubscription = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          
+          // Calculate trial end date (7 days from now)
+          const trialEndDate = new Date();
+          trialEndDate.setDate(trialEndDate.getDate() + 7);
+          
+          // Check if customer record exists
+          const { data: existingCustomer } = await supabase
+            .from('stripe_customers')
+            .select('customer_id')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (!existingCustomer) {
+            // Create customer record
+            await supabase
+              .from('stripe_customers')
+              .insert({
+                user_id: user.id,
+                customer_id: user.id
+              });
+          }
+          
+          // Create trial subscription
+          const { error: subscriptionError } = await supabase
+            .from('stripe_subscriptions')
+            .insert({
+              customer_id: user.id,
+              subscription_status: 'trialing',
+              price_id: 'price_pro',
+              current_period_start: Math.floor(Date.now() / 1000),
+              current_period_end: Math.floor(trialEndDate.getTime() / 1000),
+              cancel_at_period_end: false,
+              status: 'trialing'
+            });
+          
+          if (!subscriptionError) {
+            setDaysLeftInTrial(7);
+            setIsTrialExpired(false);
+          }
+        } catch (error) {
+          console.error('Error creating trial subscription:', error);
+          // Set demo values as fallback
+          setDaysLeftInTrial(7);
+          setIsTrialExpired(false);
+        }
+      };
+      
+      createTrialSubscription();
     }
   }, [isAuthenticated, authLoading, subLoading, subscription, trialExpired, isTrialing, navigate]);
 
