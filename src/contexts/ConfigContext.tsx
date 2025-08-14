@@ -1,9 +1,9 @@
 import React from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useConfig } from '../../contexts/ConfigContext';
+import { useAuth } from './AuthContext';
+import { useTheme } from './ThemeContext';
+import { useLanguage } from './LanguageContext';
+import { useConfig } from './ConfigContext';
 import { 
   LayoutGrid, 
   BarChart, 
