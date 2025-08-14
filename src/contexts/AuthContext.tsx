@@ -38,22 +38,34 @@ const processSupabaseUser = async (supabaseUser: SupabaseUser | null): Promise<U
   let isAdmin = false;
   try {
     if (isSupabaseConfigured()) {
-      // Direct query to avoid circular imports
+      console.log('Checking admin status for user:', supabaseUser.id);
       const { data, error } = await supabase
         .from('user_admin')
         .select('id')
         .eq('user_id', supabaseUser.id)
-        .maybeSingle();
+        .single();
       
-      if (!error && data) {
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // User not found in admin table - not an admin
+          console.log('User not found in admin table:', supabaseUser.id);
+          isAdmin = false;
+        } else {
+          console.error('Error checking admin status:', error);
+          isAdmin = false;
+        }
+      } else if (data) {
+        console.log('User found in admin table:', supabaseUser.id);
         isAdmin = true;
       }
     } else {
-      // Demo mode admin check
-      isAdmin = supabaseUser.email === 'admin@meunps.com';
+      // Demo mode - no admin privileges unless in database
+      console.log('Demo mode - no admin validation');
+      isAdmin = false;
     }
   } catch (error) {
     console.error('Error checking admin status:', error);
+    isAdmin = false;
   }
   
   console.log('Admin check result for', supabaseUser.email, ':', isAdmin);
@@ -168,46 +180,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Try Supabase authentication first if configured
       if (isSupabaseConfigured()) {
         try {
+          console.log('Attempting Supabase login for:', email);
           const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
 
           if (error) {
-            console.log('Supabase auth error:', error.message);
-            // Fall through to demo mode instead of returning error immediately
+            console.error('Supabase auth error:', error.message);
+            return { success: false, message: error.message };
           } else if (data.user) {
+            console.log('Supabase login successful for:', email);
             const processedUser = await processSupabaseUser(data.user);
             setUser(processedUser);
             
             // Store user in localStorage
             if (processedUser) {
               localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
+              console.log('User stored in localStorage:', processedUser.email, 'Role:', processedUser.role);
             }
             
             return { success: true };
           }
         } catch (authError) {
-          console.log('Supabase connection error, falling back to demo mode:', authError);
+          console.error('Supabase connection error:', authError);
+          return { success: false, message: 'Erro de conexão com o servidor' };
         }
       }
       
-      // Demo mode fallback - always allow login with any credentials
-      console.log('Using demo mode for login');
-      const mockUser: User = {
-        id: email === 'admin@meunps.com' ? '37fa7210-8123-4be3-b157-0eb587258ef3' : '123e4567-e89b-12d3-a456-426614174000',
-        email: email,
-        name: email.split('@')[0] || 'User',
-        role: email === 'admin@meunps.com' ? 'admin' : 'user'
-      };
-      
-      console.log('Demo login successful for:', email, 'Role:', mockUser.role);
-      setUser(mockUser);
-      
-      // Store mock user in localStorage
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-      
-      return { success: true };
+      // If Supabase is not configured, return error
+      return { success: false, message: 'Supabase não está configurado' };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, message: 'Erro de conexão. Tente novamente.' };
@@ -224,6 +226,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Try Supabase registration if configured
       if (isSupabaseConfigured()) {
         try {
+          console.log('Attempting Supabase registration for:', email);
           const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -236,34 +239,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
 
           if (!error && data.user) {
+            console.log('Supabase registration successful for:', email);
             const processedUser = await processSupabaseUser(data.user);
             setUser(processedUser);
             
             // Store user in localStorage
             if (processedUser) {
               localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
+              console.log('User stored in localStorage:', processedUser.email, 'Role:', processedUser.role);
             }
             
             return true;
+          } else if (error) {
+            console.error('Supabase registration error:', error);
+            return false;
           }
         } catch (authError) {
-          console.log('Supabase registration error, falling back to demo mode:', authError);
+          console.error('Supabase registration error:', authError);
+          return false;
         }
       }
       
-      // Demo mode fallback
-      const mockUser: User = {
-        id: email === 'admin@meunps.com' ? '37fa7210-8123-4be3-b157-0eb587258ef3' : '123e4567-e89b-12d3-a456-426614174000',
-        email: email,
-        name: name || email.split('@')[0] || 'User',
-        role: email === 'admin@meunps.com' ? 'admin' : 'user'
-      };
-      setUser(mockUser);
-      
-      // Store mock user in localStorage
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-      
-      return true;
+      // If Supabase is not configured, return false
+      return false;
     } catch (error) {
       console.error('Registration error:', error);
       return false;
