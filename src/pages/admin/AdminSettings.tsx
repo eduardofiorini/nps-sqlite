@@ -48,91 +48,90 @@ const AdminSettings: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Simulate loading config data
-      setTimeout(() => {
-        const mockConfigs: AdminConfig[] = [
-          {
-            id: '1',
-            key: 'app.name',
-            value: 'Meu NPS',
-            type: 'string',
-            category: 'general',
-            description: 'Nome da aplicação exibido na interface',
-            editable: true,
-            updatedAt: new Date().toISOString()
+      // Load system configurations
+      // For now, using static demo data - in production this would come from a configs table
+      const mockConfigs: AdminConfig[] = [
+        {
+          id: '1',
+          key: 'app.name',
+          value: 'Meu NPS',
+          type: 'string',
+          category: 'general',
+          description: 'Nome da aplicação exibido na interface',
+          editable: true,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          key: 'app.version',
+          value: '1.0.0',
+          type: 'string',
+          category: 'general',
+          description: 'Versão atual da aplicação',
+          editable: false,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '3',
+          key: 'email.default_sender',
+          value: 'noreply@meunps.com',
+          type: 'string',
+          category: 'email',
+          description: 'Email padrão para envio de notificações',
+          editable: true,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '4',
+          key: 'stripe.webhook_secret',
+          value: 'whsec_xxxxxxxxxxxxxxxxx',
+          type: 'string',
+          category: 'payment',
+          description: 'Chave secreta do webhook do Stripe',
+          editable: true,
+          sensitive: true,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '5',
+          key: 'features.ai_insights',
+          value: true,
+          type: 'boolean',
+          category: 'features',
+          description: 'Habilitar insights com IA nos relatórios',
+          editable: true,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '6',
+          key: 'security.max_login_attempts',
+          value: 5,
+          type: 'number',
+          category: 'security',
+          description: 'Número máximo de tentativas de login',
+          editable: true,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '7',
+          key: 'email.smtp_settings',
+          value: {
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false
           },
-          {
-            id: '2',
-            key: 'app.version',
-            value: '1.0.0',
-            type: 'string',
-            category: 'general',
-            description: 'Versão atual da aplicação',
-            editable: false,
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: '3',
-            key: 'email.default_sender',
-            value: 'noreply@meunps.com',
-            type: 'string',
-            category: 'email',
-            description: 'Email padrão para envio de notificações',
-            editable: true,
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: '4',
-            key: 'stripe.webhook_secret',
-            value: 'whsec_xxxxxxxxxxxxxxxxx',
-            type: 'string',
-            category: 'payment',
-            description: 'Chave secreta do webhook do Stripe',
-            editable: true,
-            sensitive: true,
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: '5',
-            key: 'features.ai_insights',
-            value: true,
-            type: 'boolean',
-            category: 'features',
-            description: 'Habilitar insights com IA nos relatórios',
-            editable: true,
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: '6',
-            key: 'security.max_login_attempts',
-            value: 5,
-            type: 'number',
-            category: 'security',
-            description: 'Número máximo de tentativas de login',
-            editable: true,
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: '7',
-            key: 'email.smtp_settings',
-            value: {
-              host: 'smtp.gmail.com',
-              port: 587,
-              secure: false
-            },
-            type: 'json',
-            category: 'email',
-            description: 'Configurações padrão do servidor SMTP',
-            editable: true,
-            updatedAt: new Date().toISOString()
-          }
-        ];
-        
-        setConfigs(mockConfigs);
-        setIsLoading(false);
-      }, 1000);
+          type: 'json',
+          category: 'email',
+          description: 'Configurações padrão do servidor SMTP',
+          editable: true,
+          updatedAt: new Date().toISOString()
+        }
+      ];
+      
+      setConfigs(mockConfigs);
     } catch (error) {
       console.error('Error loading configs:', error);
+    } finally {
       setIsLoading(false);
     }
   };

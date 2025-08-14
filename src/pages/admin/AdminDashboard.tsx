@@ -35,21 +35,19 @@ const AdminDashboard: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Simulate loading admin stats
       // In a real app, this would fetch from your admin API
-      setTimeout(() => {
-        setStats({
-          totalUsers: 1247,
-          activeUsers: 892,
-          totalCampaigns: 3456,
-          totalResponses: 28934,
-          revenue: { monthly: 45600, total: 234500 },
-          growth: { users: 12.5, revenue: 8.3 }
-        });
-        setIsLoading(false);
-      }, 1000);
+      // For now, using demo data
+      setStats({
+        totalUsers: 1247,
+        activeUsers: 892,
+        totalCampaigns: 3456,
+        totalResponses: 28934,
+        revenue: { monthly: 45600, total: 234500 },
+        growth: { users: 12.5, revenue: 8.3 }
+      });
     } catch (error) {
       console.error('Error loading admin stats:', error);
+    } finally {
       setIsLoading(false);
     }
   };

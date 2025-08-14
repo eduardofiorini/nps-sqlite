@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { AdminUser } from '../../types/admin';
+import { getAdminUsers } from '../../utils/supabaseStorage';
 
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -50,82 +51,59 @@ const AdminUsers: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Simulate loading users data
-      // In a real app, this would fetch from your admin API
-      setTimeout(() => {
-        const mockUsers: AdminUser[] = [
-          {
-            id: '1',
-            email: 'joao@empresa.com',
-            name: 'João Silva',
-            phone: '(11) 99999-9999',
-            company: 'Tech Corp',
-            position: 'CEO',
-            role: 'user',
-            status: 'active',
-            subscription: {
-              plan: 'Profissional',
-              status: 'active',
-              current_period_end: Date.now() / 1000 + 30 * 24 * 60 * 60,
-              cancel_at_period_end: false
-            },
-            stats: {
-              campaigns: 5,
-              responses: 234,
-              lastLogin: new Date().toISOString()
-            },
-            createdAt: '2024-01-15T10:00:00Z',
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: '2',
-            email: 'maria@startup.com',
-            name: 'Maria Santos',
-            company: 'Startup Inc',
-            role: 'user',
-            status: 'active',
-            subscription: {
-              plan: 'Iniciante',
-              status: 'trialing',
-              current_period_end: Date.now() / 1000 + 5 * 24 * 60 * 60,
-              cancel_at_period_end: false
-            },
-            stats: {
-              campaigns: 2,
-              responses: 45,
-              lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-            },
-            createdAt: '2024-12-01T14:30:00Z',
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: '3',
-            email: 'carlos@corp.com',
-            name: 'Carlos Oliveira',
-            company: 'Big Corp',
-            role: 'user',
-            status: 'suspended',
-            subscription: {
-              plan: 'Empresarial',
-              status: 'past_due',
-              current_period_end: Date.now() / 1000 - 5 * 24 * 60 * 60,
-              cancel_at_period_end: true
-            },
-            stats: {
-              campaigns: 12,
-              responses: 1567,
-              lastLogin: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            createdAt: '2023-08-20T09:15:00Z',
-            updatedAt: new Date().toISOString()
-          }
-        ];
-        
-        setUsers(mockUsers);
-        setIsLoading(false);
-      }, 1000);
+      const adminUsers = await getAdminUsers();
+      
+      // Transform the data to match AdminUser interface
+      const transformedUsers: AdminUser[] = adminUsers.map(user => ({
+        id: user.user_id || user.id,
+        email: user.email || 'unknown@email.com',
+        name: user.name || 'Unknown User',
+        phone: user.phone,
+        company: user.company,
+        position: user.position,
+        avatar: user.avatar,
+        role: user.role || 'user',
+        status: user.status || 'active',
+        subscription: user.user_subscriptions?.[0] ? {
+          plan: user.user_subscriptions[0].price_id === 'price_starter' ? 'Iniciante' :
+                user.user_subscriptions[0].price_id === 'price_pro' ? 'Profissional' :
+                user.user_subscriptions[0].price_id === 'price_enterprise' ? 'Empresarial' : 'Desconhecido',
+          status: user.user_subscriptions[0].subscription_status,
+          current_period_end: user.user_subscriptions[0].current_period_end,
+          cancel_at_period_end: user.user_subscriptions[0].cancel_at_period_end
+        } : undefined,
+        stats: {
+          campaigns: 0, // Would need to count from campaigns table
+          responses: 0, // Would need to count from responses table
+          lastLogin: user.updated_at
+        },
+        createdAt: user.created_at || new Date().toISOString(),
+        updatedAt: user.updated_at || new Date().toISOString()
+      }));
+      
+      setUsers(transformedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
+      
+      // Fallback to demo data
+      const mockUsers: AdminUser[] = [
+        {
+          id: '37fa7210-8123-4be3-b157-0eb587258ef3',
+          email: 'admin@meunps.com',
+          name: 'Administrador',
+          role: 'admin',
+          status: 'active',
+          stats: {
+            campaigns: 0,
+            responses: 0,
+            lastLogin: new Date().toISOString()
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+      setUsers(mockUsers);
+    } finally {
       setIsLoading(false);
     }
   };

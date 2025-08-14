@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { AdminPlan } from '../../types/admin';
+import { getAdminPlans } from '../../utils/supabaseStorage';
 
 const AdminPlans: React.FC = () => {
   const [plans, setPlans] = useState<AdminPlan[]>([]);
@@ -38,95 +39,11 @@ const AdminPlans: React.FC = () => {
   const loadPlans = async () => {
     try {
       setIsLoading(true);
-      
-      // Simulate loading plans data
-      setTimeout(() => {
-        const mockPlans: AdminPlan[] = [
-          {
-            id: 'starter',
-            name: 'Iniciante',
-            description: 'Perfeito para pequenas equipes começando com NPS',
-            price: 4900,
-            currency: 'BRL',
-            interval: 'month',
-            features: [
-              'Até 500 respostas/mês',
-              '2 campanhas ativas',
-              'Análises básicas',
-              'Suporte por email',
-              'Templates padrão'
-            ],
-            limits: {
-              campaigns: 2,
-              responses: 500,
-              users: 1
-            },
-            active: true,
-            stripePriceId: 'price_starter',
-            createdAt: '2024-01-01T00:00:00Z',
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: 'pro',
-            name: 'Profissional',
-            description: 'Recursos avançados para empresas em crescimento',
-            price: 9900,
-            currency: 'BRL',
-            interval: 'month',
-            features: [
-              'Até 2.500 respostas/mês',
-              'Campanhas ilimitadas',
-              'Análises e relatórios avançados',
-              'Suporte prioritário',
-              'Marca personalizada',
-              'Acesso à API',
-              'Colaboração em equipe'
-            ],
-            limits: {
-              campaigns: 'unlimited',
-              responses: 2500,
-              users: 5
-            },
-            active: true,
-            popular: true,
-            stripePriceId: 'price_pro',
-            createdAt: '2024-01-01T00:00:00Z',
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: 'enterprise',
-            name: 'Empresarial',
-            description: 'Solução completa para grandes organizações',
-            price: 24900,
-            currency: 'BRL',
-            interval: 'month',
-            features: [
-              'Respostas ilimitadas',
-              'Campanhas ilimitadas',
-              'Insights avançados com IA',
-              'Gerente de conta dedicado',
-              'Solução white-label',
-              'Integração SSO',
-              'Integrações personalizadas',
-              'Garantia de SLA'
-            ],
-            limits: {
-              campaigns: 'unlimited',
-              responses: 'unlimited',
-              users: 'unlimited'
-            },
-            active: true,
-            stripePriceId: 'price_enterprise',
-            createdAt: '2024-01-01T00:00:00Z',
-            updatedAt: new Date().toISOString()
-          }
-        ];
-        
-        setPlans(mockPlans);
-        setIsLoading(false);
-      }, 1000);
+      const adminPlans = await getAdminPlans();
+      setPlans(adminPlans);
     } catch (error) {
       console.error('Error loading plans:', error);
+    } finally {
       setIsLoading(false);
     }
   };
