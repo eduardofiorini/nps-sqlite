@@ -4,7 +4,7 @@ export type User = {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'user' | 'super_admin';
+  role: 'admin' | 'user';
   phone?: string;
   company?: string;
   position?: string;

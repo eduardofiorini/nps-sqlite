@@ -23,8 +23,7 @@ import {
   PanelLeftOpen,
   FileText,
   Users,
-  Clock,
-  Shield
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -401,16 +400,6 @@ const MainLayout: React.FC = () => {
                         <span className="text-lg font-bold text-[#073143] dark:text-white">Meu NPS</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Gestão de NPS</span>
                       </div>
-                    {user?.role === 'admin' && (
-                      <Link
-                        to="/admin"
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Shield size={16} className="mr-2" />
-                        Painel Admin
-                      </Link>
-                    )}
                     </div>
                     <button
                       className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -519,36 +508,6 @@ const MainLayout: React.FC = () => {
                         ? `Assinatura (${daysLeftInTrial} dias restantes)` 
                         : 'Assinatura e Cobrança'}
                     </Link>
-                    {user?.role === 'admin' && (
-                      <Link
-                        to="/admin"
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Shield size={16} className="mr-2" />
-                        Painel Admin
-                      </Link>
-                    )}
-                    {user?.role === 'admin' && (
-                      <Link
-                        to="/admin"
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Shield size={16} className="mr-2" />
-                        Painel Admin
-                      </Link>
-                    )}
-                    {user?.role === 'admin' && (
-                      <Link
-                        to="/admin"
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Shield size={16} className="mr-2" />
-                        Painel Admin
-                      </Link>
-                    )}
                     <Button
                       variant="outline"
                       fullWidth
