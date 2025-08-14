@@ -129,19 +129,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return { success: false, message: 'Email e senha são obrigatórios' };
         }
         
-        // Create a mock user for demo purposes
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: email.split('@')[0] || 'User',
-          role: email === 'admin@meunps.com' ? 'admin' : 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return { success: true };
+        // Demo mode - allow specific demo accounts or any email ending with @meunps.com
+        if (email === 'demo@meunps.com' || email === 'admin@meunps.com' || email.endsWith('@meunps.com')) {
+          const mockUser: User = {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            email: email,
+            name: email.split('@')[0] || 'User',
+            role: email === 'admin@meunps.com' ? 'admin' : 'user'
+          };
+          setUser(mockUser);
+          
+          // Store mock user in localStorage
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
+          
+          return { success: true };
+        } else {
+          return { success: false, message: 'Email ou senha incorretos. Verifique suas credenciais ou crie uma nova conta.' };
+        }
       }
       
       // Only attempt Supabase authentication if properly configured
@@ -178,7 +182,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('Login error:', error.message);
         
         if (error.message === 'Invalid login credentials') {
-          return { success: false, message: 'Credenciais inválidas. Verifique seu email e senha.' };
+          return { success: false, message: 'Email ou senha incorretos. Verifique suas credenciais ou crie uma nova conta.' };
         }
         
         return { success: false, message: error.message };
