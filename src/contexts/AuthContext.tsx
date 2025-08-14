@@ -134,7 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
           name: email.split('@')[0] || 'User',
-          role: 'user'
+          role: email === 'admin@meunps.com' ? 'admin' : 'user'
         };
         setUser(mockUser);
         
@@ -164,7 +164,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               id: '123e4567-e89b-12d3-a456-426614174000',
               email: email,
               name: email.split('@')[0] || 'User',
-              role: 'user'
+              role: email === 'admin@meunps.com' ? 'admin' : 'user'
             };
             setUser(mockUser);
             
@@ -205,7 +205,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
           name: email.split('@')[0] || 'User',
-          role: 'user'
+          role: email === 'admin@meunps.com' ? 'admin' : 'user'
         };
         setUser(mockUser);
         
@@ -234,7 +234,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
           name: name || email.split('@')[0] || 'User',
-          role: 'user'
+          role: email === 'admin@meunps.com' ? 'admin' : 'user'
         };
         setUser(mockUser);
         
@@ -311,7 +311,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123e4567-e89b-12d3-a456-426614174000',
           email: email,
           name: name || email.split('@')[0] || 'User',
-          role: 'user'
+          role: email === 'admin@meunps.com' ? 'admin' : 'user'
         };
         setUser(mockUser);
         
