@@ -989,17 +989,17 @@ export const checkUserIsAdmin = async (userId?: string): Promise<boolean> => {
     }
     
     const { data, error } = await supabase
-      .from('user_is_admin')
-      .select('is_admin')
+      .from('user_admin')
+      .select('id')
       .eq('user_id', userIdToCheck)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error checking admin status:', error);
       return false;
     }
-    isAdmin = await checkUserIsAdmin(supabaseUser.id);
-  } catch (error) {
+
+    return !!data;
     console.error('Error checking admin status:', error);
     return false;
   }
