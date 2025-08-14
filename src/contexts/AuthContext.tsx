@@ -257,30 +257,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (error) {
-        // Handle database errors by falling back to demo mode
-        if (error.message === 'Database error saving new user' || error.message.includes('Database error saving new user')) {
-          console.warn('Database error detected during registration, falling back to demo mode');
-          if (email && password && name) {
-            const mockUser: User = {
-              id: '123e4567-e89b-12d3-a456-426614174000',
-              email: email,
-              name: name || email.split('@')[0] || 'User',
-              role: 'user'
-            };
-            setUser(mockUser);
-            
-            // Store mock user in localStorage
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-            
-            return true;
-          }
-        }
-        
         console.error('Registration error:', error.message);
         return false;
       }
 
       if (data.user) {
+        // For email confirmation disabled, user will be automatically signed in
+        
+        // Create a trial subscription for the user
+        try {
+          // Calculate trial end date (7 days from now)
+          const trialEndDate = new Date();
+          trialEndDate.setDate(trialEndDate.getDate() + 7);
+          
+          // Create subscription record with trial status
+          const { error: subscriptionError } = await supabase
+            .from('stripe_subscriptions')
+            .insert({
+              customer_id: data.user.id,
+              subscription_status: 'trialing',
+              price_id: planId ? `price_${planId}` : 'price_pro', // Default to pro plan
+              current_period_start: Math.floor(Date.now() / 1000),
+              current_period_end: Math.floor(trialEndDate.getTime() / 1000),
+              cancel_at_period_end: false,
+              status: 'trialing'
+            });
+            
+          if (subscriptionError) {
+            console.error('Error creating trial subscription:', subscriptionError);
+          }
+        } catch (subscriptionError) {
+          console.error('Error setting up trial subscription:', subscriptionError);
+        }
+        
         const processedUser = processSupabaseUser(data.user);
         setUser(processedUser);
         

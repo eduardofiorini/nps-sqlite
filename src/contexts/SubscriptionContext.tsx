@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
-import { supabase } from '../lib/supabase';
 
 interface SubscriptionContextProps {
   isTrialExpired: boolean;
@@ -75,7 +74,7 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
         setDaysLeftInTrial(null);
         console.log("No trial or active subscription");
       }
-    } else if (!subLoading && isAuthenticated) {
+    } else if (!subLoading) {
       // If no subscription data but loading is complete, set default trial values for demo
       console.log("No subscription data found, setting demo trial values");
       setDaysLeftInTrial(7);

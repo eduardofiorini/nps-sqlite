@@ -53,40 +53,29 @@ export function useSubscription() {
         
         // If subscription status is 'trialing' and current_period_end is in the past
         if (data.subscription_status === 'trialing' && data.current_period_end) {
-          const trialEndDate = new Date(data.current_period_end * 1000);
-          const now = new Date();
-          
           // Check if trial has expired
-          if (trialEndDate < now) {
+          if (new Date(data.current_period_end * 1000) < new Date()) {
             setTrialExpired(true)
-            setDaysLeftInTrial(0)
           } else {
             setTrialExpired(false)
             
             // Calculate days left in trial
-            const diffTime = trialEndDate.getTime() - now.getTime()
+            const trialEndDate = new Date(data.current_period_end * 1000)
+            const today = new Date()
+            const diffTime = trialEndDate.getTime() - today.getTime()
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
             
             setDaysLeftInTrial(diffDays > 0 ? diffDays : 0)
           }
-        } else if (data.subscription_status === 'active') {
-          // Active subscription
-          setTrialExpired(false)
-          setDaysLeftInTrial(null)
         } else if (data.subscription_status === 'trialing') {
-          // Trialing without end date - set default 7 days
+          // If we don't have an end date but status is trialing, set a default
           setDaysLeftInTrial(7)
           setTrialExpired(false)
-        } else {
-          // Other statuses (canceled, past_due, etc.)
-          setTrialExpired(true)
-          setDaysLeftInTrial(0)
         }
       } else {
-        // If no subscription data, set demo trial values
-        console.log('No subscription found, setting demo trial values')
-        setDaysLeftInTrial(7);
-        setTrialExpired(false);
+        // If no subscription data, set default trial values for demo
+        setDaysLeftInTrial(7)
+        setTrialExpired(false)
       }
 
       // Also fetch order history
