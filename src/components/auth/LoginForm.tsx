@@ -148,7 +148,7 @@ const LoginForm: React.FC = () => {
                   <div className="mb-2">{error}</div>
                   {error.includes('Email ou senha incorretos') && (
                     <div className="text-xs text-red-600 dark:text-red-300 mt-2">
-                      <p>💡 <strong>Dica:</strong> Se você não tem uma conta, <Link to="/register" className="underline font-medium">clique aqui para criar uma</Link></p>
+                      <p>💡 <strong>Dica:</strong> Se você não tem uma conta, <Link to="/register" className=\"underline font-medium">clique aqui para criar uma</Link></p>
                       <p className="mt-1">🔑 Para testar o sistema, use: <code className="bg-red-100 dark:bg-red-800 px-1 rounded">demo@meunps.com</code> com qualquer senha</p>
                     </div>
                   )}
