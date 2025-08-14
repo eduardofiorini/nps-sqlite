@@ -1,4 +1,5 @@
 import React from 'react';
+import { useConfig } from '../../contexts/ConfigContext';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -22,6 +23,8 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
+  const { themeColor } = useConfig();
+  
   // Base classes
   const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed';
   
@@ -34,15 +37,28 @@ const Button: React.FC<ButtonProps> = ({
   
   // Variant classes
   const variantClasses = {
-    primary: 'bg-[#073143] text-white hover:bg-[#0a4a5c] focus:ring-[#073143] shadow-sm hover:shadow-md',
+    primary: `text-white shadow-sm hover:shadow-md`,
     secondary: 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500 dark:bg-purple-600 dark:hover:bg-purple-700 shadow-sm hover:shadow-md',
-    outline: 'border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-[#073143] hover:border-gray-400 dark:hover:border-gray-500',
+    outline: 'border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700 shadow-sm hover:shadow-md',
     ghost: 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-gray-500',
   };
   
   const fullWidthClass = fullWidth ? 'w-full' : '';
   const disabledClass = disabled || isLoading ? 'opacity-50 cursor-not-allowed' : '';
+  
+  // Dynamic styles for primary button
+  const dynamicStyles = variant === 'primary' ? {
+    backgroundColor: themeColor,
+    '--tw-ring-color': themeColor,
+  } : variant === 'outline' ? {
+    '--tw-ring-color': themeColor,
+  } : {};
+  
+  // Dynamic hover styles
+  const hoverStyles = variant === 'primary' ? {
+    '--hover-bg': `color-mix(in srgb, ${themeColor} 80%, black 20%)`,
+  } : {};
   
   const buttonClasses = [
     baseClasses,
@@ -56,7 +72,18 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={buttonClasses}
+      style={{ ...dynamicStyles, ...hoverStyles }}
       disabled={disabled || isLoading}
+      onMouseEnter={(e) => {
+        if (variant === 'primary' && !disabled && !isLoading) {
+          e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${themeColor} 80%, black 20%)`;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (variant === 'primary' && !disabled && !isLoading) {
+          e.currentTarget.style.backgroundColor = themeColor;
+        }
+      }}
       {...props}
     >
       {isLoading && (

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useConfig } from '../../contexts/ConfigContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
@@ -16,6 +17,7 @@ const LoginForm: React.FC = () => {
   
   const { login } = useAuth();
   const { t } = useLanguage();
+  const { themeColor } = useConfig();
   const navigate = useNavigate();
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +51,12 @@ const LoginForm: React.FC = () => {
     <div className="min-h-screen flex">
       {/* Left side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#073143] via-[#0a4a5c] to-[#0d5a75]">
+        <div 
+          className="absolute inset-0 bg-gradient-to-br"
+          style={{
+            background: `linear-gradient(to bottom right, ${themeColor}, color-mix(in srgb, ${themeColor} 80%, black 20%), color-mix(in srgb, ${themeColor} 60%, black 40%))`
+          }}
+        >
           <img
             src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
             alt="Business analytics"
@@ -118,7 +125,7 @@ const LoginForm: React.FC = () => {
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-bold text-[#073143] dark:text-white">Meu NPS</h1>
+              <h1 className="text-2xl font-bold dark:text-white" style={{ color: themeColor }}>Meu NPS</h1>
               <span className="text-xs text-gray-500 dark:text-gray-400">Plataforma de Gestão de NPS</span>
             </div>
           </div>
@@ -189,11 +196,19 @@ const LoginForm: React.FC = () => {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143]"
+                    className="w-4 h-4 border-gray-300 rounded"
+                    style={{ 
+                      accentColor: themeColor,
+                      '--tw-ring-color': themeColor
+                    } as React.CSSProperties}
                   />
                   <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Lembrar de mim</span>
                 </label>
-                <a href="/forgot-password" className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff]">
+                <a 
+                  href="/forgot-password" 
+                  className="text-sm hover:opacity-80"
+                  style={{ color: themeColor }}
+                >
                   Esqueceu a senha?
                 </a>
               </div>
@@ -203,7 +218,7 @@ const LoginForm: React.FC = () => {
                 variant="primary"
                 fullWidth
                 isLoading={isLoading}
-                className="h-12 text-base font-medium bg-[#073143] hover:bg-[#0a4a5c] focus:ring-[#073143]"
+                className="h-12 text-base font-medium"
               >
                 Entrar
               </Button>
@@ -214,7 +229,8 @@ const LoginForm: React.FC = () => {
                 </span>
                 <Link 
                   to="/register" 
-                  className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium"
+                  className="text-sm font-medium hover:opacity-80"
+                  style={{ color: themeColor }}
                 >
                   Criar conta
                 </Link>

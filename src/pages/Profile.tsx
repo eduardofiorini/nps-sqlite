@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useConfig } from '../contexts/ConfigContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -36,6 +37,7 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
+  const { themeColor } = useConfig();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -367,7 +369,10 @@ const Profile: React.FC = () => {
   if (!user || !profile) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
+          style={{ borderTopColor: themeColor, borderBottomColor: themeColor }}
+        ></div>
       </div>
     );
   }
@@ -375,7 +380,10 @@ const Profile: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
+          style={{ borderTopColor: themeColor, borderBottomColor: themeColor }}
+        ></div>
       </div>
     );
   }
@@ -453,14 +461,29 @@ const Profile: React.FC = () => {
                       className="w-20 h-20 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-[#073143] text-white flex items-center justify-center text-2xl font-bold border-4 border-gray-200 dark:border-gray-600">
+                    <div 
+                      className="w-20 h-20 rounded-full text-white flex items-center justify-center text-2xl font-bold border-4 border-gray-200 dark:border-gray-600"
+                      style={{ backgroundColor: themeColor }}
+                    >
                       {profile.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                   
                   {isEditing && (
                     <div className="absolute bottom-0 right-0 flex space-x-1">
-                      <label className="w-6 h-6 bg-[#073143] text-white rounded-full flex items-center justify-center hover:bg-[#0a4a5c] transition-colors cursor-pointer">
+                      <label 
+                        className="w-6 h-6 text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                        style={{ 
+                          backgroundColor: themeColor,
+                          '--hover-bg': `color-mix(in srgb, ${themeColor} 80%, black 20%)`
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${themeColor} 80%, black 20%)`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = themeColor;
+                        }}
+                      >
                         <Camera size={12} />
                         <input
                           type="file"
@@ -666,7 +689,11 @@ const Profile: React.FC = () => {
                           }
                         }}
                         disabled={!isEditing}
-                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                        className="w-4 h-4 border-gray-300 rounded disabled:opacity-50"
+                        style={{ 
+                          accentColor: themeColor,
+                          '--tw-ring-color': themeColor
+                        } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                         Aceito receber comunicações de marketing e novidades
@@ -692,7 +719,11 @@ const Profile: React.FC = () => {
                           }
                         }}
                         disabled={!isEditing}
-                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                        className="w-4 h-4 border-gray-300 rounded disabled:opacity-50"
+                        style={{ 
+                          accentColor: themeColor,
+                          '--tw-ring-color': themeColor
+                        } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                         Aceito o uso de dados para análises e melhorias do serviço
@@ -718,7 +749,11 @@ const Profile: React.FC = () => {
                           }
                         }}
                         disabled={!isEditing}
-                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                        className="w-4 h-4 border-gray-300 rounded disabled:opacity-50"
+                        style={{ 
+                          accentColor: themeColor,
+                          '--tw-ring-color': themeColor
+                        } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                         Aceito o compartilhamento de dados com parceiros confiáveis
@@ -784,7 +819,8 @@ const Profile: React.FC = () => {
                     value={profile.preferences.language}
                     onChange={(e) => handleInputChange('preferences.language', e.target.value)}
                     disabled={!isEditing}
-                    className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ '--tw-ring-color': themeColor } as React.CSSProperties}
                   >
                     <option value="en">🇺🇸 English</option>
                     <option value="pt-BR">🇧🇷 Português (Brasil)</option>
@@ -825,7 +861,11 @@ const Profile: React.FC = () => {
                         checked={profile.preferences.emailNotifications.newResponses}
                         onChange={(e) => handleNotificationChange('newResponses', e.target.checked)}
                         disabled={!isEditing}
-                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                        className="w-4 h-4 border-gray-300 rounded disabled:opacity-50"
+                        style={{ 
+                          accentColor: themeColor,
+                          '--tw-ring-color': themeColor
+                        } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                         Novas respostas NPS
@@ -837,7 +877,11 @@ const Profile: React.FC = () => {
                         checked={profile.preferences.emailNotifications.weeklyReports}
                         onChange={(e) => handleNotificationChange('weeklyReports', e.target.checked)}
                         disabled={!isEditing}
-                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                        className="w-4 h-4 border-gray-300 rounded disabled:opacity-50"
+                        style={{ 
+                          accentColor: themeColor,
+                          '--tw-ring-color': themeColor
+                        } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                         Relatórios semanais
@@ -849,7 +893,11 @@ const Profile: React.FC = () => {
                         checked={profile.preferences.emailNotifications.productUpdates}
                         onChange={(e) => handleNotificationChange('productUpdates', e.target.checked)}
                         disabled={!isEditing}
-                        className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] disabled:opacity-50"
+                        className="w-4 h-4 border-gray-300 rounded disabled:opacity-50"
+                        style={{ 
+                          accentColor: themeColor,
+                          '--tw-ring-color': themeColor
+                        } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                         Atualizações do produto

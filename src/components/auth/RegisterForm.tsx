@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useConfig } from '../../contexts/ConfigContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { 
@@ -34,6 +35,7 @@ const RegisterForm: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   const { register } = useAuth();
+  const { themeColor } = useConfig();
   const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
@@ -98,7 +100,7 @@ const RegisterForm: React.FC = () => {
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-bold text-[#073143] dark:text-white">Meu NPS</h1>
+              <h1 className="text-2xl font-bold dark:text-white" style={{ color: themeColor }}>Meu NPS</h1>
               <span className="text-sm text-gray-500 dark:text-gray-400">Plataforma de Gestão de NPS</span>
             </div>
           </div>
@@ -224,14 +226,19 @@ const RegisterForm: React.FC = () => {
                     id="accept-terms"
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="w-4 h-4 text-[#073143] border-gray-300 rounded focus:ring-[#073143] mt-0.5"
+                    className="w-4 h-4 border-gray-300 rounded mt-0.5"
+                    style={{ 
+                      accentColor: themeColor,
+                      '--tw-ring-color': themeColor
+                    } as React.CSSProperties}
                   />
                   <label htmlFor="accept-terms" className="text-sm text-gray-600 dark:text-gray-400">
                     Eu aceito os{' '}
                     <button
                       type="button"
                       onClick={() => setShowTermsModal(true)}
-                      className="text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] underline"
+                      className="underline hover:opacity-80"
+                      style={{ color: themeColor }}
                     >
                       Termos de Uso e Política de Privacidade
                     </button>
@@ -243,7 +250,7 @@ const RegisterForm: React.FC = () => {
                   fullWidth
                   isLoading={isLoading}
                   disabled={!acceptedTerms}
-                  className="h-12 text-base font-medium bg-[#073143] hover:bg-[#0a4a5c] focus:ring-[#073143]"
+                  className="h-12 text-base font-medium"
                   icon={<ArrowRight size={18} />}
                 >
                   Criar Conta
@@ -255,7 +262,8 @@ const RegisterForm: React.FC = () => {
                   </span>
                   <Link 
                     to="/login" 
-                    className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium"
+                    className="text-sm font-medium hover:opacity-80"
+                    style={{ color: themeColor }}
                   >
                     Entrar
                   </Link>
@@ -284,7 +292,12 @@ const RegisterForm: React.FC = () => {
           
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#073143] to-[#0a4a5c] rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div 
+                className="w-16 h-16 bg-gradient-to-r rounded-2xl flex items-center justify-center mx-auto mb-4"
+                style={{
+                  background: `linear-gradient(to right, ${themeColor}, color-mix(in srgb, ${themeColor} 80%, black 20%))`
+                }}
+              >
                 <BarChart3 size={32} className="text-white" />
               </div>
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">

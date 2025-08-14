@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useConfig } from '../../contexts/ConfigContext';
 import { 
   LayoutGrid, 
   BarChart, 
@@ -26,11 +27,10 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
-import { useConfig } from '../../contexts/ConfigContext';
 
 const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
-  const { config } = useConfig();
+  const { config, themeColor } = useConfig();
   const { theme, toggleTheme, isDark } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
@@ -129,7 +129,7 @@ const MainLayout: React.FC = () => {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold text-[#073143] dark:text-white">Meu NPS</span>
+                  <span className="text-xl font-bold dark:text-white" style={{ color: themeColor }}>Meu NPS</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Plataforma de Gestão de NPS</span>
                 </div>
               </Link>
@@ -142,7 +142,8 @@ const MainLayout: React.FC = () => {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR')}
-                  className="appearance-none bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pr-8 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#073143] transition-colors"
+                  className="appearance-none bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pr-8 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 transition-colors"
+                  style={{ '--tw-ring-color': themeColor } as React.CSSProperties}
                 >
                   <option value="en">🇺🇸 EN</option>
                   <option value="pt-BR">🇧🇷 PT</option>
@@ -166,7 +167,10 @@ const MainLayout: React.FC = () => {
                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                     className="flex items-center text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#073143] text-white flex items-center justify-center mr-3 text-sm font-medium">
+                    <div 
+                      className="w-8 h-8 rounded-full text-white flex items-center justify-center mr-3 text-sm font-medium"
+                      style={{ backgroundColor: themeColor }}
+                    >
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="text-left">
@@ -263,9 +267,10 @@ const MainLayout: React.FC = () => {
                       : 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200'
                   } ${
                     isActive(item.path)
-                      ? 'bg-[#073143] text-white shadow-md'
+                      ? 'text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                   }`}
+                  style={isActive(item.path) ? { backgroundColor: themeColor } : {}}
                   title={isSidebarCollapsed ? item.label : undefined}
                 >
                   <span className={`${isSidebarCollapsed ? 'mr-0' : 'mr-3'}`}>{item.icon}</span>
@@ -283,9 +288,10 @@ const MainLayout: React.FC = () => {
                       : 'flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200'
                   } ${
                     isSettingsActive()
-                      ? 'bg-[#073143] text-white shadow-md'
+                      ? 'text-white shadow-md'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                   }`}
+                  style={isSettingsActive() ? { backgroundColor: themeColor } : {}}
                   title={isSidebarCollapsed ? t('nav.settings') : undefined}
                 >
                   {isSidebarCollapsed ? (
@@ -320,9 +326,14 @@ const MainLayout: React.FC = () => {
                             to={item.path}
                             className={`flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200 ${
                               isActive(item.path)
-                                ? 'bg-[#073143]/10 text-[#073143] dark:bg-[#073143]/20 dark:text-white border-l-2 border-[#073143]'
+                                ? 'dark:text-white border-l-2'
                                 : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                             }`}
+                            style={isActive(item.path) ? { 
+                              backgroundColor: `rgba(${hexToRgb(themeColor)?.r || 7}, ${hexToRgb(themeColor)?.g || 49}, ${hexToRgb(themeColor)?.b || 67}, 0.1)`,
+                              color: themeColor,
+                              borderLeftColor: themeColor
+                            } : {}}
                           >
                             <span className="mr-3">{item.icon}</span>
                             {item.label}
@@ -341,9 +352,22 @@ const MainLayout: React.FC = () => {
                 fullWidth={!isSidebarCollapsed}
                 icon={<LogOut size={16} />}
                 onClick={handleLogout}
-                className={`border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white ${
+                className={`hover:text-white ${
                   isSidebarCollapsed ? 'p-3 justify-center' : ''
                 }`}
+                style={{ 
+                  borderColor: themeColor, 
+                  color: themeColor,
+                  '--hover-bg': themeColor
+                } as React.CSSProperties}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = themeColor;
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = themeColor;
+                }}
                 title={isSidebarCollapsed ? t('nav.logout') : undefined}
               >
                 {!isSidebarCollapsed && t('nav.logout')}
@@ -375,7 +399,7 @@ const MainLayout: React.FC = () => {
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-lg font-bold text-[#073143] dark:text-white">Meu NPS</span>
+                        <span className="text-lg font-bold dark:text-white" style={{ color: themeColor }}>Meu NPS</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Gestão de NPS</span>
                       </div>
                     </div>
@@ -406,9 +430,10 @@ const MainLayout: React.FC = () => {
                         to={item.path}
                         className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                           isActive(item.path)
-                            ? 'bg-[#073143] text-white shadow-md'
+                            ? 'text-white shadow-md'
                             : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                         }`}
+                        style={isActive(item.path) ? { backgroundColor: themeColor } : {}}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <span className="mr-3">{item.icon}</span>
@@ -427,9 +452,10 @@ const MainLayout: React.FC = () => {
                           to={item.path}
                           className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                             isActive(item.path)
-                              ? 'bg-[#073143] text-white shadow-md'
+                              ? 'text-white shadow-md'
                               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#073143] dark:hover:text-white'
                           }`}
+                          style={isActive(item.path) ? { backgroundColor: themeColor } : {}}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <span className="mr-3">{item.icon}</span>
@@ -442,7 +468,10 @@ const MainLayout: React.FC = () => {
                 <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                   {user && (
                     <div className="flex items-center mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="w-10 h-10 rounded-full bg-[#073143] text-white flex items-center justify-center mr-3 text-sm font-medium overflow-hidden">
+                      <div 
+                        className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-3 text-sm font-medium overflow-hidden"
+                        style={{ backgroundColor: themeColor }}
+                      >
                         {user.avatar ? (
                           <img
                             src={user.avatar}
@@ -473,7 +502,18 @@ const MainLayout: React.FC = () => {
                       fullWidth
                       icon={<LogOut size={16} />}
                       onClick={handleLogout}
-                      className="border-[#073143] text-[#073143] hover:bg-[#073143] hover:text-white"
+                      style={{ 
+                        borderColor: themeColor, 
+                        color: themeColor
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = themeColor;
+                        e.currentTarget.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = themeColor;
+                      }}
                     >
                       {t('nav.logout')}
                     </Button>
@@ -493,6 +533,16 @@ const MainLayout: React.FC = () => {
       </div>
     </div>
   );
+};
+
+// Helper function to convert hex to RGB (needed for the component)
+const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
 };
 
 export default MainLayout;
