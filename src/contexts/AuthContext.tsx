@@ -262,48 +262,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (data.user) {
-        // For email confirmation disabled, user will be automatically signed in
-        
-        // Create a trial subscription for the user
-        try {
-          // Calculate trial end date (7 days from now)
-          const trialEndDate = new Date();
-          trialEndDate.setDate(trialEndDate.getDate() + 7);
-          
-          // Create Stripe customer first
-          const { data: customerData, error: customerError } = await supabase
-            .from('stripe_customers')
-            .insert({
-              user_id: data.user.id,
-              customer_id: data.user.id // Use user ID as customer ID for trial
-            })
-            .select()
-            .single();
-            
-          if (customerError) {
-            console.error('Error creating customer record:', customerError);
-          }
-          
-          // Create subscription record with trial status
-          const { error: subscriptionError } = await supabase
-            .from('stripe_subscriptions')
-            .insert({
-              customer_id: data.user.id,
-              subscription_status: 'trialing',
-              price_id: planId ? `price_${planId}` : 'price_pro',
-              current_period_start: Math.floor(Date.now() / 1000),
-              current_period_end: Math.floor(trialEndDate.getTime() / 1000),
-              cancel_at_period_end: false,
-              status: 'trialing'
-            });
-            
-          if (subscriptionError) {
-            console.error('Error creating trial subscription:', subscriptionError);
-          }
-        } catch (subscriptionError) {
-          console.error('Error setting up trial subscription:', subscriptionError);
-        }
-        
         const processedUser = processSupabaseUser(data.user);
         setUser(processedUser);
         
