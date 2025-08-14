@@ -67,6 +67,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error loading user from localStorage:', error);
     }
+    
+    // Set loading to false immediately if we have stored user data
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -124,13 +127,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } 
       else if (_event === 'SIGNED_OUT') {
         localStorage.removeItem(USER_STORAGE_KEY);
+        setUser(null);
       }
       
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [user]);
   
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {

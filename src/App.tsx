@@ -37,7 +37,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143] mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -51,7 +58,14 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Verificando permissões de administrador...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user || user.role !== 'admin') {
@@ -67,15 +81,15 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
   useEffect(() => {
     // Only initialize data when user is authenticated and auth loading is complete
     if (!loading && isAuthenticated) {
-    const initData = async () => {
-      try {
-        await initializeDefaultData();
-      } catch (error) {
-        console.error('Error initializing default data:', error);
-      }
-    };
-    
-    initData();
+      const initData = async () => {
+        try {
+          await initializeDefaultData();
+        } catch (error) {
+          console.error('Error initializing default data:', error);
+        }
+      };
+      
+      initData();
     }
   }, [isAuthenticated, loading]);
 

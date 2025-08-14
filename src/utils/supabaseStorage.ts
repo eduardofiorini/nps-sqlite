@@ -969,7 +969,7 @@ export const saveAppConfig = async (config: AppConfig): Promise<AppConfig> => {
 };
 
 // Admin functions
-export const checkUserIsAdmin = async (): Promise<boolean> => {
+export const checkUserIsAdmin = async (userId?: string): Promise<boolean> => {
   try {
     if (!isSupabaseConfigured()) {
       // In demo mode, check if email is admin email
@@ -981,21 +981,24 @@ export const checkUserIsAdmin = async (): Promise<boolean> => {
       return false;
     }
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+    let userIdToCheck = userId;
+    if (!userIdToCheck) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      userIdToCheck = user.id;
+    }
     
     const { data, error } = await supabase
       .from('user_is_admin')
       .select('is_admin')
-      .eq('user_id', user.id)
+      .eq('user_id', userIdToCheck)
       .single();
     
     if (error) {
       console.error('Error checking admin status:', error);
       return false;
     }
-    
-    return data?.is_admin || false;
+    isAdmin = await checkUserIsAdmin(supabaseUser.id);
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
