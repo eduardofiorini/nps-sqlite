@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 interface AppConfig {
   id?: string;
   user_id?: string;
-  theme_color: string;
+  themeColor: string;
   language: string;
   company: {
     name: string;
@@ -57,7 +57,7 @@ interface ConfigContextType {
 }
 
 const defaultConfig: AppConfig = {
-  theme_color: '#073143',
+  themeColor: '#073143',
   language: 'pt-BR',
   company: {
     name: '',
@@ -158,16 +158,16 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       if (userConfig) {
         setConfig(userConfig);
-        applyThemeColor(userConfig.theme_color);
+        applyThemeColor(userConfig.themeColor);
       } else {
         setConfig(defaultConfig);
-        applyThemeColor(defaultConfig.theme_color);
+        applyThemeColor(defaultConfig.themeColor);
       }
     } catch (err) {
       console.error('Error loading config:', err);
       setError('Erro ao carregar configurações');
       setConfig(defaultConfig);
-      applyThemeColor(defaultConfig.theme_color);
+      applyThemeColor(defaultConfig.themeColor);
     } finally {
       setLoading(false);
     }
@@ -182,8 +182,8 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setConfig(updatedConfig);
       
       // Apply theme color if it was updated
-      if (updates.theme_color) {
-        applyThemeColor(updates.theme_color);
+      if (updates.themeColor) {
+        applyThemeColor(updates.themeColor);
       }
     } catch (err) {
       console.error('Error updating config:', err);
@@ -198,12 +198,12 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Apply initial theme color on mount
   useEffect(() => {
-    applyThemeColor(config.theme_color);
+    applyThemeColor(config.themeColor);
   }, []);
 
   const value: ConfigContextType = {
     config,
-    themeColor: config.theme_color,
+    themeColor: config.themeColor,
     updateConfig,
     loading,
     error
