@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase'
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { 
@@ -9,7 +8,6 @@ import {
   Users, 
   Zap, 
   Shield, 
-  Star,
   ArrowRight,
   Mail,
   Lock,
@@ -21,20 +19,7 @@ import {
 import { motion } from 'framer-motion';
 import TermsModal from './TermsModal';
 
-interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  period: string;
-  description: string;
-  features: string[];
-  popular?: boolean;
-  icon: React.ReactNode;
-  color: string;
-}
-
 const RegisterForm: React.FC = () => {
-  const [selectedPlan, setSelectedPlan] = useState<string>('pro');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -50,63 +35,6 @@ const RegisterForm: React.FC = () => {
   
   const { register } = useAuth();
   const navigate = useNavigate();
-
-  const plans: Plan[] = [
-    {
-      id: 'starter',
-      name: 'Iniciante',
-      price: 49,
-      period: 'mês',
-      description: 'Perfeito para pequenas equipes começando com NPS',
-      icon: <Users size={24} />,
-      color: 'from-green-400 to-green-600',
-      features: [
-        'Até 500 respostas/mês',
-        '2 campanhas ativas',
-        'Análises básicas',
-        'Suporte por email',
-        'Templates padrão'
-      ]
-    },
-    {
-      id: 'pro',
-      name: 'Profissional',
-      price: 99,
-      period: 'mês',
-      description: 'Recursos avançados para empresas em crescimento',
-      icon: <BarChart3 size={24} />,
-      color: 'from-[#073143] to-[#0a4a5c]',
-      popular: true,
-      features: [
-        'Até 2.500 respostas/mês',
-        'Campanhas ilimitadas',
-        'Análises e relatórios avançados',
-        'Suporte prioritário',
-        'Marca personalizada',
-        'Acesso à API',
-        'Colaboração em equipe'
-      ]
-    },
-    {
-      id: 'enterprise',
-      name: 'Empresarial',
-      price: 249,
-      period: 'mês',
-      description: 'Solução completa para grandes organizações',
-      icon: <Zap size={24} />,
-      color: 'from-purple-400 to-purple-600',
-      features: [
-        'Respostas ilimitadas',
-        'Campanhas ilimitadas',
-        'Insights avançados com IA',
-        'Gerente de conta dedicado',
-        'Solução white-label',
-        'Integração SSO',
-        'Integrações personalizadas',
-        'Garantia de SLA'
-      ]
-    }
-  ];
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -133,7 +61,7 @@ const RegisterForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const success = await register(formData.email, formData.password, formData.name, selectedPlan);
+      const success = await register(formData.email, formData.password, formData.name);
       
       if (success) {
         navigate('/');
@@ -176,89 +104,28 @@ const RegisterForm: React.FC = () => {
           </div>
           
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Inicie Seu Teste Gratuito
+            Crie Sua Conta
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Escolha o plano perfeito para seu negócio e comece a coletar feedback valioso dos clientes hoje mesmo.
+            Comece a coletar feedback valioso dos clientes hoje mesmo com nossa plataforma completa de NPS.
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-12">
-          {/* Pricing Plans */}
-          <div className="lg:col-span-2">
-            <div className="grid md:grid-cols-3 gap-6">
-              {plans.map((plan, index) => (
-                <motion.div
-                  key={plan.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 transition-all duration-300 cursor-pointer ${
-                    selectedPlan === plan.id
-                      ? 'border-[#073143] shadow-[#073143]/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                  onClick={() => setSelectedPlan(plan.id)}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-[#073143] to-[#0a4a5c] text-white px-4 py-1 rounded-full text-sm font-medium flex items-center">
-                        <Star size={14} className="mr-1" />
-                        Mais Popular
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="p-6">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${plan.color} flex items-center justify-center text-white mb-4`}>
-                      {plan.icon}
-                    </div>
-                    
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {plan.name}
-                    </h3>
-                    
-                    <div className="mb-4">
-                      <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                        R${plan.price}
-                      </span>
-                      <span className="text-gray-600 dark:text-gray-400">/{plan.period}</span>
-                    </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      {plan.description}
-                    </p>
-                    
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-start">
-                          <Check size={16} className="text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {feature}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
 
-          {/* Registration Form */}
+        {/* Registration Form */}
+        <div className="max-w-md mx-auto">
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="lg:col-span-1"
           >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 sticky top-8">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+              <div className="mb-6 text-center">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   Crie Sua Conta
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Inicie seu teste gratuito de 14 dias, sem cartão de crédito
+                  Comece a usar nossa plataforma de NPS hoje mesmo
                 </p>
               </div>
 
@@ -351,20 +218,6 @@ const RegisterForm: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="bg-[#073143]/10 dark:bg-[#073143]/20 rounded-lg p-4 border border-[#073143]/20 dark:border-[#073143]/40">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-[#073143] dark:text-white">
-                        Plano Selecionado: {plans.find(p => p.id === selectedPlan)?.name}
-                      </p>
-                      <p className="text-xs text-[#073143]/70 dark:text-gray-300">
-                        7 dias grátis, depois R${plans.find(p => p.id === selectedPlan)?.price}/mês
-                      </p>
-                    </div>
-                    <Shield size={20} className="text-[#073143] dark:text-white" />
-                  </div>
-                </div>
-
                 <div className="flex items-start space-x-3">
                   <input
                     type="checkbox"
@@ -393,7 +246,7 @@ const RegisterForm: React.FC = () => {
                   className="h-12 text-base font-medium bg-[#073143] hover:bg-[#0a4a5c] focus:ring-[#073143]"
                   icon={<ArrowRight size={18} />}
                 >
-                  Iniciar Teste Gratuito de 7 dias
+                  Criar Conta
                 </Button>
 
                 <div className="text-center">
@@ -426,7 +279,7 @@ const RegisterForm: React.FC = () => {
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700"
         >
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
-            Experimente por 7 dias grátis!
+            Recursos da Plataforma
           </h3>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -438,7 +291,7 @@ const RegisterForm: React.FC = () => {
                 Análises em Tempo Real
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
-                Obtenha insights instantâneos sobre a satisfação do cliente com dashboards ao vivo durante seu período de teste.
+                Obtenha insights instantâneos sobre a satisfação do cliente com dashboards ao vivo.
               </p>
             </div>
             
@@ -450,7 +303,7 @@ const RegisterForm: React.FC = () => {
                 Colaboração em Equipe
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
-                Trabalhe junto com sua equipe para analisar feedback durante 7 dias sem compromisso.
+                Trabalhe junto com sua equipe para analisar feedback e melhorar a experiência do cliente.
               </p>
             </div>
             
@@ -462,7 +315,7 @@ const RegisterForm: React.FC = () => {
                 Segurança Empresarial
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
-                Seus dados estão protegidos com segurança de nível empresarial durante e após o período de teste.
+                Seus dados estão protegidos com segurança de nível empresarial e conformidade com LGPD.
               </p>
             </div>
           </div>

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Campaign, NpsResponse } from '../types';
 import { getCampaigns, getResponses, getSources, getSituations, getGroups } from '../utils/supabaseStorage';
-import { useSubscriptionContext } from '../contexts/SubscriptionContext';
 import { calculateNPS, categorizeResponses } from '../utils/npsCalculator';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -48,7 +47,6 @@ const Overview: React.FC = () => {
     totalDetractors: 0
   });
   const [isLoading, setIsLoading] = useState(true);
-  const { daysLeftInTrial, isTrialExpired } = useSubscriptionContext();
 
   useEffect(() => {
     loadData();
@@ -187,66 +185,6 @@ const Overview: React.FC = () => {
         </Link>
       </div>
 
-      {/* Trial Period Alert */}
-      {daysLeftInTrial !== null && daysLeftInTrial > 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8"
-        >
-          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <Clock size={20} className="text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0" />
-                <div>
-                  <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                    Período de Teste Gratuito
-                  </h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Você tem <span className="font-bold">{daysLeftInTrial} {daysLeftInTrial === 1 ? 'dia' : 'dias'}</span> restantes no seu período de teste gratuito.
-                    <Link to="/billing" className="ml-2 underline">Assinar agora</Link>
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ) : null}
-
-      {/* Trial Expiring Soon Warning */}
-      {daysLeftInTrial !== null && daysLeftInTrial <= 2 && daysLeftInTrial > 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8"
-        >
-          <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-            <CardContent className="p-4">
-              <div className="flex items-center">
-                <AlertTriangle size={20} className="text-yellow-600 dark:text-yellow-400 mr-3 flex-shrink-0" />
-                <div>
-                  <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                    Seu período de teste está acabando!
-                  </h3>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    Restam apenas <span className="font-bold">{daysLeftInTrial} {daysLeftInTrial === 1 ? 'dia' : 'dias'}</span>. 
-                    Para continuar utilizando todos os recursos, assine um plano antes que seu acesso seja bloqueado.
-                  </p>
-                  <div className="mt-2">
-                    <Link to="/billing">
-                      <Button variant="primary" size="sm">
-                        Assinar Agora
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ) : null}
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

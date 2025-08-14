@@ -1,18 +1,15 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { 
   AlertTriangle, 
-  CreditCard, 
   Lock, 
   CheckCircle, 
-  ArrowRight, 
   LogOut 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { STRIPE_PRODUCTS } from '../stripe-config';
 
 const TrialExpired: React.FC = () => {
   const { logout } = useAuth();
@@ -48,47 +45,8 @@ const TrialExpired: React.FC = () => {
               </h2>
               
               <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
-                Seu período de teste gratuito de 7 dias expirou. Para continuar utilizando todos os recursos do Meu NPS, 
-                escolha um plano de assinatura abaixo.
+                Seu período de teste gratuito expirou. Entre em contato conosco para continuar utilizando a plataforma.
               </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {STRIPE_PRODUCTS.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 p-6 hover:border-[#073143] hover:shadow-lg transition-all duration-300"
-                >
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                    {product.name}
-                  </h3>
-                  
-                  <div className="text-2xl font-bold text-[#073143] dark:text-white mb-4">
-                    {new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    }).format(product.price / 100)}
-                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/mês</span>
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    {product.description}
-                  </p>
-                  
-                  <Link to="/billing">
-                    <Button 
-                      variant="primary" 
-                      fullWidth 
-                      icon={<ArrowRight size={16} />}
-                    >
-                      Assinar Agora
-                    </Button>
-                  </Link>
-                </motion.div>
-              ))}
             </div>
             
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
@@ -99,24 +57,14 @@ const TrialExpired: React.FC = () => {
                     Seus dados estão seguros
                   </h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Todos os seus dados e configurações permanecem intactos. Ao assinar um plano, 
-                    você terá acesso imediato a todas as suas campanhas e respostas.
+                    Todos os seus dados e configurações permanecem intactos. Entre em contato conosco 
+                    para reativar sua conta e ter acesso a todas as suas campanhas e respostas.
                   </p>
                 </div>
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row justify-between items-center">
-              <Link to="/billing">
-                <Button 
-                  variant="primary" 
-                  icon={<CreditCard size={16} />}
-                  className="mb-4 sm:mb-0"
-                >
-                  Ir para Assinaturas
-                </Button>
-              </Link>
-              
+            <div className="flex justify-center">
               <Button 
                 variant="outline" 
                 onClick={handleLogout}
@@ -129,7 +77,7 @@ const TrialExpired: React.FC = () => {
         </Card>
         
         <div className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
-          Precisa de ajuda? Entre em contato com nosso suporte em <a href="mailto:suporte@meunps.com" className="text-[#073143] dark:text-[#4a9eff]">suporte@meunps.com</a>
+          Precisa de ajuda? Entre em contato conosco em <a href="mailto:contato@meunps.com" className="text-[#073143] dark:text-[#4a9eff]">contato@meunps.com</a>
         </div>
       </motion.div>
     </div>
