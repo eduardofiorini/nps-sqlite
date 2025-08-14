@@ -999,7 +999,7 @@ export const checkUserIsAdmin = async (userId?: string): Promise<boolean> => {
       return false;
     }
 
-    return !!data;
+  } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
   }
