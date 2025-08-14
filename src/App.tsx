@@ -57,6 +57,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
 
+  console.log('AdminRoute check - User:', user?.email, 'Role:', user?.role, 'Loading:', loading);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
@@ -69,6 +71,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (!user || user.role !== 'admin') {
+    console.log('Access denied - redirecting to overview');
     return <Navigate to="/overview" />;
   }
 

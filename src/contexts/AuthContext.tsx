@@ -38,8 +38,16 @@ const processSupabaseUser = async (supabaseUser: SupabaseUser | null): Promise<U
   let isAdmin = false;
   try {
     if (isSupabaseConfigured()) {
-      const { checkUserIsAdmin } = await import('../utils/supabaseStorage');
-      isAdmin = await checkUserIsAdmin(supabaseUser.id);
+      // Direct query to avoid circular imports
+      const { data, error } = await supabase
+        .from('user_admin')
+        .select('id')
+        .eq('user_id', supabaseUser.id)
+        .maybeSingle();
+      
+      if (!error && data) {
+        isAdmin = true;
+      }
     } else {
       // Demo mode admin check
       isAdmin = supabaseUser.email === 'admin@meunps.com';
@@ -47,6 +55,8 @@ const processSupabaseUser = async (supabaseUser: SupabaseUser | null): Promise<U
   } catch (error) {
     console.error('Error checking admin status:', error);
   }
+  
+  console.log('Admin check result for', supabaseUser.email, ':', isAdmin);
   
   return {
     id: supabaseUser.id,
@@ -190,6 +200,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         name: email.split('@')[0] || 'User',
         role: email === 'admin@meunps.com' ? 'admin' : 'user'
       };
+      
+      console.log('Demo login successful for:', email, 'Role:', mockUser.role);
       setUser(mockUser);
       
       // Store mock user in localStorage
