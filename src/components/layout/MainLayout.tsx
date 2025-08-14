@@ -508,6 +508,26 @@ const MainLayout: React.FC = () => {
                         ? `Assinatura (${daysLeftInTrial} dias restantes)` 
                         : 'Assinatura e Cobrança'}
                     </Link>
+                    {user?.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Shield size={16} className="mr-2" />
+                        Painel Admin
+                      </Link>
+                    )}
+                    {user?.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <Shield size={16} className="mr-2" />
+                        Painel Admin
+                      </Link>
+                    )}
                     <Button
                       variant="outline"
                       fullWidth

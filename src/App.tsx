@@ -26,6 +26,11 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import Billing from './pages/Billing';
 import TrialExpired from './pages/TrialExpired';
+import AdminLayout from './components/layout/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminPlans from './pages/admin/AdminPlans';
+import AdminSettings from './pages/admin/AdminSettings';
 import { initializeDefaultData } from './utils/supabaseStorage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -37,6 +42,20 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
+  }
+
+  return <>{children}</>;
+};
+
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/overview" />;
   }
 
   return <>{children}</>;
@@ -113,6 +132,21 @@ function App() {
                     
                     {/* Public survey route - moved outside protected routes */}
                     <Route path="/survey/:id" element={<Survey />} />
+                    
+                    {/* Admin routes */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <AdminLayout />
+                        </AdminRoute>
+                      }
+                    >
+                      <Route index element={<AdminDashboard />} />
+                      <Route path="users" element={<AdminUsers />} />
+                      <Route path="plans" element={<AdminPlans />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                    </Route>
                     
                     <Route path="*" element={<Navigate to="/overview" />} />
                   </Routes>
