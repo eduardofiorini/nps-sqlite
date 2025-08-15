@@ -156,6 +156,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return { success: false, message: 'Seu e-mail ainda não foi confirmado. Por favor, verifique sua caixa de entrada.' };
         }
         
+        // Also check for the error code in case the message format changes
+        if (error.message.includes('email_not_confirmed') || error.message.includes('Email not confirmed')) {
+          return { success: false, message: 'Seu e-mail ainda não foi confirmado. Por favor, verifique sua caixa de entrada.' };
+        }
+        
         // Handle database errors by falling back to demo mode
         if (error.message === 'Database error granting user' || error.message.includes('unexpected_failure')) {
           console.warn('Database error detected, falling back to demo mode');
