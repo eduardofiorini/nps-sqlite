@@ -117,7 +117,7 @@ export type Contact = {
 
 export type AppConfig = {
   themeColor: string;
-  language: 'en' | 'pt-BR';
+  language: 'en' | 'pt-BR' | 'es';
   company: {
     name: string;
     document: string;
@@ -166,7 +166,7 @@ export type UserProfile = {
   position?: string;
   avatar?: string;
   preferences: {
-    language: 'en' | 'pt-BR';
+    language: 'en' | 'pt-BR' | 'es';
     theme: 'light' | 'dark';
     emailNotifications: {
       newResponses: boolean;
