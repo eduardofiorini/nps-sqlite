@@ -251,9 +251,16 @@ export const getCampaigns = async (): Promise<Campaign[]> => {
       return getDemoCampaigns();
     }
     
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      console.log('No authenticated user, returning empty campaigns');
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('campaigns')
       .select('*')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false });
     
     if (error) {
