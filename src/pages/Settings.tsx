@@ -338,7 +338,7 @@ const Settings: React.FC = () => {
                 <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   {t('settings.themeColorLabel')}
                 </label>
-                <div className="flex items-center">
+                <div className="flex items-center space-x-3">
                   <input
                     type="color"
                     value={formData.themeColor}
@@ -351,7 +351,19 @@ const Settings: React.FC = () => {
                     className="ml-2"
                     placeholder="#HEX"
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleChange('themeColor', '#00ac75')}
+                    className="whitespace-nowrap"
+                  >
+                    Resetar Padrão
+                  </Button>
                 </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Cor padrão: #00ac75
+                </p>
               </div>
               
               <div>
