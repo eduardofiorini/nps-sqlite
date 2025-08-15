@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../contexts/LanguageContext';
 import LegalModals from '../components/legal/LegalModals';
 import { 
   ArrowRight, 
@@ -35,6 +36,7 @@ import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 
 const Landing: React.FC = () => {
+  const { language, setLanguage, t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -70,7 +72,7 @@ const Landing: React.FC = () => {
     setShowCookieBanner(false);
   };
 
-  const features = [
+  const features = language === 'pt-BR' ? [
     {
       icon: <BarChart3 size={24} />,
       title: 'Análise em Tempo Real',
@@ -107,9 +109,83 @@ const Landing: React.FC = () => {
       description: 'Totalmente conforme com LGPD e GDPR, garantindo a proteção dos dados dos seus clientes.',
       color: 'from-red-500 to-red-600'
     }
+  ] : language === 'es' ? [
+    {
+      icon: <BarChart3 size={24} />,
+      title: 'Análisis en Tiempo Real',
+      description: 'Monitorea tu NPS instantáneamente con dashboards interactivos y métricas actualizadas en tiempo real.',
+      color: 'from-blue-500 to-blue-600'
+    },
+    {
+      icon: <Users size={24} />,
+      title: 'Gestión de Contactos',
+      description: 'Organiza tus clientes en grupos, segmenta por características y gestiona campañas dirigidas.',
+      color: 'from-green-500 to-green-600'
+    },
+    {
+      icon: <Smartphone size={24} />,
+      title: 'Multi-canal',
+      description: 'Recopila feedback vía WhatsApp, email, SMS, sitio web y otros canales de comunicación.',
+      color: 'from-purple-500 to-purple-600'
+    },
+    {
+      icon: <PieChart size={24} />,
+      title: 'Reportes Avanzados',
+      description: 'Genera insights profundos con reportes personalizables y análisis predictivos.',
+      color: 'from-orange-500 to-orange-600'
+    },
+    {
+      icon: <Zap size={24} />,
+      title: 'Automatización Inteligente',
+      description: 'Configura flujos automáticos de seguimiento basados en las respuestas de los clientes.',
+      color: 'from-yellow-500 to-yellow-600'
+    },
+    {
+      icon: <Shield size={24} />,
+      title: 'Seguridad GDPR',
+      description: 'Totalmente conforme con GDPR y regulaciones locales, garantizando la protección de datos.',
+      color: 'from-red-500 to-red-600'
+    }
+  ] : [
+    {
+      icon: <BarChart3 size={24} />,
+      title: 'Real-Time Analytics',
+      description: 'Track your NPS instantly with interactive dashboards and real-time updated metrics.',
+      color: 'from-blue-500 to-blue-600'
+    },
+    {
+      icon: <Users size={24} />,
+      title: 'Contact Management',
+      description: 'Organize your customers into groups, segment by characteristics and manage targeted campaigns.',
+      color: 'from-green-500 to-green-600'
+    },
+    {
+      icon: <Smartphone size={24} />,
+      title: 'Multi-channel',
+      description: 'Collect feedback via WhatsApp, email, SMS, website and other communication channels.',
+      color: 'from-purple-500 to-purple-600'
+    },
+    {
+      icon: <PieChart size={24} />,
+      title: 'Advanced Reports',
+      description: 'Generate deep insights with customizable reports and predictive analytics.',
+      color: 'from-orange-500 to-orange-600'
+    },
+    {
+      icon: <Zap size={24} />,
+      title: 'Smart Automation',
+      description: 'Set up automatic follow-up flows based on customer responses.',
+      color: 'from-yellow-500 to-yellow-600'
+    },
+    {
+      icon: <Shield size={24} />,
+      title: 'GDPR Security',
+      description: 'Fully compliant with GDPR and local regulations, ensuring customer data protection.',
+      color: 'from-red-500 to-red-600'
+    }
   ];
 
-  const testimonials = [
+  const testimonials = language === 'pt-BR' ? [
     {
       name: 'Ana Silva',
       role: 'Diretora de CX',
@@ -134,16 +210,76 @@ const Landing: React.FC = () => {
       rating: 5,
       avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
     }
+  ] : language === 'es' ? [
+    {
+      name: 'Ana Silva',
+      role: 'Directora de CX',
+      company: 'TechCorp',
+      content: 'Meu NPS transformó nuestra gestión de experiencia del cliente. Logramos aumentar nuestro NPS de 45 a 78 en solo 6 meses.',
+      rating: 5,
+      avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
+    },
+    {
+      name: 'Carlos Mendes',
+      role: 'CEO',
+      company: 'StartupXYZ',
+      content: 'Interfaz intuitiva y reportes que realmente marcan la diferencia. Nuestro equipo adoptó la herramienta en pocos días.',
+      rating: 5,
+      avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
+    },
+    {
+      name: 'Marina Costa',
+      role: 'Gerente de Marketing',
+      company: 'E-commerce Plus',
+      content: 'La automatización de campañas nos ahorra 15 horas por semana. ¡ROI fantástico!',
+      rating: 5,
+      avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
+    }
+  ] : [
+    {
+      name: 'Ana Silva',
+      role: 'CX Director',
+      company: 'TechCorp',
+      content: 'Meu NPS transformed our customer experience management. We managed to increase our NPS from 45 to 78 in just 6 months.',
+      rating: 5,
+      avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
+    },
+    {
+      name: 'Carlos Mendes',
+      role: 'CEO',
+      company: 'StartupXYZ',
+      content: 'Intuitive interface and reports that really make a difference. Our team adopted the tool in just a few days.',
+      rating: 5,
+      avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
+    },
+    {
+      name: 'Marina Costa',
+      role: 'Marketing Manager',
+      company: 'E-commerce Plus',
+      content: 'Campaign automation saves us 15 hours per week. Fantastic ROI!',
+      rating: 5,
+      avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'
+    }
   ];
 
-  const stats = [
+  const stats = language === 'pt-BR' ? [
     { number: '10k+', label: 'Empresas Ativas' },
     { number: '2M+', label: 'Pesquisas Enviadas' },
     { number: '98%', label: 'Satisfação dos Usuários' },
     { number: '24/7', label: 'Suporte Disponível' }
+  ] : language === 'es' ? [
+    { number: '10k+', label: 'Empresas Activas' },
+    { number: '2M+', label: 'Encuestas Enviadas' },
+    { number: '98%', label: 'Satisfacción de Usuarios' },
+    { number: '24/7', label: 'Soporte Disponible' }
+  ] : [
+    { number: '10k+', label: 'Active Companies' },
+    { number: '2M+', label: 'Surveys Sent' },
+    { number: '98%', label: 'User Satisfaction' },
+    { number: '24/7', label: 'Support Available' }
   ];
 
-  const plans = [
+  const plans = language === 'pt-BR' ? [
     {
       name: 'Iniciante',
       price: 49,
@@ -190,6 +326,100 @@ const Landing: React.FC = () => {
       color: 'border-gray-200',
       buttonStyle: 'outline'
     }
+  ] : language === 'es' ? [
+    {
+      name: 'Principiante',
+      price: 49,
+      description: 'Perfecto para equipos pequeños',
+      features: [
+        'Hasta 500 respuestas/mes',
+        '2 campañas activas',
+        'Análisis básicos',
+        'Soporte por email',
+        'Templates estándar'
+      ],
+      color: 'border-gray-200',
+      buttonStyle: 'outline'
+    },
+    {
+      name: 'Profesional',
+      price: 99,
+      description: 'Para empresas en crecimiento',
+      features: [
+        'Hasta 2.500 respuestas/mes',
+        'Campañas ilimitadas',
+        'Análisis avanzados',
+        'Soporte prioritario',
+        'Marca personalizada',
+        'Acceso a API'
+      ],
+      color: 'border-[#00ac75] ring-2 ring-[#00ac75]/20',
+      buttonStyle: 'primary',
+      popular: true
+    },
+    {
+      name: 'Empresarial',
+      price: 249,
+      description: 'Solución completa para grandes organizaciones',
+      features: [
+        'Respuestas ilimitadas',
+        'Campañas ilimitadas',
+        'Insights con IA',
+        'Gerente dedicado',
+        'White-label',
+        'Integración SSO',
+        'SLA garantizado'
+      ],
+      color: 'border-gray-200',
+      buttonStyle: 'outline'
+    }
+  ] : [
+    {
+      name: 'Starter',
+      price: 49,
+      description: 'Perfect for small teams',
+      features: [
+        'Up to 500 responses/month',
+        '2 active campaigns',
+        'Basic analytics',
+        'Email support',
+        'Standard templates'
+      ],
+      color: 'border-gray-200',
+      buttonStyle: 'outline'
+    },
+    {
+      name: 'Professional',
+      price: 99,
+      description: 'For growing businesses',
+      features: [
+        'Up to 2,500 responses/month',
+        'Unlimited campaigns',
+        'Advanced analytics',
+        'Priority support',
+        'Custom branding',
+        'API access'
+      ],
+      color: 'border-[#00ac75] ring-2 ring-[#00ac75]/20',
+      buttonStyle: 'primary',
+      popular: true
+    },
+    {
+      name: 'Enterprise',
+      price: 249,
+      description: 'Complete solution for large organizations',
+      features: [
+        'Unlimited responses',
+        'Unlimited campaigns',
+        'AI insights',
+        'Dedicated manager',
+        'White-label',
+        'SSO integration',
+        'SLA guaranteed'
+      ],
+      color: 'border-gray-200',
+      buttonStyle: 'outline'
+    }
   ];
 
   const integrations = [
@@ -201,6 +431,124 @@ const Landing: React.FC = () => {
     { name: 'Zapier', icon: <Zap size={24} className="text-orange-500" /> }
   ];
 
+  // Translation helper for landing page specific content
+  const getText = (key: string) => {
+    const translations = {
+      'pt-BR': {
+        'hero.badge': 'Plataforma #1 em Gestão de NPS no Brasil',
+        'hero.title': 'Transforme',
+        'hero.titleHighlight': 'Feedback',
+        'hero.titleEnd': 'em Crescimento',
+        'hero.subtitle': 'A plataforma mais completa para coletar, analisar e agir sobre o feedback dos seus clientes. Aumente a satisfação e impulsione o crescimento do seu negócio.',
+        'hero.cta': 'Começar Teste Gratuito',
+        'hero.demo': 'Ver Demonstração',
+        'hero.feature1': '7 dias grátis',
+        'hero.feature2': 'Sem cartão de crédito',
+        'hero.feature3': 'Suporte em português',
+        'nav.features': 'Recursos',
+        'nav.pricing': 'Preços',
+        'nav.testimonials': 'Clientes',
+        'nav.contact': 'Contato',
+        'nav.login': 'Entrar',
+        'nav.trial': 'Teste Grátis',
+        'features.title': 'Recursos que Fazem a Diferença',
+        'features.subtitle': 'Tudo que você precisa para uma gestão completa de NPS em uma única plataforma',
+        'howItWorks.title': 'Como Funciona',
+        'howItWorks.subtitle': 'Em apenas 3 passos simples, você estará coletando feedback valioso dos seus clientes',
+        'testimonials.title': 'O que Nossos Clientes Dizem',
+        'testimonials.subtitle': 'Empresas de todos os tamanhos confiam no Meu NPS para melhorar a experiência do cliente',
+        'pricing.title': 'Planos para Todos os Tamanhos',
+        'pricing.subtitle': 'Escolha o plano ideal para sua empresa. Todos incluem teste gratuito de 7 dias.',
+        'pricing.save': 'Economize 20% pagando anualmente',
+        'pricing.popular': 'Mais Popular',
+        'pricing.cta': 'Começar Teste Gratuito',
+        'integrations.title': 'Integre com Suas Ferramentas Favoritas',
+        'integrations.subtitle': 'Conecte o Meu NPS com as ferramentas que você já usa no dia a dia',
+        'benefits.title': 'Por que Escolher o Meu NPS?',
+        'cta.title': 'Pronto para Transformar sua Experiência do Cliente?',
+        'cta.subtitle': 'Junte-se a milhares de empresas que já usam o Meu NPS para crescer de forma sustentável',
+        'cta.trial': 'Começar Teste Gratuito',
+        'cta.demo': 'Agendar Demonstração',
+        'cta.features': 'Sem compromisso • Cancele quando quiser • Suporte em português'
+      },
+      'es': {
+        'hero.badge': 'Plataforma #1 en Gestión de NPS en Brasil',
+        'hero.title': 'Transforma',
+        'hero.titleHighlight': 'Feedback',
+        'hero.titleEnd': 'en Crecimiento',
+        'hero.subtitle': 'La plataforma más completa para recopilar, analizar y actuar sobre el feedback de tus clientes. Aumenta la satisfacción e impulsa el crecimiento de tu negocio.',
+        'hero.cta': 'Comenzar Prueba Gratuita',
+        'hero.demo': 'Ver Demostración',
+        'hero.feature1': '7 días gratis',
+        'hero.feature2': 'Sin tarjeta de crédito',
+        'hero.feature3': 'Soporte en español',
+        'nav.features': 'Características',
+        'nav.pricing': 'Precios',
+        'nav.testimonials': 'Clientes',
+        'nav.contact': 'Contacto',
+        'nav.login': 'Iniciar Sesión',
+        'nav.trial': 'Prueba Gratis',
+        'features.title': 'Características que Marcan la Diferencia',
+        'features.subtitle': 'Todo lo que necesitas para una gestión completa de NPS en una sola plataforma',
+        'howItWorks.title': 'Cómo Funciona',
+        'howItWorks.subtitle': 'En solo 3 pasos simples, estarás recopilando feedback valioso de tus clientes',
+        'testimonials.title': 'Lo que Dicen Nuestros Clientes',
+        'testimonials.subtitle': 'Empresas de todos los tamaños confían en Meu NPS para mejorar la experiencia del cliente',
+        'pricing.title': 'Planes para Todos los Tamaños',
+        'pricing.subtitle': 'Elige el plan ideal para tu empresa. Todos incluyen prueba gratuita de 7 días.',
+        'pricing.save': 'Ahorra 20% pagando anualmente',
+        'pricing.popular': 'Más Popular',
+        'pricing.cta': 'Comenzar Prueba Gratuita',
+        'integrations.title': 'Integra con tus Herramientas Favoritas',
+        'integrations.subtitle': 'Conecta Meu NPS con las herramientas que ya usas día a día',
+        'benefits.title': '¿Por qué Elegir Meu NPS?',
+        'cta.title': '¿Listo para Transformar tu Experiencia del Cliente?',
+        'cta.subtitle': 'Únete a miles de empresas que ya usan Meu NPS para crecer de forma sostenible',
+        'cta.trial': 'Comenzar Prueba Gratuita',
+        'cta.demo': 'Agendar Demostración',
+        'cta.features': 'Sin compromiso • Cancela cuando quieras • Soporte en español'
+      },
+      'en': {
+        'hero.badge': '#1 NPS Management Platform in Brazil',
+        'hero.title': 'Transform',
+        'hero.titleHighlight': 'Feedback',
+        'hero.titleEnd': 'into Growth',
+        'hero.subtitle': 'The most complete platform to collect, analyze and act on your customers\' feedback. Increase satisfaction and drive business growth.',
+        'hero.cta': 'Start Free Trial',
+        'hero.demo': 'Watch Demo',
+        'hero.feature1': '7 days free',
+        'hero.feature2': 'No credit card',
+        'hero.feature3': 'English support',
+        'nav.features': 'Features',
+        'nav.pricing': 'Pricing',
+        'nav.testimonials': 'Customers',
+        'nav.contact': 'Contact',
+        'nav.login': 'Sign In',
+        'nav.trial': 'Free Trial',
+        'features.title': 'Features that Make a Difference',
+        'features.subtitle': 'Everything you need for complete NPS management in one platform',
+        'howItWorks.title': 'How It Works',
+        'howItWorks.subtitle': 'In just 3 simple steps, you\'ll be collecting valuable customer feedback',
+        'testimonials.title': 'What Our Customers Say',
+        'testimonials.subtitle': 'Companies of all sizes trust Meu NPS to improve customer experience',
+        'pricing.title': 'Plans for Every Size',
+        'pricing.subtitle': 'Choose the ideal plan for your company. All include 7-day free trial.',
+        'pricing.save': 'Save 20% paying annually',
+        'pricing.popular': 'Most Popular',
+        'pricing.cta': 'Start Free Trial',
+        'integrations.title': 'Integrate with Your Favorite Tools',
+        'integrations.subtitle': 'Connect Meu NPS with the tools you already use daily',
+        'benefits.title': 'Why Choose Meu NPS?',
+        'cta.title': 'Ready to Transform Your Customer Experience?',
+        'cta.subtitle': 'Join thousands of companies already using Meu NPS to grow sustainably',
+        'cta.trial': 'Start Free Trial',
+        'cta.demo': 'Schedule Demo',
+        'cta.features': 'No commitment • Cancel anytime • English support'
+      }
+    };
+    
+    return translations[language]?.[key] || key;
+  };
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Fixed Header */}
@@ -211,24 +559,42 @@ const Landing: React.FC = () => {
               <img src="/icone.png" alt="Meu NPS" className="w-10 h-10 mr-3" />
               <div>
                 <span className="text-xl font-bold text-[#00ac75]">Meu NPS</span>
-                <div className="text-xs text-gray-500">Gestão Inteligente de NPS</div>
+                <div className="text-xs text-gray-500">
+                  {language === 'pt-BR' ? 'Gestão Inteligente de NPS' : 
+                   language === 'es' ? 'Gestión Inteligente de NPS' : 
+                   'Intelligent NPS Management'}
+                </div>
               </div>
             </div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-[#00ac75] transition-colors">Recursos</a>
-              <a href="#pricing" className="text-gray-600 hover:text-[#00ac75] transition-colors">Preços</a>
-              <a href="#testimonials" className="text-gray-600 hover:text-[#00ac75] transition-colors">Clientes</a>
-              <a href="#contact" className="text-gray-600 hover:text-[#00ac75] transition-colors">Contato</a>
+              <a href="#features" className="text-gray-600 hover:text-[#00ac75] transition-colors">{getText('nav.features')}</a>
+              <a href="#pricing" className="text-gray-600 hover:text-[#00ac75] transition-colors">{getText('nav.pricing')}</a>
+              <a href="#testimonials" className="text-gray-600 hover:text-[#00ac75] transition-colors">{getText('nav.testimonials')}</a>
+              <a href="#contact" className="text-gray-600 hover:text-[#00ac75] transition-colors">{getText('nav.contact')}</a>
+              
+              {/* Language Selector */}
+              <div className="relative">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR' | 'es')}
+                  className="appearance-none bg-transparent border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#00ac75] transition-colors"
+                >
+                  <option value="pt-BR">🇧🇷 PT</option>
+                  <option value="en">🇺🇸 EN</option>
+                  <option value="es">🇪🇸 ES</option>
+                </select>
+                <Globe size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
             </nav>
 
             <div className="hidden md:flex items-center space-x-4">
               <Link to="/login">
-                <Button variant="outline" size="sm">Entrar</Button>
+                <Button variant="outline" size="sm">{getText('nav.login')}</Button>
               </Link>
               <Link to="/register">
-                <Button variant="primary" size="sm">Teste Grátis</Button>
+                <Button variant="primary" size="sm">{getText('nav.trial')}</Button>
               </Link>
             </div>
 
@@ -250,16 +616,30 @@ const Landing: React.FC = () => {
             className="md:hidden bg-white border-t border-gray-200 shadow-lg"
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
-              <a href="#features" className="block text-gray-600 hover:text-[#00ac75]">Recursos</a>
-              <a href="#pricing" className="block text-gray-600 hover:text-[#00ac75]">Preços</a>
-              <a href="#testimonials" className="block text-gray-600 hover:text-[#00ac75]">Clientes</a>
-              <a href="#contact" className="block text-gray-600 hover:text-[#00ac75]">Contato</a>
+              <a href="#features" className="block text-gray-600 hover:text-[#00ac75]">{getText('nav.features')}</a>
+              <a href="#pricing" className="block text-gray-600 hover:text-[#00ac75]">{getText('nav.pricing')}</a>
+              <a href="#testimonials" className="block text-gray-600 hover:text-[#00ac75]">{getText('nav.testimonials')}</a>
+              <a href="#contact" className="block text-gray-600 hover:text-[#00ac75]">{getText('nav.contact')}</a>
+              
+              {/* Mobile Language Selector */}
+              <div className="pt-2">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR' | 'es')}
+                  className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700"
+                >
+                  <option value="pt-BR">🇧🇷 Português</option>
+                  <option value="en">🇺🇸 English</option>
+                  <option value="es">🇪🇸 Español</option>
+                </select>
+              </div>
+              
               <div className="pt-4 border-t border-gray-200 space-y-2">
                 <Link to="/login" className="block">
-                  <Button variant="outline" size="sm" fullWidth>Entrar</Button>
+                  <Button variant="outline" size="sm" fullWidth>{getText('nav.login')}</Button>
                 </Link>
                 <Link to="/register" className="block">
-                  <Button variant="primary" size="sm" fullWidth>Teste Grátis</Button>
+                  <Button variant="primary" size="sm" fullWidth>{getText('nav.trial')}</Button>
                 </Link>
               </div>
             </div>
@@ -279,18 +659,17 @@ const Landing: React.FC = () => {
             >
               <div className="inline-flex items-center px-4 py-2 bg-[#00ac75]/10 text-[#00ac75] rounded-full text-sm font-medium mb-6">
                 <Crown size={16} className="mr-2" />
-                Plataforma #1 em Gestão de NPS no Brasil
+                {getText('hero.badge')}
               </div>
               
               <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Transforme
-                <span className="text-[#00ac75]"> Feedback </span>
-                em Crescimento
+                {getText('hero.title')}
+                <span className="text-[#00ac75]"> {getText('hero.titleHighlight')} </span>
+                {getText('hero.titleEnd')}
               </h1>
               
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                A plataforma mais completa para coletar, analisar e agir sobre o feedback dos seus clientes. 
-                Aumente a satisfação e impulsione o crescimento do seu negócio.
+                {getText('hero.subtitle')}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -301,7 +680,7 @@ const Landing: React.FC = () => {
                     icon={<ArrowRight size={20} />}
                     className="h-14 px-8 text-lg font-semibold"
                   >
-                    Começar Teste Gratuito
+                    {getText('hero.cta')}
                   </Button>
                 </Link>
                 <Button 
@@ -310,22 +689,22 @@ const Landing: React.FC = () => {
                   icon={<Play size={20} />}
                   className="h-14 px-8 text-lg font-semibold"
                 >
-                  Ver Demonstração
+                  {getText('hero.demo')}
                 </Button>
               </div>
               
               <div className="flex items-center space-x-6 text-sm text-gray-500">
                 <div className="flex items-center">
                   <CheckCircle size={16} className="text-green-500 mr-2" />
-                  7 dias grátis
+                  {getText('hero.feature1')}
                 </div>
                 <div className="flex items-center">
                   <CheckCircle size={16} className="text-green-500 mr-2" />
-                  Sem cartão de crédito
+                  {getText('hero.feature2')}
                 </div>
                 <div className="flex items-center">
                   <CheckCircle size={16} className="text-green-500 mr-2" />
-                  Suporte em português
+                  {getText('hero.feature3')}
                 </div>
               </div>
             </motion.div>
@@ -352,7 +731,9 @@ const Landing: React.FC = () => {
                   className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-white/20"
                 >
                   <div className="text-3xl font-bold text-[#00ac75] mb-1">+78</div>
-                  <div className="text-sm text-gray-600 font-medium">NPS Score</div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    {language === 'pt-BR' ? 'NPS Score' : language === 'es' ? 'Puntuación NPS' : 'NPS Score'}
+                  </div>
                 </motion.div>
                 
                 <motion.div
@@ -362,7 +743,11 @@ const Landing: React.FC = () => {
                   className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-white/20"
                 >
                   <div className="text-2xl font-bold text-gray-900 mb-1">2,847</div>
-                  <div className="text-sm text-gray-600 font-medium">Respostas este mês</div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    {language === 'pt-BR' ? 'Respostas este mês' : 
+                     language === 'es' ? 'Respuestas este mes' : 
+                     'Responses this month'}
+                  </div>
                 </motion.div>
                 
                 {/* Additional floating element for more visual interest */}
@@ -376,7 +761,11 @@ const Landing: React.FC = () => {
                     <TrendingUp size={20} />
                     <div>
                       <div className="text-lg font-bold">+32%</div>
-                      <div className="text-xs opacity-90">Crescimento</div>
+                      <div className="text-xs opacity-90">
+                        {language === 'pt-BR' ? 'Crescimento' : 
+                         language === 'es' ? 'Crecimiento' : 
+                         'Growth'}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -415,10 +804,10 @@ const Landing: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Recursos que Fazem a Diferença
+              {getText('features.title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Tudo que você precisa para uma gestão completa de NPS em uma única plataforma
+              {getText('features.subtitle')}
             </p>
           </motion.div>
 
@@ -455,10 +844,10 @@ const Landing: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Como Funciona
+              {getText('howItWorks.title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Em apenas 3 passos simples, você estará coletando feedback valioso dos seus clientes
+              {getText('howItWorks.subtitle')}
             </p>
           </motion.div>
 
@@ -466,22 +855,34 @@ const Landing: React.FC = () => {
             {[
               {
                 step: '01',
-                title: 'Configure sua Campanha',
-                description: 'Crie campanhas personalizadas com nosso construtor visual intuitivo. Defina perguntas, design e automações.',
+                title: language === 'pt-BR' ? 'Configure sua Campanha' : 
+                        language === 'es' ? 'Configura tu Campaña' : 
+                        'Set Up Your Campaign',
+                description: language === 'pt-BR' ? 'Crie campanhas personalizadas com nosso construtor visual intuitivo. Defina perguntas, design e automações.' :
+                            language === 'es' ? 'Crea campañas personalizadas con nuestro constructor visual intuitivo. Define preguntas, diseño y automatizaciones.' :
+                            'Create personalized campaigns with our intuitive visual builder. Define questions, design and automations.',
                 icon: <Settings size={32} />,
                 color: 'from-blue-500 to-blue-600'
               },
               {
                 step: '02',
-                title: 'Colete Respostas',
-                description: 'Envie pesquisas via WhatsApp, email, SMS ou incorpore em seu site. Múltiplos canais, uma única plataforma.',
+                title: language === 'pt-BR' ? 'Colete Respostas' : 
+                        language === 'es' ? 'Recopila Respuestas' : 
+                        'Collect Responses',
+                description: language === 'pt-BR' ? 'Envie pesquisas via WhatsApp, email, SMS ou incorpore em seu site. Múltiplos canais, uma única plataforma.' :
+                            language === 'es' ? 'Envía encuestas vía WhatsApp, email, SMS o incorpóralas en tu sitio. Múltiples canales, una sola plataforma.' :
+                            'Send surveys via WhatsApp, email, SMS or embed on your site. Multiple channels, one platform.',
                 icon: <MessageSquare size={32} />,
                 color: 'from-green-500 to-green-600'
               },
               {
                 step: '03',
-                title: 'Analise e Aja',
-                description: 'Visualize insights em tempo real, identifique tendências e tome decisões baseadas em dados concretos.',
+                title: language === 'pt-BR' ? 'Analise e Aja' : 
+                        language === 'es' ? 'Analiza y Actúa' : 
+                        'Analyze and Act',
+                description: language === 'pt-BR' ? 'Visualize insights em tempo real, identifique tendências e tome decisões baseadas em dados concretos.' :
+                            language === 'es' ? 'Visualiza insights en tiempo real, identifica tendencias y toma decisiones basadas en datos concretos.' :
+                            'Visualize real-time insights, identify trends and make decisions based on concrete data.',
                 icon: <TrendingUp size={32} />,
                 color: 'from-purple-500 to-purple-600'
               }
@@ -518,10 +919,10 @@ const Landing: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              O que Nossos Clientes Dizem
+              {getText('testimonials.title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Empresas de todos os tamanhos confiam no Meu NPS para melhorar a experiência do cliente
+              {getText('testimonials.subtitle')}
             </p>
           </motion.div>
 
@@ -584,15 +985,15 @@ const Landing: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Planos para Todos os Tamanhos
+              {getText('pricing.title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Escolha o plano ideal para sua empresa. Todos incluem teste gratuito de 7 dias.
+              {getText('pricing.subtitle')}
             </p>
             
             <div className="inline-flex items-center px-6 py-3 bg-green-100 text-green-800 rounded-full text-sm font-medium">
               <CheckCircle size={16} className="mr-2" />
-              Economize 20% pagando anualmente
+              {getText('pricing.save')}
             </div>
           </motion.div>
 
@@ -608,7 +1009,7 @@ const Landing: React.FC = () => {
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <div className="bg-[#00ac75] text-white px-4 py-1 rounded-full text-sm font-medium">
-                      Mais Popular
+                      {getText('pricing.popular')}
                     </div>
                   </div>
                 )}
@@ -620,10 +1021,18 @@ const Landing: React.FC = () => {
                     
                     <div className="mb-8">
                       <div className="flex items-baseline justify-center">
-                        <span className="text-4xl font-bold text-gray-900">R${plan.price}</span>
-                        <span className="text-lg text-gray-600 ml-1">/mês</span>
+                        <span className="text-4xl font-bold text-gray-900">
+                          {language === 'pt-BR' ? 'R$' : language === 'es' ? '$' : '$'}{plan.price}
+                        </span>
+                        <span className="text-lg text-gray-600 ml-1">
+                          {language === 'pt-BR' ? '/mês' : language === 'es' ? '/mes' : '/month'}
+                        </span>
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">Cobrado mensalmente</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {language === 'pt-BR' ? 'Cobrado mensalmente' : 
+                         language === 'es' ? 'Facturado mensualmente' : 
+                         'Billed monthly'}
+                      </p>
                     </div>
                     
                     <ul className="space-y-3 mb-8 text-left">
@@ -643,7 +1052,7 @@ const Landing: React.FC = () => {
                         className="h-12 font-semibold"
                         icon={<ArrowRight size={16} />}
                       >
-                        Começar Teste Gratuito
+                        {getText('pricing.cta')}
                       </Button>
                     </Link>
                   </CardContent>
@@ -663,10 +1072,10 @@ const Landing: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Integre com Suas Ferramentas Favoritas
+              {getText('integrations.title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Conecte o Meu NPS com as ferramentas que você já usa no dia a dia
+              {getText('integrations.subtitle')}
             </p>
           </motion.div>
 
@@ -699,30 +1108,46 @@ const Landing: React.FC = () => {
               whileInView={{ opacity: 1, x: 0 }}
             >
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-                Por que Escolher o Meu NPS?
+                {getText('benefits.title')}
               </h2>
               
               <div className="space-y-6">
                 {[
                   {
                     icon: <Target size={24} />,
-                    title: 'Foco no ROI',
-                    description: 'Cada recurso foi pensado para gerar resultados mensuráveis e aumentar a satisfação dos clientes.'
+                    title: language === 'pt-BR' ? 'Foco no ROI' : 
+                            language === 'es' ? 'Enfoque en ROI' : 
+                            'ROI Focus',
+                    description: language === 'pt-BR' ? 'Cada recurso foi pensado para gerar resultados mensuráveis e aumentar a satisfação dos clientes.' :
+                                language === 'es' ? 'Cada característica fue diseñada para generar resultados medibles y aumentar la satisfacción del cliente.' :
+                                'Every feature was designed to generate measurable results and increase customer satisfaction.'
                   },
                   {
                     icon: <HeartHandshake size={24} />,
-                    title: 'Suporte Humanizado',
-                    description: 'Equipe brasileira especializada em CX, pronta para ajudar você a alcançar seus objetivos.'
+                    title: language === 'pt-BR' ? 'Suporte Humanizado' : 
+                            language === 'es' ? 'Soporte Humanizado' : 
+                            'Human Support',
+                    description: language === 'pt-BR' ? 'Equipe brasileira especializada em CX, pronta para ajudar você a alcançar seus objetivos.' :
+                                language === 'es' ? 'Equipo especializado en CX, listo para ayudarte a alcanzar tus objetivos.' :
+                                'Specialized CX team, ready to help you achieve your goals.'
                   },
                   {
                     icon: <Shield size={24} />,
-                    title: 'Segurança Garantida',
-                    description: 'Conformidade total com LGPD e GDPR. Seus dados e dos seus clientes estão sempre protegidos.'
+                    title: language === 'pt-BR' ? 'Segurança Garantida' : 
+                            language === 'es' ? 'Seguridad Garantizada' : 
+                            'Guaranteed Security',
+                    description: language === 'pt-BR' ? 'Conformidade total com LGPD e GDPR. Seus dados e dos seus clientes estão sempre protegidos.' :
+                                language === 'es' ? 'Cumplimiento total con GDPR y regulaciones locales. Tus datos y los de tus clientes están siempre protegidos.' :
+                                'Full compliance with GDPR and local regulations. Your data and your customers\' data are always protected.'
                   },
                   {
                     icon: <Zap size={24} />,
-                    title: 'Implementação Rápida',
-                    description: 'Configure sua primeira campanha em minutos. Interface intuitiva que não requer treinamento.'
+                    title: language === 'pt-BR' ? 'Implementação Rápida' : 
+                            language === 'es' ? 'Implementación Rápida' : 
+                            'Quick Implementation',
+                    description: language === 'pt-BR' ? 'Configure sua primeira campanha em minutos. Interface intuitiva que não requer treinamento.' :
+                                language === 'es' ? 'Configura tu primera campaña en minutos. Interfaz intuitiva que no requiere entrenamiento.' :
+                                'Set up your first campaign in minutes. Intuitive interface that requires no training.'
                   }
                 ].map((benefit, index) => (
                   <motion.div
@@ -750,26 +1175,44 @@ const Landing: React.FC = () => {
               className="relative"
             >
               <div className="bg-gradient-to-br from-[#00ac75] to-[#009966] rounded-2xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-6">Resultados Comprovados</h3>
+                <h3 className="text-2xl font-bold mb-6">
+                  {language === 'pt-BR' ? 'Resultados Comprovados' : 
+                   language === 'es' ? 'Resultados Comprobados' : 
+                   'Proven Results'}
+                </h3>
                 
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <span>Aumento médio no NPS</span>
+                    <span>
+                      {language === 'pt-BR' ? 'Aumento médio no NPS' : 
+                       language === 'es' ? 'Aumento promedio en NPS' : 
+                       'Average NPS increase'}
+                    </span>
                     <span className="text-2xl font-bold">+32%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>Redução no churn</span>
+                    <span>
+                      {language === 'pt-BR' ? 'Redução no churn' : 
+                       language === 'es' ? 'Reducción en churn' : 
+                       'Churn reduction'}
+                    </span>
                     <span className="text-2xl font-bold">-45%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>ROI médio em 6 meses</span>
+                    <span>
+                      {language === 'pt-BR' ? 'ROI médio em 6 meses' : 
+                       language === 'es' ? 'ROI promedio en 6 meses' : 
+                       'Average ROI in 6 months'}
+                    </span>
                     <span className="text-2xl font-bold">380%</span>
                   </div>
                 </div>
                 
                 <div className="mt-8 pt-6 border-t border-white/20">
                   <p className="text-sm text-green-100">
-                    *Baseado em dados de mais de 1.000 empresas clientes
+                    {language === 'pt-BR' ? '*Baseado em dados de mais de 1.000 empresas clientes' : 
+                     language === 'es' ? '*Basado en datos de más de 1.000 empresas clientes' : 
+                     '*Based on data from over 1,000 client companies'}
                   </p>
                 </div>
               </div>
@@ -787,10 +1230,10 @@ const Landing: React.FC = () => {
             className="max-w-3xl mx-auto"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-              Pronto para Transformar sua Experiência do Cliente?
+              {getText('cta.title')}
             </h2>
             <p className="text-xl text-green-100 mb-8">
-              Junte-se a milhares de empresas que já usam o Meu NPS para crescer de forma sustentável
+              {getText('cta.subtitle')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -801,7 +1244,7 @@ const Landing: React.FC = () => {
                   className="h-14 px-8 text-lg font-semibold bg-white text-[#00ac75] border-white hover:bg-gray-50"
                   icon={<ArrowRight size={20} />}
                 >
-                  Começar Teste Gratuito
+                  {getText('cta.trial')}
                 </Button>
               </Link>
               <Button 
@@ -810,12 +1253,12 @@ const Landing: React.FC = () => {
                 className="h-14 px-8 text-lg font-semibold border-white text-white hover:bg-white/10"
                 icon={<Play size={20} />}
               >
-                Agendar Demonstração
+                {getText('cta.demo')}
               </Button>
             </div>
             
             <p className="text-sm text-green-100 mt-6">
-              Sem compromisso • Cancele quando quiser • Suporte em português
+              {getText('cta.features')}
             </p>
           </motion.div>
         </div>
@@ -830,12 +1273,17 @@ const Landing: React.FC = () => {
                 <img src="/icone.png" alt="Meu NPS" className="w-10 h-10 mr-3" />
                 <div>
                   <span className="text-xl font-bold">Meu NPS</span>
-                  <div className="text-sm text-gray-400">Gestão Inteligente de NPS</div>
+                  <div className="text-sm text-gray-400">
+                    {language === 'pt-BR' ? 'Gestão Inteligente de NPS' : 
+                     language === 'es' ? 'Gestión Inteligente de NPS' : 
+                     'Intelligent NPS Management'}
+                  </div>
                 </div>
               </div>
               <p className="text-gray-400 mb-6 max-w-md">
-                A plataforma mais completa para gestão de Net Promoter Score. 
-                Transforme feedback em crescimento sustentável.
+                {language === 'pt-BR' ? 'A plataforma mais completa para gestão de Net Promoter Score. Transforme feedback em crescimento sustentável.' :
+                 language === 'es' ? 'La plataforma más completa para gestión de Net Promoter Score. Transforma feedback en crecimiento sostenible.' :
+                 'The most complete platform for Net Promoter Score management. Transform feedback into sustainable growth.'}
               </p>
               <div className="flex space-x-4">
                 <a 
@@ -897,31 +1345,49 @@ const Landing: React.FC = () => {
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Produto</h4>
+              <h4 className="text-lg font-semibold mb-4">
+                {language === 'pt-BR' ? 'Produto' : language === 'es' ? 'Producto' : 'Product'}
+              </h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#features" className="hover:text-white transition-colors">Recursos</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Preços</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Integrações</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">{getText('nav.features')}</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">{getText('nav.pricing')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">
+                  {language === 'pt-BR' ? 'Integrações' : language === 'es' ? 'Integraciones' : 'Integrations'}
+                </a></li>
                 <li><a href="#" className="hover:text-white transition-colors">API</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Suporte</h4>
+              <h4 className="text-lg font-semibold mb-4">
+                {language === 'pt-BR' ? 'Suporte' : language === 'es' ? 'Soporte' : 'Support'}
+              </h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Central de Ajuda</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Documentação</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Tutoriais</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Status do Sistema</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">
+                  {language === 'pt-BR' ? 'Central de Ajuda' : language === 'es' ? 'Centro de Ayuda' : 'Help Center'}
+                </a></li>
+                <li><a href="#" className="hover:text-white transition-colors">
+                  {language === 'pt-BR' ? 'Documentação' : language === 'es' ? 'Documentación' : 'Documentation'}
+                </a></li>
+                <li><a href="#" className="hover:text-white transition-colors">
+                  {language === 'pt-BR' ? 'Tutoriais' : language === 'es' ? 'Tutoriales' : 'Tutorials'}
+                </a></li>
+                <li><a href="#" className="hover:text-white transition-colors">
+                  {language === 'pt-BR' ? 'Status do Sistema' : language === 'es' ? 'Estado del Sistema' : 'System Status'}
+                </a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Contato</h4>
+              <h4 className="text-lg font-semibold mb-4">{getText('nav.contact')}</h4>
               <ul className="space-y-2 text-gray-400">
                 <li><a href="mailto:contato@meunps.com" className="hover:text-white transition-colors">contato@meunps.com</a></li>
                 <li><a href="tel:+5511999999999" className="hover:text-white transition-colors">(11) 99999-9999</a></li>
-                <li className="text-gray-400">Rua das Empresas, 123<br />São Paulo, SP - 01234-567</li>
+                <li className="text-gray-400">
+                  {language === 'pt-BR' ? 'Rua das Empresas, 123\nSão Paulo, SP - 01234-567' :
+                   language === 'es' ? 'Calle de las Empresas, 123\nSão Paulo, SP - 01234-567' :
+                   'Business Street, 123\nSão Paulo, SP - 01234-567'}
+                </li>
                 <li><a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">WhatsApp</a></li>
               </ul>
             </div>
@@ -929,20 +1395,26 @@ const Landing: React.FC = () => {
           
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © 2025 Meu NPS. Todos os direitos reservados.
+              {language === 'pt-BR' ? '© 2025 Meu NPS. Todos os direitos reservados.' :
+               language === 'es' ? '© 2025 Meu NPS. Todos los derechos reservados.' :
+               '© 2025 Meu NPS. All rights reserved.'}
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <button 
                 onClick={() => setShowPrivacyModal(true)}
                 className="text-gray-400 hover:text-white text-sm transition-colors"
               >
-                Política de Privacidade
+                {language === 'pt-BR' ? 'Política de Privacidade' :
+                 language === 'es' ? 'Política de Privacidad' :
+                 'Privacy Policy'}
               </button>
               <button 
                 onClick={() => setShowTermsModal(true)}
                 className="text-gray-400 hover:text-white text-sm transition-colors"
               >
-                Termos de Uso
+                {language === 'pt-BR' ? 'Termos de Uso' :
+                 language === 'es' ? 'Términos de Uso' :
+                 'Terms of Use'}
               </button>
               <button 
                 onClick={() => setShowLgpdModal(true)}
@@ -983,16 +1455,21 @@ const Landing: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                      Utilizamos cookies para melhorar sua experiência
+                      {language === 'pt-BR' ? 'Utilizamos cookies para melhorar sua experiência' :
+                       language === 'es' ? 'Utilizamos cookies para mejorar tu experiencia' :
+                       'We use cookies to improve your experience'}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                      Usamos cookies essenciais para o funcionamento do site e cookies de análise para melhorar nossos serviços. 
-                      Você pode gerenciar suas preferências a qualquer momento.{' '}
+                      {language === 'pt-BR' ? 'Usamos cookies essenciais para o funcionamento do site e cookies de análise para melhorar nossos serviços. Você pode gerenciar suas preferências a qualquer momento.' :
+                       language === 'es' ? 'Usamos cookies esenciales para el funcionamiento del sitio y cookies de análisis para mejorar nuestros servicios. Puedes gestionar tus preferencias en cualquier momento.' :
+                       'We use essential cookies for site functionality and analytics cookies to improve our services. You can manage your preferences at any time.'}{' '}
                       <button
                         onClick={() => setShowPrivacyModal(true)}
                         className="text-[#00ac75] hover:underline font-medium"
                       >
-                        Saiba mais
+                        {language === 'pt-BR' ? 'Saiba mais' :
+                         language === 'es' ? 'Saber más' :
+                         'Learn more'}
                       </button>
                     </p>
                   </div>
@@ -1005,7 +1482,9 @@ const Landing: React.FC = () => {
                     onClick={handleDeclineCookies}
                     className="text-gray-600 border-gray-300 hover:bg-gray-50"
                   >
-                    Apenas Essenciais
+                    {language === 'pt-BR' ? 'Apenas Essenciais' :
+                     language === 'es' ? 'Solo Esenciales' :
+                     'Essential Only'}
                   </Button>
                   <Button
                     variant="primary"
@@ -1013,12 +1492,14 @@ const Landing: React.FC = () => {
                     onClick={handleAcceptCookies}
                     className="bg-[#00ac75] hover:bg-[#009966]"
                   >
-                    Aceitar Todos
+                    {language === 'pt-BR' ? 'Aceitar Todos' :
+                     language === 'es' ? 'Aceptar Todos' :
+                     'Accept All'}
                   </Button>
                   <button
                     onClick={() => setShowCookieBanner(false)}
                     className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                    title="Fechar"
+                    title={language === 'pt-BR' ? 'Fechar' : language === 'es' ? 'Cerrar' : 'Close'}
                   >
                     <X size={16} />
                   </button>
