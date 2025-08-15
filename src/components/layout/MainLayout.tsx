@@ -23,7 +23,8 @@ import {
   PanelLeftOpen,
   FileText,
   Users,
-  Clock
+  Clock,
+  Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
