@@ -54,38 +54,52 @@ export const useTrial = () => {
 
         if (isSupabaseConfigured()) {
           // Get trial start date from user profile
-          const { data: profile, error } = await supabase
+          const { data: profiles, error } = await supabase
             .from('user_profiles')
             .select('trial_start_date')
-            .eq('user_id', user.id)
-            .single();
+            .eq('user_id', user.id);
 
-          if (error || !profile?.trial_start_date) {
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            // Fallback to localStorage for trial date
+            const storedTrialStart = localStorage.getItem(`trial_start_date_${user.id}`);
+            if (storedTrialStart) {
+              trialStartDate = new Date(storedTrialStart);
+            } else {
+              trialStartDate = new Date();
+              localStorage.setItem(`trial_start_date_${user.id}`, trialStartDate.toISOString());
+            }
+          } else if (!profiles || profiles.length === 0 || !profiles[0]?.trial_start_date) {
             // If no profile or trial date, create one
             const now = new Date();
-            const { error: updateError } = await supabase
+            
+            // Try to insert/update profile with trial start date
+            const { error: upsertError } = await supabase
               .from('user_profiles')
               .upsert({
                 user_id: user.id,
+                name: user.name,
                 trial_start_date: now.toISOString(),
               }, { onConflict: 'user_id' });
 
-            if (updateError) {
-              console.error('Error updating trial start date:', updateError);
+            if (upsertError) {
+              console.error('Error creating/updating user profile:', upsertError);
+              // Fallback to localStorage
+              localStorage.setItem(`trial_start_date_${user.id}`, now.toISOString());
             }
             
             trialStartDate = now;
           } else {
-            trialStartDate = new Date(profile.trial_start_date);
+            trialStartDate = new Date(profiles[0].trial_start_date);
           }
         } else {
           // Demo mode - use localStorage
-          const storedTrialStart = localStorage.getItem('trial_start_date');
+          const storedTrialStart = localStorage.getItem(`trial_start_date_${user.id}`);
           if (storedTrialStart) {
             trialStartDate = new Date(storedTrialStart);
           } else {
             trialStartDate = new Date();
-            localStorage.setItem('trial_start_date', trialStartDate.toISOString());
+            localStorage.setItem(`trial_start_date_${user.id}`, trialStartDate.toISOString());
           }
         }
 
