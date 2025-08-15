@@ -97,6 +97,7 @@ function App() {
                     }
                   >
                     <Route index element={<Navigate to="/dashboard/campaigns" replace />} />
+                    <Route path="overview" element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="campaigns/new" element={<CampaignCreate />} />
                     <Route path="campaigns/:id" element={<CampaignDashboard />} />
@@ -117,18 +118,6 @@ function App() {
                   </Route>
                   
                   {/* Direct overview route for easier access */}
-                  <Route
-                    path="/overview"
-                    element={
-                      <ProtectedRoute>
-                        <TrialGuard>
-                          <MainLayout />
-                        </TrialGuard>
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route index element={<Overview />} />
-                  </Route>
                   
                   {/* Public survey route - moved outside protected routes */}
                   <Route path="/survey/:id" element={<Survey />} />

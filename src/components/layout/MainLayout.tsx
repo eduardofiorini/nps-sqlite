@@ -52,7 +52,7 @@ const MainLayout: React.FC = () => {
 
   const navItems = [
     { 
-      path: '/dashboard', 
+      path: '/dashboard/overview', 
       label: language === 'pt-BR' ? 'Dashboard Geral' : 'General Dashboard', 
       icon: <LayoutGrid size={20} /> 
     },
@@ -86,8 +86,8 @@ const MainLayout: React.FC = () => {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return location.pathname === '/dashboard' || location.pathname === '/overview';
+    if (path === '/dashboard/overview') {
+      return location.pathname === '/dashboard/overview' || location.pathname === '/overview';
     }
     if (path === '/dashboard/campaigns') {
       return location.pathname === '/dashboard/campaigns' || location.pathname.startsWith('/dashboard/campaigns/');
