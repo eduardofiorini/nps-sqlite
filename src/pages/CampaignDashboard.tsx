@@ -711,7 +711,7 @@ const TvDashboard = () => {
           <CardHeader title="Ações Rápidas" />
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link to={`/dashboard/campaigns/${id}/form`}>
+              <Link to={`/user/campaigns/${id}/form`}>
                 <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
                   <div className="flex items-center">
                     <Edit size={20} className="text-[#073143] dark:text-blue-400 mr-3" />
@@ -723,7 +723,7 @@ const TvDashboard = () => {
                 </div>
               </Link>
 
-              <Link to={`/dashboard/campaigns/${id}/share`}>
+              <Link to={`/user/campaigns/${id}/share`}>
                 <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
                   <div className="flex items-center">
                     <Share2 size={20} className="text-[#073143] dark:text-blue-400 mr-3" />
