@@ -122,7 +122,7 @@ function App() {
                   {/* Public survey route - moved outside protected routes */}
                   <Route path="/survey/:id" element={<Survey />} />
                   
-                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                  <Route path="*" element={<Navigate to="/dashboard/campaigns" />} />
                 </Routes>
               </AppInitializer>
             </ConfigProvider>
