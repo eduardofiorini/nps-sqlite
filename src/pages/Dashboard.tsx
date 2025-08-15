@@ -104,6 +104,7 @@ const Dashboard: React.FC = () => {
             {t('common.refresh')}
           </Button>
           <Link to="/campaigns/new">
+          <Link to="/dashboard/campaigns/new">
             <Button variant="primary" icon={<Plus size={16} />}>
               {t('campaigns.newCampaign')}
             </Button>
@@ -143,7 +144,7 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             {t('campaigns.noCampaignsDesc')}
           </p>
-          <Link to="/campaigns/new">
+          <Link to="/dashboard/campaigns/new">
             <Button variant="primary" icon={<Plus size={16} />}>
               {t('campaigns.createCampaign')}
             </Button>

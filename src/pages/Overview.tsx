@@ -177,6 +177,7 @@ const Overview: React.FC = () => {
           </p>
         </div>
         <Link to="/campaigns/new">
+        <Link to="/dashboard/campaigns/new">
           <Button variant="primary" icon={<Plus size={16} />}>
             {t('dashboard.newCampaign')}
           </Button>
@@ -351,7 +352,8 @@ const Overview: React.FC = () => {
             title={t('overview.activeCampaignsTitle')} 
             action={
               <Link to="/">
-                <Button variant="outline\" size="sm\" icon={<ArrowRight size={16} />}>
+              <Link to="/dashboard/campaigns">
+                <Button variant="outline" size="sm" icon={<ArrowRight size={16} />}>
                   {t('overview.viewAll')}
                 </Button>
               </Link>
@@ -368,6 +370,7 @@ const Overview: React.FC = () => {
                   {t('overview.noCampaignsDesc')}
                 </p>
                 <Link to="/campaigns/new">
+                <Link to="/dashboard/campaigns/new">
                   <Button variant="outline" size="sm" icon={<ArrowRight size={16} />} className="text-gray-700 dark:text-gray-300">
                     {t('overview.createFirstCampaign')}
                   </Button>
@@ -415,6 +418,7 @@ const Overview: React.FC = () => {
                         {stat.campaign.active ? t('overview.active') : t('overview.inactive')}
                       </Badge>
                       <Link to={`/campaigns/${stat.campaign.id}`}>
+                      <Link to={`/dashboard/campaigns/${stat.campaign.id}`}>
                         <Button variant="outline" size="sm" icon={<Eye size={14} />}>
                           {t('overview.view')}
                         </Button>
@@ -425,6 +429,7 @@ const Overview: React.FC = () => {
                 
                 {campaignStats.length > 5 && (
                   <div className="text-center pt-4">
+                    <Link to="/dashboard/campaigns">
                     <Link to="/dashboard/campaigns">
                       <Button variant="outline">
                         {t('overview.viewAllCampaigns')} {campaignStats.length} {t('overview.campaignsText')}

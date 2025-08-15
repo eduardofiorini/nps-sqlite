@@ -76,6 +76,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
               </div>
               <div className="flex space-x-1">
                 <Link to={`/campaigns/${campaign.id}/form`}>
+                <Link to={`/dashboard/campaigns/${campaign.id}/form`}>
                   <button
                     className="p-1 text-gray-400 hover:text-[#073143] dark:hover:text-white transition-colors"
                     title={t('campaigns.editCampaign')}
@@ -129,7 +130,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-3 mt-auto">
-          <Link to={`/campaigns/${campaign.id}`} className="w-full">
+          <Link to={`/dashboard/campaigns/${campaign.id}`} className="w-full">
             <Button variant="primary" size="sm" icon={<BarChart3 size={14} />} fullWidth>
               {t('campaign.dashboard')}
             </Button>

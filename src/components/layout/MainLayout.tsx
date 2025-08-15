@@ -57,7 +57,7 @@ const MainLayout: React.FC = () => {
       icon: <LayoutGrid size={20} /> 
     },
     { 
-      path: '/dashboard/campaigns', 
+      path: '/dashboard/campaigns',
       label: language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns', 
       icon: <TrendingUp size={20} /> 
     },
@@ -90,13 +90,13 @@ const MainLayout: React.FC = () => {
       return location.pathname === '/dashboard' || location.pathname === '/overview';
     }
     if (path === '/dashboard/campaigns') {
-      return location.pathname === '/dashboard/campaigns' || location.pathname.startsWith('/dashboard/campaigns');
+      return location.pathname === '/dashboard/campaigns' || location.pathname.startsWith('/dashboard/campaigns/');
     }
     if (path === '/dashboard/reports') {
-      return location.pathname === '/dashboard/reports' || location.pathname.startsWith('/dashboard/reports');
+      return location.pathname === '/dashboard/reports' || location.pathname.startsWith('/dashboard/reports/');
     }
     if (path === '/dashboard/contacts') {
-      return location.pathname === '/dashboard/contacts' || location.pathname.startsWith('/dashboard/contacts');
+      return location.pathname === '/dashboard/contacts' || location.pathname.startsWith('/dashboard/contacts/');
     }
     return location.pathname === path;
   };

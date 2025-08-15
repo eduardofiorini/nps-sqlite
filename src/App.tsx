@@ -98,15 +98,14 @@ function App() {
                   >
                     <Route index element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
-                    <Route path="reports" element={<Reports />} />
-                    <Route path="contacts" element={<Contacts />} />
-                    <Route path="profile" element={<Profile />} />
-                    
                     <Route path="campaigns/new" element={<CampaignCreate />} />
                     <Route path="campaigns/:id" element={<CampaignDashboard />} />
                     <Route path="campaigns/:id/responses" element={<CampaignResponses />} />
                     <Route path="campaigns/:id/share" element={<CampaignShare />} />
                     <Route path="campaigns/:id/form" element={<CampaignForm />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="contacts" element={<Contacts />} />
+                    <Route path="profile" element={<Profile />} />
                     
                     <Route path="settings" element={<Settings />} />
                     <Route path="settings/sources" element={<EntityCrud entityType="sources" />} />
