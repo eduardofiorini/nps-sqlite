@@ -9,6 +9,7 @@ import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const LoginForm: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +24,13 @@ const LoginForm: React.FC = () => {
   const { themeColor } = useConfig();
   const navigate = useNavigate();
   
+  // Redirect if user is already logged in
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
