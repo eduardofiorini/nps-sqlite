@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { stripeProducts } from '../../stripe-config';
 import Button from '../ui/Button';
@@ -19,13 +19,34 @@ import { motion } from 'framer-motion';
 import TermsModal from './TermsModal';
 
 const RegisterForm: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  
+  // Map plan names to product IDs
+  const getPlanIdFromName = (planName: string): string => {
+    const planMap: Record<string, string> = {
+      'iniciante': 'prod_SepSP5opHKX1bn',
+      'profissional': 'prod_SepTpOOlWoAQVJ', 
+      'empresarial': 'prod_SepUQbVbq2G9Ww'
+    };
+    return planMap[planName.toLowerCase()] || 'prod_SepTpOOlWoAQVJ'; // Default to professional
+  };
+  
+  // Get initial plan from URL parameter
+  const getInitialPlan = (): string => {
+    const planParam = searchParams.get('plan');
+    if (planParam) {
+      return getPlanIdFromName(planParam);
+    }
+    return 'prod_SepTpOOlWoAQVJ'; // Default to professional plan
+  };
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
-  const [selectedPlan, setSelectedPlan] = useState('profissional');
+  const [selectedPlan, setSelectedPlan] = useState(getInitialPlan());
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
