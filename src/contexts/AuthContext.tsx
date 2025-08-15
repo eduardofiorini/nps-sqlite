@@ -10,7 +10,7 @@ interface AuthContextProps {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   loading: boolean;
 }
@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextProps>({
   user: null,
   isAuthenticated: false,
   login: () => Promise.resolve({ success: false }),
-  register: () => Promise.resolve(false),
+  register: () => Promise.resolve({ success: false }),
   logout: () => {},
   loading: true,
 });
@@ -219,14 +219,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (email: string, password: string, name: string): Promise<{ success: boolean; message?: string }> => {
     try {
       // Check if Supabase is configured first
       if (!isSupabaseConfigured()) {
         // Demo mode - create mock user if credentials provided
         if (!email || !password || !name) {
           console.error('Registration error: Email and password are required');
-          return false;
+          return { success: false, message: 'Email, senha e nome são obrigatórios' };
         }
         
         // Create a mock user for demo purposes
@@ -241,7 +241,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Store mock user in localStorage
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
         
-        return true;
+        return { success: true };
       }
       
       // Only attempt Supabase registration if properly configured
@@ -268,10 +268,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Store mock user in localStorage
             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
             
-            return true;
+            return { success: true, message: 'Conta criada com sucesso (modo demo)' };
           }
         }
         
+        return { success: false, message: error.message };
       }
 
       if (data.user) {
@@ -283,10 +284,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
         }
         
-        return true;
+        return { success: true };
       }
 
-      return false;
+      return { success: false, message: 'Falha no registro. Tente novamente.' };
     } catch (error) {
       console.error('Registration error:', error);
       
@@ -303,10 +304,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Store mock user in localStorage
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
         
-        return true;
+        return { success: true };
       }
       
-      return false;
+      return { success: false, message: 'Erro de conexão. Tente novamente.' };
     }
   };
   

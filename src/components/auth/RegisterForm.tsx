@@ -114,12 +114,12 @@ const RegisterForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const success = await register(formData.email, formData.password, formData.name);
+      const result = await register(formData.email, formData.password, formData.name);
       
-      if (success) {
+      if (result.success) {
         navigate('/');
       } else {
-        setError('Falha no registro. Verifique os dados e tente novamente.');
+        setError(result.message || 'Falha no registro. Verifique os dados e tente novamente.');
       }
     } catch (err) {
       console.error('Registration error:', err);
