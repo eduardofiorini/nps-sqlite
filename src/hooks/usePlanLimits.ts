@@ -40,19 +40,19 @@ const getPlanLimits = (priceId: string | null): PlanLimits => {
   }
 
   // Map plan features to limits
-  if (product.name.includes('iniciante')) {
+  if (product.name.includes('Iniciante')) {
     return {
       campaigns: 5,
       responsesPerMonth: 500,
       users: 1
     };
-  } else if (product.name.includes('profissional')) {
+  } else if (product.name.includes('Profissional')) {
     return {
       campaigns: 'unlimited',
       responsesPerMonth: 2500,
       users: 1
     };
-  } else if (product.name.includes('empresarial')) {
+  } else if (product.name.includes('Empresarial')) {
     return {
       campaigns: 'unlimited',
       responsesPerMonth: 'unlimited',
