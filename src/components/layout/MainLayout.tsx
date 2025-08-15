@@ -69,10 +69,10 @@ const MainLayout: React.FC = () => {
   ];
 
   const settingsItems = [
-    { path: '/settings', label: t('nav.settings'), icon: <BarChart size={20} /> },
-    { path: '/settings/sources', label: t('settings.sources'), icon: <BarChart size={18} /> },
-    { path: '/settings/situations', label: t('settings.situations'), icon: <BarChart size={18} /> },
-    { path: '/settings/groups', label: t('settings.groups'), icon: <BarChart size={18} /> },
+    { path: '/settings', label: t('nav.settings'), icon: <Settings size={20} /> },
+    { path: '/settings/sources', label: t('settings.sources'), icon: <Globe size={18} /> },
+    { path: '/settings/situations', label: t('settings.situations'), icon: <Tag size={18} /> },
+    { path: '/settings/groups', label: t('settings.groups'), icon: <Users size={18} /> },
   ];
 
   const isActive = (path: string) => {
