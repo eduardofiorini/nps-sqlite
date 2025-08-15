@@ -789,11 +789,11 @@ const Profile: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.status')}:</span>
-                  <span className="text-sm font-medium text-green-600 dark:text-green-400">{t('profile.active')}</span>
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">Ativo</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.plan')}:</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('profile.professional')}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Profissional</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.lastUpdate')}:</span>
@@ -836,7 +836,7 @@ const Profile: React.FC = () => {
                   </label>
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {isDark ? `🌙 ${t('profile.darkMode')}` : `☀️ ${t('profile.lightMode')}`}
+                      {isDark ? t('profile.darkMode') : t('profile.lightMode')}
                     </span>
                     {isEditing && (
                       <Button
