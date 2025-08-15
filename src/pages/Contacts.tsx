@@ -40,8 +40,10 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Contacts: React.FC = () => {
+  const { t } = useLanguage();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -459,10 +461,10 @@ const Contacts: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
             <Users className="mr-3" size={32} />
-            Contatos
+            {t('contacts.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Gerencie seus contatos e organize por grupos
+            {t('contacts.subtitle')}
           </p>
         </div>
         <div className="flex space-x-3">
@@ -471,21 +473,21 @@ const Contacts: React.FC = () => {
             icon={<Upload size={16} />}
             onClick={() => setImportModalOpen(true)}
           >
-            Importar Excel
+            {t('contacts.importExcel')}
           </Button>
           <Button
             variant="outline"
             icon={<Download size={16} />}
             onClick={exportContacts}
           >
-            Exportar
+            {t('contacts.export')}
           </Button>
           <Button
             variant="primary"
             icon={<Plus size={16} />}
             onClick={handleOpenModal}
           >
-            Novo Contato
+            {t('contacts.newContact')}
           </Button>
         </div>
       </div>
@@ -500,7 +502,7 @@ const Contacts: React.FC = () => {
                 <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Buscar por nome, email, telefone ou empresa..."
+                  placeholder={t('contacts.search')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -511,7 +513,7 @@ const Contacts: React.FC = () => {
                 icon={showFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 onClick={() => setShowFilters(!showFilters)}
               >
-                Filtros
+                {t('contacts.filters')}
               </Button>
             </div>
 
@@ -528,14 +530,14 @@ const Contacts: React.FC = () => {
                     {/* Group Filter */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Filtrar por Grupo
+                        {t('contacts.filterByGroup')}
                       </label>
                       <select
                         value={selectedGroup}
                         onChange={(e) => setSelectedGroup(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       >
-                        <option value="all">Todos os grupos</option>
+                        <option value="all">{t('contacts.allGroups')}</option>
                         {groups.map(group => (
                           <option key={group.id} value={group.id}>
                             {group.name}
@@ -547,7 +549,7 @@ const Contacts: React.FC = () => {
                     {/* Tags Filter */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Filtrar por Tags
+                        {t('contacts.filterByTags')}
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {allTags.map(tag => (
@@ -587,7 +589,7 @@ const Contacts: React.FC = () => {
               {filteredContacts.length}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {filteredContacts.length !== contacts.length ? 'Contatos Filtrados' : 'Total de Contatos'}
+              {filteredContacts.length !== contacts.length ? t('contacts.filteredContacts') : t('contacts.totalContacts')}
             </div>
           </CardContent>
         </Card>
@@ -598,7 +600,7 @@ const Contacts: React.FC = () => {
               {groups.length}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Grupos Ativos
+              {t('contacts.activeGroups')}
             </div>
           </CardContent>
         </Card>
@@ -609,7 +611,7 @@ const Contacts: React.FC = () => {
               {allTags.length}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Tags Únicas
+              {t('contacts.uniqueTags')}
             </div>
           </CardContent>
         </Card>
@@ -620,7 +622,7 @@ const Contacts: React.FC = () => {
               {contacts.filter(c => c.company).length}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Com Empresa
+              {t('contacts.withCompany')}
             </div>
           </CardContent>
         </Card>
@@ -630,7 +632,7 @@ const Contacts: React.FC = () => {
       {totalPages > 1 && (
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-700 dark:text-gray-300">
-            Mostrando {indexOfFirstContact + 1} a {Math.min(indexOfLastContact, filteredContacts.length)} de {filteredContacts.length} contatos
+            {t('contacts.showing')} {indexOfFirstContact + 1} {t('contacts.to')} {Math.min(indexOfLastContact, filteredContacts.length)} {t('contacts.of')} {filteredContacts.length} {t('contacts.contactsText')}
           </div>
           
           <div className="flex items-center space-x-2">
@@ -641,7 +643,7 @@ const Contacts: React.FC = () => {
               disabled={currentPage === 1}
               icon={<ChevronLeft size={16} />}
             >
-              Anterior
+              {t('contacts.previous')}
             </Button>
             
             <div className="flex items-center space-x-1">
@@ -681,7 +683,7 @@ const Contacts: React.FC = () => {
               disabled={currentPage === totalPages}
               icon={<ChevronRight size={16} />}
             >
-              Próxima
+              {t('contacts.next')}
             </Button>
           </div>
         </div>
@@ -690,7 +692,7 @@ const Contacts: React.FC = () => {
       {/* Contacts Grid */}
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader 
-          title={`Contatos (${filteredContacts.length})`}
+          title={`${t('contacts.title')} (${filteredContacts.length})`}
         />
         <CardContent>
           {currentContacts.length === 0 ? (
@@ -699,17 +701,14 @@ const Contacts: React.FC = () => {
                 <Users size={24} className="text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                {contacts.length === 0 ? 'Nenhum contato ainda' : 'Nenhum contato encontrado'}
+                {contacts.length === 0 ? t('contacts.noContacts') : t('contacts.noContactsFound')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {contacts.length === 0 
-                  ? 'Adicione seu primeiro contato para começar a organizar sua rede.'
-                  : 'Tente ajustar os filtros para encontrar os contatos que procura.'
-                }
+                {contacts.length === 0 ? t('contacts.noContactsDesc') : t('contacts.noContactsFoundDesc')}
               </p>
               {contacts.length === 0 && (
                 <Button variant="primary" icon={<Plus size={16} />} onClick={handleOpenModal}>
-                  Adicionar Primeiro Contato
+                  {t('contacts.addFirstContact')}
                 </Button>
               )}
             </div>
@@ -825,7 +824,7 @@ const Contacts: React.FC = () => {
 
                   {/* Footer */}
                   <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-400">
-                    Criado em {new Date(contact.createdAt).toLocaleDateString('pt-BR')}
+                    {t('contacts.createdOn')} {new Date(contact.createdAt).toLocaleDateString('pt-BR')}
                   </div>
                 </motion.div>
               ))}
@@ -838,15 +837,15 @@ const Contacts: React.FC = () => {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={`${isEditing ? 'Editar' : 'Novo'} Contato`}
+        title={isEditing ? t('contacts.editContact') : t('contacts.newContactTitle')}
         size="lg"
         footer={
           <div className="flex justify-end space-x-3">
             <Button variant="outline" onClick={() => setModalOpen(false)}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" onClick={handleSave}>
-              Salvar
+              {t('common.save')}
             </Button>
           </div>
         }
@@ -856,7 +855,7 @@ const Contacts: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
               <Input
-                label="Nome *"
+                label={`${t('contacts.name')} *`}
                 value={currentContact.name || ''}
                 onChange={(e) => setCurrentContact({ ...currentContact, name: e.target.value })}
                 fullWidth
@@ -870,7 +869,7 @@ const Contacts: React.FC = () => {
 
             <div className="relative">
               <Input
-                label="Email *"
+                label={`${t('contacts.email')} *`}
                 type="email"
                 value={currentContact.email || ''}
                 onChange={(e) => setCurrentContact({ ...currentContact, email: e.target.value })}
@@ -885,7 +884,7 @@ const Contacts: React.FC = () => {
 
             <div className="relative">
               <Input
-                label="Telefone *"
+                label={`${t('contacts.phone')} *`}
                 value={currentContact.phone || ''}
                 onChange={(e) => setCurrentContact({ ...currentContact, phone: e.target.value })}
                 placeholder="(11) 99999-9999"
@@ -900,7 +899,7 @@ const Contacts: React.FC = () => {
 
             <div className="relative">
               <Input
-                label="Empresa"
+                label={t('contacts.company')}
                 value={currentContact.company || ''}
                 onChange={(e) => setCurrentContact({ ...currentContact, company: e.target.value })}
                 fullWidth
@@ -913,7 +912,7 @@ const Contacts: React.FC = () => {
 
             <div className="relative md:col-span-2">
               <Input
-                label="Cargo"
+                label={t('contacts.position')}
                 value={currentContact.position || ''}
                 onChange={(e) => setCurrentContact({ ...currentContact, position: e.target.value })}
                 fullWidth
@@ -928,7 +927,7 @@ const Contacts: React.FC = () => {
           {/* Groups */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Grupos
+              {t('contacts.groups')}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {groups.map(group => (
@@ -948,7 +947,7 @@ const Contacts: React.FC = () => {
           {/* Tags */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Tags
+              {t('contacts.tags')}
             </label>
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
@@ -971,7 +970,7 @@ const Contacts: React.FC = () => {
               <div className="flex space-x-2">
                 <input
                   type="text"
-                  placeholder="Adicionar tag..."
+                  placeholder={t('contacts.addTag')}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
@@ -992,7 +991,7 @@ const Contacts: React.FC = () => {
                     }
                   }}
                 >
-                  Adicionar
+                  {t('contacts.add')}
                 </Button>
               </div>
             </div>
@@ -1001,13 +1000,13 @@ const Contacts: React.FC = () => {
           {/* Notes */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Notas
+              {t('contacts.notes')}
             </label>
             <textarea
               value={currentContact.notes || ''}
               onChange={(e) => setCurrentContact({ ...currentContact, notes: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00ac75] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Adicione notas sobre este contato..."
+              placeholder={t('contacts.addNotesPlaceholder')}
               rows={4}
             />
           </div>
@@ -1018,7 +1017,7 @@ const Contacts: React.FC = () => {
       <Modal
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        title="Importar Contatos do Excel"
+        title={t('contacts.importContacts')}
         size="lg"
         footer={
           <div className="flex justify-between">
@@ -1027,11 +1026,11 @@ const Contacts: React.FC = () => {
               onClick={downloadTemplate}
               icon={<FileSpreadsheet size={16} />}
             >
-              Baixar Template
+              {t('contacts.downloadTemplate')}
             </Button>
             <div className="flex space-x-3">
               <Button variant="outline" onClick={() => setImportModalOpen(false)}>
-                Cancelar
+                {t('common.cancel')}
               </Button>
               {importFile && importStatus === 'idle' && (
                 <Button 
@@ -1040,7 +1039,7 @@ const Contacts: React.FC = () => {
                   isLoading={isImporting}
                   icon={<Upload size={16} />}
                 >
-                  Importar Contatos
+                  {t('contacts.importContactsButton')}
                 </Button>
               )}
             </div>
@@ -1051,21 +1050,21 @@ const Contacts: React.FC = () => {
           {/* Instructions */}
           <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
             <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
-              Instruções para Importação
+              {t('contacts.importInstructions')}
             </h4>
             <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-              <li>• O arquivo deve estar no formato CSV (separado por vírgulas)</li>
-              <li>• Colunas aceitas: Nome, Email, Telefone, Empresa, Cargo, Tags, Notas</li>
-              <li>• Nome, Email e Telefone são obrigatórios</li>
-              <li>• Tags devem ser separadas por ponto e vírgula (;)</li>
-              <li>• Baixe o template para ver o formato correto</li>
+              <li>• {t('contacts.csvFormat')}</li>
+              <li>• {t('contacts.acceptedColumns')}</li>
+              <li>• {t('contacts.requiredFields')}</li>
+              <li>• {t('contacts.tagsSeparator')}</li>
+              <li>• {t('contacts.downloadTemplateDesc')}</li>
             </ul>
           </div>
 
           {/* File Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Selecionar Arquivo CSV
+              {t('contacts.selectCsvFile')}
             </label>
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
               <input
@@ -1078,11 +1077,11 @@ const Contacts: React.FC = () => {
               <label htmlFor="file-upload" className="cursor-pointer">
                 <FileSpreadsheet size={48} className="mx-auto text-gray-400 mb-4" />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Clique para selecionar um arquivo CSV ou arraste aqui
+                  {t('contacts.clickToSelect')}
                 </p>
                 {importFile && (
                   <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                    Arquivo selecionado: {importFile.name}
+                    {t('contacts.fileSelected')} {importFile.name}
                   </p>
                 )}
               </label>
@@ -1094,7 +1093,7 @@ const Contacts: React.FC = () => {
             <div className="flex items-center p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <AlertCircle size={20} className="text-red-600 dark:text-red-400 mr-3" />
               <div>
-                <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Erro na Importação</h4>
+                <h4 className="text-sm font-medium text-red-800 dark:text-red-200">{t('contacts.importError')}</h4>
                 <p className="text-sm text-red-700 dark:text-red-300">{importMessage}</p>
               </div>
             </div>
@@ -1104,7 +1103,7 @@ const Contacts: React.FC = () => {
             <div className="flex items-center p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <CheckCircle size={20} className="text-green-600 dark:text-green-400 mr-3" />
               <div>
-                <h4 className="text-sm font-medium text-green-800 dark:text-green-200">Importação Concluída</h4>
+                <h4 className="text-sm font-medium text-green-800 dark:text-green-200">{t('contacts.importCompleted')}</h4>
                 <p className="text-sm text-green-700 dark:text-green-300">{importMessage}</p>
               </div>
             </div>
@@ -1114,8 +1113,8 @@ const Contacts: React.FC = () => {
             <div className="flex items-center p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-600 mr-3"></div>
               <div>
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">Processando...</h4>
-                <p className="text-sm text-blue-700 dark:text-blue-300">Importando contatos, aguarde...</p>
+                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">{t('contacts.processing')}</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300">{t('contacts.importingContacts')}</p>
               </div>
             </div>
           )}
@@ -1124,7 +1123,7 @@ const Contacts: React.FC = () => {
           {importPreview.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Pré-visualização (primeiras 5 linhas)
+                {t('contacts.preview')}
               </h4>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
