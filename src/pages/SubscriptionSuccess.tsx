@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSubscription } from '../hooks/useSubscription';
 import { Card, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
+import Badge from '../components/ui/Badge';
 import { CheckCircle, ArrowRight, CreditCard, Calendar, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
