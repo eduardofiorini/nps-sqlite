@@ -16,7 +16,7 @@ import {
 const getCurrentUserId = async () => {
   try {
     if (!isSupabaseConfigured()) {
-      return 'demo-user';
+      return null;
     }
     
     const { data: { user } } = await supabase.auth.getUser();
@@ -24,7 +24,7 @@ const getCurrentUserId = async () => {
     return user.id;
   } catch (error) {
     console.error('Error getting current user:', error);
-    return 'demo-user';
+    return null;
   }
 };
 
@@ -53,21 +53,21 @@ export const getSources = async (): Promise<Source[]> => {
 
 // Demo data functions
 const getDemoSources = (): Source[] => [
-  { id: '1', name: 'Website', description: 'Website feedback', color: '#3B82F6', user_id: 'demo-user' },
-  { id: '2', name: 'Email', description: 'Email campaigns', color: '#10B981', user_id: 'demo-user' },
-  { id: '3', name: 'SMS', description: 'SMS surveys', color: '#8B5CF6', user_id: 'demo-user' }
+  { id: '1', name: 'Website', description: 'Website feedback', color: '#3B82F6', user_id: 'demo' },
+  { id: '2', name: 'Email', description: 'Email campaigns', color: '#10B981', user_id: 'demo' },
+  { id: '3', name: 'SMS', description: 'SMS surveys', color: '#8B5CF6', user_id: 'demo' }
 ];
 
 const getDemoSituations = (): Situation[] => [
-  { id: '1', name: 'New Purchase', description: 'After a new purchase', color: '#10B981', user_id: 'demo-user' },
-  { id: '2', name: 'Support Interaction', description: 'After customer support', color: '#3B82F6', user_id: 'demo-user' },
-  { id: '3', name: 'Renewal', description: 'After subscription renewal', color: '#8B5CF6', user_id: 'demo-user' }
+  { id: '1', name: 'New Purchase', description: 'After a new purchase', color: '#10B981', user_id: 'demo' },
+  { id: '2', name: 'Support Interaction', description: 'After customer support', color: '#3B82F6', user_id: 'demo' },
+  { id: '3', name: 'Renewal', description: 'After subscription renewal', color: '#8B5CF6', user_id: 'demo' }
 ];
 
 const getDemoGroups = (): Group[] => [
-  { id: '1', name: 'Premium Customers', description: 'High-value customers', user_id: 'demo-user' },
-  { id: '2', name: 'New Users', description: 'Users who joined in the last 30 days', user_id: 'demo-user' },
-  { id: '3', name: 'Enterprise', description: 'Enterprise customers', user_id: 'demo-user' }
+  { id: '1', name: 'Premium Customers', description: 'High-value customers', user_id: 'demo' },
+  { id: '2', name: 'New Users', description: 'Users who joined in the last 30 days', user_id: 'demo' },
+  { id: '3', name: 'Enterprise', description: 'Enterprise customers', user_id: 'demo' }
 ];
 
 export const saveSource = async (source: Omit<Source, 'id'> & { id?: string }): Promise<Source> => {
@@ -78,7 +78,7 @@ export const saveSource = async (source: Omit<Source, 'id'> & { id?: string }): 
     return {
       ...source,
       id: source.id || `demo-${Date.now()}`,
-      user_id: 'demo-user'
+      user_id: 'demo'
     };
   }
   
@@ -143,7 +143,7 @@ export const saveSituation = async (situation: Omit<Situation, 'id'> & { id?: st
     return {
       ...situation,
       id: situation.id || `demo-${Date.now()}`,
-      user_id: 'demo-user'
+      user_id: 'demo'
     };
   }
   
@@ -208,7 +208,7 @@ export const saveGroup = async (group: Omit<Group, 'id'> & { id?: string }): Pro
     return {
       ...group,
       id: group.id || `demo-${Date.now()}`,
-      user_id: 'demo-user'
+      user_id: 'demo'
     };
   }
   
@@ -797,7 +797,7 @@ export const saveUserProfile = async (profile: UserProfile): Promise<UserProfile
 export const getAppConfig = async (): Promise<AppConfig> => {
   const userId = await getCurrentUserId();
   
-  if (!userId) {
+  if (!userId || !isSupabaseConfigured()) {
     // Return default config when user is not authenticated
     return {
       themeColor: '#00ac75',
@@ -925,6 +925,11 @@ export const getAppConfig = async (): Promise<AppConfig> => {
 
 export const saveAppConfig = async (config: AppConfig): Promise<AppConfig> => {
   const userId = await getCurrentUserId();
+  
+  if (!userId || !isSupabaseConfigured()) {
+    // Return the config as-is for demo mode
+    return config;
+  }
   
   const configData = {
     theme_color: config.themeColor,
