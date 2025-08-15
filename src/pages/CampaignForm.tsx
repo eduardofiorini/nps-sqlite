@@ -174,7 +174,7 @@ const CampaignForm: React.FC = () => {
   return (
     <div>
       <div className="mb-6">
-        <Link to={`/campaigns/${id}`}>
+        <Link to={`/dashboard/campaigns/${id}`}>
           <Button variant="outline" size="sm" icon={<ChevronLeft size={16} />}>
             Voltar à Campanha
           </Button>
