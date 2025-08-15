@@ -32,6 +32,8 @@ import Button from '../ui/Button';
 import UnifiedBanner from '../ui/UnifiedBanner';
 import UsageBanner from '../ui/UsageBanner';
 import { useSubscription } from '../../hooks/useSubscription';
+import { getUserProfile } from '../../utils/supabaseStorage';
+import type { UserProfile } from '../../types';
 
 const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -45,6 +47,23 @@ const MainLayout: React.FC = () => {
   const [isSettingsExpanded, setIsSettingsExpanded] = React.useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = React.useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
+
+  // Load user profile to get avatar
+  React.useEffect(() => {
+    const loadUserProfile = async () => {
+      if (user) {
+        try {
+          const profile = await getUserProfile();
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+        }
+      }
+    };
+    
+    loadUserProfile();
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -183,9 +202,9 @@ const MainLayout: React.FC = () => {
                       className="w-8 h-8 rounded-full text-white flex items-center justify-center mr-3 text-sm font-medium overflow-hidden"
                       style={{ backgroundColor: themeColor }}
                     >
-                      {user.avatar ? (
+                      {userProfile?.avatar ? (
                         <img
-                          src={user.avatar}
+                          src={userProfile.avatar}
                           alt={user.name}
                           className="w-8 h-8 rounded-full object-cover"
                         />
@@ -215,9 +234,9 @@ const MainLayout: React.FC = () => {
                               className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-3 text-sm font-medium overflow-hidden"
                               style={{ backgroundColor: themeColor }}
                             >
-                              {user.avatar ? (
+                              {userProfile?.avatar ? (
                                 <img
-                                  src={user.avatar}
+                                  src={userProfile.avatar}
                                   alt={user.name}
                                   className="w-10 h-10 rounded-full object-cover"
                                 />
@@ -510,9 +529,9 @@ const MainLayout: React.FC = () => {
                         className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-3 text-sm font-medium overflow-hidden"
                         style={{ backgroundColor: themeColor }}
                       >
-                        {user.avatar ? (
+                        {userProfile?.avatar ? (
                           <img
-                            src={user.avatar}
+                            src={userProfile.avatar}
                             alt={user.name}
                             className="w-10 h-10 rounded-full object-cover"
                           />
