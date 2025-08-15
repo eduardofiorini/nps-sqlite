@@ -14,6 +14,9 @@ const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showResendConfirmation, setShowResendConfirmation] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   
   const { login } = useAuth();
   const { t, language } = useLanguage();
@@ -23,6 +26,8 @@ const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setShowResendConfirmation(false);
+    setResendMessage('');
     
     if (!email || !password) {
       setError('Por favor, preencha todos os campos');
@@ -35,8 +40,12 @@ const LoginForm: React.FC = () => {
       const result = await login(email, password);
       
       if (result.success) {
-        navigate('/dashboard');
+        navigate('/overview');
       } else {
+        // Check if it's an email confirmation error
+        if (result.message?.includes('confirmado') || result.message?.includes('confirmed')) {
+          setShowResendConfirmation(true);
+        }
         setError(result.message || 'Erro no login. Tente novamente.');
       }
     } catch (err) {
@@ -44,6 +53,38 @@ const LoginForm: React.FC = () => {
       console.error(err);
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      setResendMessage('Por favor, digite seu email primeiro');
+      return;
+    }
+    
+    setIsResending(true);
+    setResendMessage('');
+    
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      
+      if (error) {
+        setResendMessage('Erro ao reenviar email. Tente novamente.');
+      } else {
+        setResendMessage('Email de confirmação reenviado! Verifique sua caixa de entrada.');
+        setShowResendConfirmation(false);
+      }
+    } catch (err) {
+      setResendMessage('Erro ao reenviar email. Tente novamente.');
+    } finally {
+      setIsResending(false);
     }
   };
   
@@ -148,6 +189,39 @@ const LoginForm: React.FC = () => {
                   className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 rounded-lg text-sm"
                 >
                   {error}
+                  
+                  {/* Resend confirmation option */}
+                  {showResendConfirmation && (
+                    <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-700">
+                      <p className="text-sm text-red-700 dark:text-red-300 mb-2">
+                        Não recebeu o email de confirmação?
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResendConfirmation}
+                        isLoading={isResending}
+                        className="text-red-700 border-red-300 hover:bg-red-100 dark:text-red-300 dark:border-red-600 dark:hover:bg-red-900/30"
+                      >
+                        Reenviar Email de Confirmação
+                      </Button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+              
+              {/* Resend confirmation success message */}
+              {resendMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`p-4 border rounded-lg text-sm ${
+                    resendMessage.includes('reenviado')
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+                      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+                  }`}
+                >
+                  {resendMessage}
                 </motion.div>
               )}
               
