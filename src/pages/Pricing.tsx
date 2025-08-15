@@ -331,7 +331,7 @@ const Pricing: React.FC = () => {
                         }`}
                         icon={<ArrowRight size={16} />}
                       >
-                        {subscription?.status === 'active' ? 'Alterar Plano' : 'Iniciar Teste'}
+                        {subscription?.status === 'active' ? 'Alterar Plano' : 'Assinar Agora'}
                       </Button>
                     )}
                   </div>
