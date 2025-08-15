@@ -538,13 +538,11 @@ const Pricing: React.FC = () => {
                     <span className="font-medium text-gray-900 dark:text-white">
                       {subscription.paymentMethodBrand?.toUpperCase()} •••• {subscription.paymentMethodLast4}
                     </span>
-                  Você perderá acesso aos recursos premium.
+                  </div>
                 )}
               </div>
             </div>
           )}
-            />
-          </div>
 
           <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
             <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
@@ -560,7 +558,7 @@ const Pricing: React.FC = () => {
         </div>
       </Modal>
     </div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-              <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
-                Seus dados serão preservados e você pode reativar a qualquer momento.
-              </p>
+  );
+};
+
+export default Pricing;
