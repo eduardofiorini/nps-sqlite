@@ -130,7 +130,7 @@ const MainLayout: React.FC = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               {/* Logo */}
-              <Link to="/overview" className="flex items-center">
+              <Link to="/dashboard/campaigns" className="flex items-center">
                 <div className="w-10 h-10 mr-3 flex items-center justify-center">
                   <img 
                     src="/icone.png" 

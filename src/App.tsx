@@ -155,7 +155,7 @@ const HomeRedirect: React.FC = () => {
     );
   }
 
-  return isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />;
+  return isAuthenticated ? <Navigate to="/dashboard/campaigns" /> : <Landing />;
 };
 
 export default App;
