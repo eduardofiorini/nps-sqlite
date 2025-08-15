@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSubscription } from '../hooks/useSubscription';
 import { Card, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { CheckCircle, ArrowRight, CreditCard, Calendar } from 'lucide-react';
+import { Badge } from '../components/ui/Badge';
+import { CheckCircle, ArrowRight, CreditCard, Calendar, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SubscriptionSuccess: React.FC = () => {
