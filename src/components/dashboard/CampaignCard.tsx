@@ -15,7 +15,7 @@ interface CampaignCardProps {
 }
 
 const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
