@@ -244,13 +244,6 @@ const Survey: React.FC = () => {
     try {
       const { webhookUrl, webhookHeaders, webhookPayload } = campaign.automation;
       
-      // Validate webhook URL format
-      try {
-        new URL(webhookUrl);
-      } catch (urlError) {
-        throw new Error('URL do webhook inválida');
-      }
-
       // Prepare payload
       let payload = {
         campaign_id: responseData.campaignId,
@@ -282,45 +275,33 @@ const Survey: React.FC = () => {
         }
       }
 
-      // Prepare headers
-      const headers = {
+      // Use Supabase Edge Function as proxy to avoid CORS issues
+      const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/webhook-proxy`;
+      const proxyHeaders = {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
-        ...webhookHeaders
       };
 
-      // Send webhook with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
       try {
-        const response = await fetch(webhookUrl, {
+        const response = await fetch(proxyUrl, {
           method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-          mode: 'cors' // Explicitly set CORS mode
+          headers: proxyHeaders,
+          body: JSON.stringify({
+            url: webhookUrl,
+            headers: webhookHeaders,
+            payload: payload
+          })
         });
 
-        clearTimeout(timeoutId);
+        const result = await response.json();
 
-        if (!response.ok) {
-          throw new Error(`Webhook falhou com status: ${response.status} ${response.statusText}`);
+        if (!result.success) {
+          throw new Error(`Webhook falhou: ${result.error || 'Erro desconhecido'}`);
         }
 
         console.log('Webhook sent successfully');
         setAutomationError(''); // Clear any previous errors on success
       } catch (fetchError) {
-        clearTimeout(timeoutId);
-        
-        if (fetchError.name === 'AbortError') {
-          throw new Error('Timeout: O webhook demorou muito para responder (15s)');
-        }
-        
-        // Handle different types of fetch errors
-        if (fetchError.message.includes('Failed to fetch') || fetchError.name === 'TypeError') {
-          throw new Error('CORS_ERROR');
-        }
-        
         throw fetchError;
       }
 
@@ -334,17 +315,9 @@ const Survey: React.FC = () => {
       if (error instanceof Error) {
         if (error.message.includes('URL do webhook inválida')) {
           errorMessage = 'URL do webhook inválida. Verifique a configuração da campanha.';
-        } else if (error.message.includes('Timeout')) {
-          errorMessage = 'Timeout: O webhook demorou muito para responder. A resposta foi salva.';
+        } else if (error.message.includes('timed out')) {
+          errorMessage = 'Timeout: O webhook demorou muito para responder (30s). A resposta foi salva.';
           showRetryOption = retryAttempt < 2;
-        } else if (error.message === 'CORS_ERROR') {
-          errorMessage = `Erro de CORS: O servidor webhook não permite requisições desta origem (${window.location.origin}). Para resolver este problema:
-
-• Configure o servidor webhook para incluir o header "Access-Control-Allow-Origin: ${window.location.origin}" ou "Access-Control-Allow-Origin: *"
-• Para requisições POST com JSON, o servidor também deve responder a requisições OPTIONS com os headers apropriados
-• Alternativamente, use um proxy no seu backend para contornar as restrições de CORS do navegador
-
-A resposta da pesquisa foi salva com sucesso.`;
         } else if (error.message.includes('Webhook falhou com status')) {
           errorMessage = `Erro do servidor webhook: ${error.message}. A resposta foi salva.`;
           showRetryOption = retryAttempt < 2;
