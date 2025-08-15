@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useConfig } from '../../contexts/ConfigContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { 
   Check, 
   Users, 
-  Zap, 
-  Shield, 
   ArrowRight,
   Mail,
   Lock,
@@ -27,6 +24,7 @@ const RegisterForm: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
+  const [selectedPlan, setSelectedPlan] = useState('profissional');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
@@ -35,8 +33,61 @@ const RegisterForm: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   const { register } = useAuth();
-  const { themeColor } = useConfig();
   const navigate = useNavigate();
+
+  const plans = [
+    {
+      id: 'iniciante',
+      name: 'Iniciante',
+      price: 49.00,
+      description: 'Perfeito para pequenas equipes começando com NPS',
+      icon: <Users size={24} className="text-white" />,
+      color: 'bg-green-500',
+      features: [
+        'Até 500 respostas/mês',
+        '2 campanhas ativas',
+        'Análises básicas',
+        'Suporte por email',
+        'Templates padrão'
+      ]
+    },
+    {
+      id: 'profissional',
+      name: 'Profissional',
+      price: 99.00,
+      description: 'Recursos avançados para empresas em crescimento',
+      icon: <BarChart3 size={24} className="text-white" />,
+      color: 'bg-[#00ac75]',
+      popular: true,
+      features: [
+        'Até 2.500 respostas/mês',
+        'Campanhas ilimitadas',
+        'Análises e relatórios avançados',
+        'Suporte prioritário',
+        'Marca personalizada',
+        'Acesso à API',
+        'Colaboração em equipe'
+      ]
+    },
+    {
+      id: 'empresarial',
+      name: 'Empresarial',
+      price: 249.00,
+      description: 'Solução completa para grandes organizações',
+      icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>,
+      color: 'bg-purple-500',
+      features: [
+        'Respostas ilimitadas',
+        'Campanhas ilimitadas',
+        'Insights avançados com IA',
+        'Gerente de conta dedicado',
+        'Solução white-label',
+        'Integração SSO',
+        'Integrações personalizadas',
+        'Garantia de SLA'
+      ]
+    }
+  ];
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -82,6 +133,9 @@ const RegisterForm: React.FC = () => {
     setAcceptedTerms(true);
     setShowTermsModal(false);
   };
+
+  const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -100,34 +154,113 @@ const RegisterForm: React.FC = () => {
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-bold dark:text-white" style={{ color: themeColor }}>Meu NPS</h1>
+              <h1 className="text-2xl font-bold text-[#00ac75] dark:text-white">Meu NPS</h1>
               <span className="text-sm text-gray-500 dark:text-gray-400">Plataforma de Gestão de NPS</span>
             </div>
           </div>
           
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Crie Sua Conta
+            Inicie Seu Teste Gratuito
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Comece a coletar feedback valioso dos clientes hoje mesmo com nossa plataforma completa de NPS.
+            Escolha o plano perfeito para seu negócio e comece a coletar feedback valioso dos clientes hoje mesmo.
           </p>
         </motion.div>
 
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Pricing Plans */}
+          <div className="lg:col-span-2">
+            {/* Free Trial Banner */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-center mb-8"
+            >
+              <div className="inline-flex items-center px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-lg font-medium">
+                <span className="mr-2">🎉</span>
+                7 dias grátis em todos os planos
+              </div>
+            </motion.div>
 
-        {/* Registration Form */}
-        <div className="max-w-md mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-              <div className="mb-6 text-center">
+            <div className="grid md:grid-cols-3 gap-6">
+              {plans.map((plan, index) => (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + index * 0.1 }}
+                  className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                    selectedPlan === plan.id
+                      ? 'border-[#00ac75] bg-[#00ac75]/5 dark:bg-[#00ac75]/10'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                  }`}
+                  onClick={() => setSelectedPlan(plan.id)}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="px-3 py-1 text-xs font-medium text-white bg-[#00ac75] rounded-full">
+                        ⭐ Mais Popular
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="text-center">
+                    <div className={`w-12 h-12 ${plan.color} rounded-xl flex items-center justify-center mx-auto mb-4`}>
+                      {plan.icon}
+                    </div>
+                    
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      {plan.name}
+                    </h4>
+                    
+                    <div className="mb-4">
+                      <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                        R${plan.price.toFixed(0)}
+                      </span>
+                      <span className="text-gray-600 dark:text-gray-400">/mês</span>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                      {plan.description}
+                    </p>
+                    
+                    <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 text-left">
+                      {plan.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-center">
+                          <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {selectedPlan === plan.id && (
+                    <div className="absolute top-4 right-4">
+                      <div className="w-6 h-6 bg-[#00ac75] rounded-full flex items-center justify-center">
+                        <Check size={14} className="text-white" />
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Registration Form */}
+          <div className="lg:col-span-1">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 sticky top-8"
+            >
+              <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   Crie Sua Conta
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Comece a usar nossa plataforma de NPS hoje mesmo
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  Inicie seu teste gratuito de 14 dias, sem cartão de crédito
                 </p>
               </div>
 
@@ -220,40 +353,53 @@ const RegisterForm: React.FC = () => {
                   </button>
                 </div>
 
+                {/* Selected Plan Display */}
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                        Plano Selecionado: {selectedPlanData?.name}
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        7 dias grátis, depois R${selectedPlanData?.price.toFixed(0)}/mês
+                      </p>
+                    </div>
+                    <div className="w-6 h-6 bg-[#00ac75] rounded-full flex items-center justify-center">
+                      <Check size={14} className="text-white" />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-start space-x-3">
                   <input
                     type="checkbox"
                     id="accept-terms"
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="w-4 h-4 border-gray-300 rounded mt-0.5"
-                    style={{ 
-                      accentColor: themeColor,
-                      '--tw-ring-color': themeColor
-                    } as React.CSSProperties}
+                    className="w-4 h-4 text-[#00ac75] border-gray-300 rounded mt-0.5 focus:ring-[#00ac75]"
                   />
                   <label htmlFor="accept-terms" className="text-sm text-gray-600 dark:text-gray-400">
                     Eu aceito os{' '}
                     <button
                       type="button"
                       onClick={() => setShowTermsModal(true)}
-                      className="underline hover:opacity-80"
-                      style={{ color: themeColor }}
+                      className="text-[#00ac75] underline hover:opacity-80"
                     >
                       Termos de Uso e Política de Privacidade
                     </button>
                   </label>
                 </div>
+
                 <Button
                   type="submit"
                   variant="primary"
                   fullWidth
                   isLoading={isLoading}
                   disabled={!acceptedTerms}
-                  className="h-12 text-base font-medium"
+                  className="h-12 text-base font-medium bg-[#00ac75] hover:bg-[#009966] focus:ring-[#00ac75]"
                   icon={<ArrowRight size={18} />}
                 >
-                  Criar Conta
+                  → Iniciar Teste Gratuito de 7 dias
                 </Button>
 
                 <div className="text-center">
@@ -262,8 +408,7 @@ const RegisterForm: React.FC = () => {
                   </span>
                   <Link 
                     to="/login" 
-                    className="text-sm font-medium hover:opacity-80"
-                    style={{ color: themeColor }}
+                    className="text-sm font-medium text-[#00ac75] hover:opacity-80"
                   >
                     Entrar
                   </Link>
@@ -276,208 +421,8 @@ const RegisterForm: React.FC = () => {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
-
-        {/* Features Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 mb-8"
-        >
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
-            Recursos da Plataforma
-          </h3>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div 
-                className="w-16 h-16 bg-gradient-to-r rounded-2xl flex items-center justify-center mx-auto mb-4"
-                style={{
-                  background: `linear-gradient(to right, #00ac75, color-mix(in srgb, #00ac75 80%, black 20%))`
-                }}
-              >
-                <BarChart3 size={32} className="text-white" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Análises em Tempo Real
-              </h4>
-              <p className="text-gray-600 dark:text-gray-400">
-                Obtenha insights instantâneos sobre a satisfação do cliente com dashboards ao vivo.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Users size={32} className="text-white" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Colaboração em Equipe
-              </h4>
-              <p className="text-gray-600 dark:text-gray-400">
-                Trabalhe junto com sua equipe para analisar feedback e melhorar a experiência do cliente.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield size={32} className="text-white" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Segurança Empresarial
-              </h4>
-              <p className="text-gray-600 dark:text-gray-400">
-                Seus dados estão protegidos com segurança de nível empresarial e conformidade com LGPD.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Pricing Plans Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700"
-        >
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Planos e Preços
-            </h3>
-            <div className="inline-flex items-center px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
-              <span className="mr-2">🎉</span>
-              7 dias grátis em todos os planos
-            </div>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Iniciante Plan */}
-            <div className="border border-gray-200 dark:border-gray-600 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
-              <div className="text-center">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Iniciante
-                </h4>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold text-gray-900 dark:text-white">R$ 49</span>
-                  <span className="text-gray-600 dark:text-gray-400">/mês</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Até 500 respostas/mês
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    3 campanhas ativas
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Relatórios básicos
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Suporte por email
-                  </li>
-                </ul>
-                <div className="text-xs text-green-600 dark:text-green-400 font-medium">
-                  Ideal para pequenos negócios
-                </div>
-              </div>
-            </div>
-
-            {/* Profissional Plan */}
-            <div className="border-2 rounded-xl p-6 hover:shadow-lg transition-all duration-200 relative" style={{ borderColor: themeColor }}>
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="px-3 py-1 text-xs font-medium text-white rounded-full" style={{ backgroundColor: themeColor }}>
-                  Mais Popular
-                </span>
-              </div>
-              <div className="text-center">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Profissional
-                </h4>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold text-gray-900 dark:text-white">R$ 99</span>
-                  <span className="text-gray-600 dark:text-gray-400">/mês</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Até 2.000 respostas/mês
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Campanhas ilimitadas
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Relatórios avançados
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Integrações API
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Suporte prioritário
-                  </li>
-                </ul>
-                <div className="text-xs font-medium" style={{ color: themeColor }}>
-                  Ideal para empresas em crescimento
-                </div>
-              </div>
-            </div>
-
-            {/* Empresarial Plan */}
-            <div className="border border-gray-200 dark:border-gray-600 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
-              <div className="text-center">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Empresarial
-                </h4>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold text-gray-900 dark:text-white">R$ 249</span>
-                  <span className="text-gray-600 dark:text-gray-400">/mês</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Respostas ilimitadas
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Campanhas ilimitadas
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Relatórios personalizados
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Múltiplos usuários
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    Suporte dedicado
-                  </li>
-                  <li className="flex items-center">
-                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
-                    White-label
-                  </li>
-                </ul>
-                <div className="text-xs text-purple-600 dark:text-purple-400 font-medium">
-                  Para grandes empresas
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center mt-8">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Todos os planos incluem 7 dias de teste gratuito. Cancele a qualquer momento.
-            </p>
-          </div>
-        </motion.div>
       </div>
       
       <TermsModal
