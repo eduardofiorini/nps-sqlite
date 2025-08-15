@@ -35,7 +35,7 @@ const LoginForm: React.FC = () => {
       const result = await login(email, password);
       
       if (result.success) {
-        navigate('/');
+        navigate('/overview');
       } else {
         setError(result.message || 'Erro no login. Tente novamente.');
       }
