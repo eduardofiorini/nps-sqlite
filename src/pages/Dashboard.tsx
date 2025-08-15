@@ -84,8 +84,6 @@ const Dashboard: React.FC = () => {
     show: { y: 0, opacity: 1 },
   };
 
-  const pageTitle = language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns';
-  const pageSubtitle = language === 'pt-BR' ? 'Monitore e gerencie suas campanhas NPS' : 'Monitor and manage your NPS campaigns';
   const pageTitle = t('campaigns.title');
   const pageSubtitle = t('campaigns.subtitle');
   
