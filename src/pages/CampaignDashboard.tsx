@@ -442,7 +442,7 @@ const TvDashboard = () => {
               Editar
             </Button>
           </Link>
-          <Link to={`/campaigns/${id}/share`}>
+          <Link to={`/dashboard/campaigns/${id}/share`}>
             <Button variant="primary" size="sm" icon={<Share2 size={16} />}>
               Compartilhar
             </Button>
