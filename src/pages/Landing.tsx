@@ -40,7 +40,17 @@ const Landing: React.FC = () => {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showLgpdModal, setShowLgpdModal] = useState(false);
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
   const { scrollY } = useScroll();
+
+  // Check if user has already accepted cookies
+  useEffect(() => {
+    const cookieConsent = localStorage.getItem('cookie-consent');
+    if (!cookieConsent) {
+      // Show banner after a short delay
+      setTimeout(() => setShowCookieBanner(true), 2000);
+    }
+  }, []);
 
   // Auto-rotate testimonials
   useEffect(() => {
@@ -49,6 +59,16 @@ const Landing: React.FC = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleAcceptCookies = () => {
+    localStorage.setItem('cookie-consent', 'accepted');
+    setShowCookieBanner(false);
+  };
+
+  const handleDeclineCookies = () => {
+    localStorage.setItem('cookie-consent', 'declined');
+    setShowCookieBanner(false);
+  };
 
   const features = [
     {
@@ -923,6 +943,70 @@ const Landing: React.FC = () => {
         onCloseTerms={() => setShowTermsModal(false)}
         onCloseLgpd={() => setShowLgpdModal(false)}
       />
+
+      {/* Cookie Consent Banner */}
+      <AnimatePresence>
+        {showCookieBanner && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-2xl"
+          >
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-start space-x-3 flex-1">
+                  <div className="w-6 h-6 bg-[#00ac75]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Shield size={14} className="text-[#00ac75]" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                      Utilizamos cookies para melhorar sua experiência
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      Usamos cookies essenciais para o funcionamento do site e cookies de análise para melhorar nossos serviços. 
+                      Você pode gerenciar suas preferências a qualquer momento.{' '}
+                      <button
+                        onClick={() => setShowPrivacyModal(true)}
+                        className="text-[#00ac75] hover:underline font-medium"
+                      >
+                        Saiba mais
+                      </button>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3 flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDeclineCookies}
+                    className="text-gray-600 border-gray-300 hover:bg-gray-50"
+                  >
+                    Apenas Essenciais
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleAcceptCookies}
+                    className="bg-[#00ac75] hover:bg-[#009966]"
+                  >
+                    Aceitar Todos
+                  </Button>
+                  <button
+                    onClick={() => setShowCookieBanner(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    title="Fechar"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
