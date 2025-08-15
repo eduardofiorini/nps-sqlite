@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
-import TrialBanner from '../ui/TrialBanner';
+import UnifiedBanner from '../ui/UnifiedBanner';
 import { useSubscription } from '../../hooks/useSubscription';
 
 const MainLayout: React.FC = () => {
@@ -549,7 +549,7 @@ const MainLayout: React.FC = () => {
         {/* Main content */}
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <TrialBanner />
+            <UnifiedBanner />
             <Outlet />
           </div>
         </main>
