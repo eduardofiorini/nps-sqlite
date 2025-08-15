@@ -93,10 +93,7 @@ export const useAdmin = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('admin_user_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_admin_users');
 
       if (error) {
         console.error('Error fetching admin users:', error);
@@ -116,10 +113,7 @@ export const useAdmin = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('admin_user_subscriptions_full')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_admin_subscriptions');
 
       if (error) {
         console.error('Error fetching admin subscriptions:', error);
