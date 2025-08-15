@@ -763,7 +763,7 @@ const CampaignForm: React.FC = () => {
                         </div>
                         {campaign.automation?.action === action.value && (
                           <div className="absolute top-2 right-2">
-                            <CheckCircle size={20} className="text-[#00ac75]" />
+                            <CheckCircle size={20} className="text-[#073143]" />
                           </div>
                         )}
                       </motion.div>
@@ -802,7 +802,7 @@ const CampaignForm: React.FC = () => {
                             // Invalid JSON, keep the text for editing
                           }
                         }}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#073143] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00ac75] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
                         rows={4}
                         placeholder='{"Content-Type": "application/json"}'
                       />
