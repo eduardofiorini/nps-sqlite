@@ -38,6 +38,7 @@ const Pricing: React.FC = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const [showComparison, setShowComparison] = useState(false);
 
   const isSupabaseConfigured = () => {
     return import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -172,45 +173,25 @@ const Pricing: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 mr-4 flex items-center justify-center">
-              <img 
-                src="/icone.png" 
-                alt="Meu NPS" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-3xl font-bold text-[#00ac75] dark:text-white">Meu NPS</h1>
-              <span className="text-sm text-gray-500 dark:text-gray-400">Plataforma de Gestão de NPS</span>
-            </div>
-          </div>
-          
-          <h2 className="text-5xl font-bold text-gray-900 dark:text-white mb-6">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Planos e Preços
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            Escolha o plano perfeito para transformar o feedback dos seus clientes em crescimento real para o seu negócio
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-6">
+            Escolha o plano ideal para sua empresa
           </p>
           
-          {/* Free Trial Banner */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full text-lg font-semibold mt-8 shadow-lg"
-          >
-            <Crown size={24} className="mr-3" />
-            🎉 7 dias grátis em todos os planos - Sem cartão de crédito
-          </motion.div>
+          <div className="inline-flex items-center px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
+            <Crown size={16} className="mr-2" />
+            7 dias grátis • Sem cartão de crédito
+          </div>
         </motion.div>
 
         {/* Current Subscription Info */}
@@ -218,9 +199,9 @@ const Pricing: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
+            className="mb-8"
           >
-            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+            <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row items-center justify-between">
                   <div className="flex items-center mb-4 md:mb-0">
@@ -231,7 +212,8 @@ const Pricing: React.FC = () => {
                       <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
                         Assinatura Atual: {subscription.planName}
                       </h3>
-                      <p className="text-blue-700 dark:text-blue-300 text-sm">
+                      <p className="text-blue-700 dark:text-blue-300 text-sm flex items-center">
+                        <Calendar size={14} className="mr-1" />
                         Próxima cobrança: {formatDate(subscription.currentPeriodEnd)}
                         {subscription.cancelAtPeriodEnd && (
                           <span className="ml-2 text-orange-600 dark:text-orange-400 font-medium">
@@ -246,7 +228,7 @@ const Pricing: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowCancelModal(true)}
-                      className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className="text-red-600 border-red-300 hover:bg-red-50"
                     >
                       Cancelar Assinatura
                     </Button>
@@ -258,7 +240,7 @@ const Pricing: React.FC = () => {
         )}
 
         {/* Pricing Cards */}
-        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+        <div className="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
           {stripeProducts.map((product, index) => (
             <motion.div
               key={product.id}
@@ -269,80 +251,71 @@ const Pricing: React.FC = () => {
             >
               {product.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-gradient-to-r from-orange-400 to-pink-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                    ⭐ MAIS POPULAR
+                  <div className="bg-[#00ac75] text-white px-4 py-1 rounded-full text-xs font-medium">
+                    Mais Popular
                   </div>
                 </div>
               )}
               
-              <Card className={`h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
+              <Card className={`h-full transition-all duration-200 hover:shadow-lg ${
                 product.popular 
-                  ? 'border-2 border-gradient-to-r from-orange-400 to-pink-500 shadow-xl scale-105' 
-                  : 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500'
+                  ? 'border-2 border-[#00ac75] shadow-md' 
+                  : 'border border-gray-200 dark:border-gray-700'
               } ${isCurrentPlan(product.priceId) ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}>
                 
                 {isCurrentPlan(product.priceId) && (
                   <div className="absolute top-4 right-4">
-                    <Badge variant="success" className="text-xs font-bold">
+                    <Badge variant="success" className="text-xs">
                       PLANO ATUAL
                     </Badge>
                   </div>
                 )}
 
-                <CardHeader className="text-center pb-2">
-                  <div className={`w-20 h-20 ${product.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>
+                <CardContent className="p-6 text-center">
+                  <div className={`w-16 h-16 ${product.color} rounded-xl flex items-center justify-center mx-auto mb-4`}>
                     {getProductIcon(product.name)}
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3"> 
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2"> 
                     {product.name.replace('Meu NPS - ', '')}
                   </h3>
                   
-                  <div className="mb-4">
+                  <div className="mb-6">
                     <div className="flex items-baseline justify-center">
-                      <span className="text-5xl font-bold text-gray-900 dark:text-white">
+                      <span className="text-3xl font-bold text-gray-900 dark:text-white">
                         R${product.price.toFixed(0)}
                       </span>
-                      <span className="text-xl text-gray-600 dark:text-gray-400 ml-2">/mês</span>
+                      <span className="text-lg text-gray-600 dark:text-gray-400 ml-1">/mês</span>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Cobrado mensalmente
-                    </p>
                   </div>
                   
-                  <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
                     {product.description}
                   </p>
-                </CardHeader>
-                
-                <CardContent className="flex-1 flex flex-col px-6 pb-8">
-                  <div className="mb-8">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">
-                      Recursos Inclusos:
-                    </h4>
-                    <ul className="space-y-3">
-                      {product.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-start">
-                          <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                            <Check size={12} className="text-green-600 dark:text-green-400" />
-                          </div>
-                          <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                            {feature}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                   
-                  <div className="mt-auto">
+                  <ul className="space-y-2 mb-8 text-left">
+                    {product.features.slice(0, 4).map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                        <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                    {product.features.length > 4 && (
+                      <li className="text-sm text-gray-500 dark:text-gray-400 text-center pt-2">
+                        +{product.features.length - 4} recursos adicionais
+                      </li>
+                    )}
+                  </ul>
+                  
+                  <div>
                     {isCurrentPlan(product.priceId) ? (
                       <Button
                         variant="outline"
                         fullWidth
                         disabled
-                        className="h-14 text-base font-semibold border-2"
+                        className="h-12 text-sm font-medium"
                       >
-                        <Crown size={18} className="mr-2" />
+                        <Crown size={16} className="mr-2" />
                         Seu Plano Atual
                       </Button>
                     ) : (
@@ -351,21 +324,15 @@ const Pricing: React.FC = () => {
                         fullWidth
                         onClick={() => handleSubscribe(product.priceId)}
                         isLoading={loadingPriceId === product.priceId}
-                        className={`h-14 text-base font-semibold transition-all duration-300 ${
+                        className={`h-12 text-sm font-medium ${
                           product.popular 
-                            ? 'bg-gradient-to-r from-[#00ac75] to-[#009966] hover:from-[#009966] hover:to-[#008855] shadow-lg hover:shadow-xl' 
-                            : 'border-2 hover:border-[#00ac75] hover:text-[#00ac75]'
+                            ? '' 
+                            : 'hover:border-[#00ac75] hover:text-[#00ac75]'
                         }`}
-                        icon={<ArrowRight size={18} />}
+                        icon={<ArrowRight size={16} />}
                       >
-                        {subscription?.status === 'active' ? 'Alterar para Este Plano' : 'Começar Teste Grátis'}
+                        {subscription?.status === 'active' ? 'Alterar Plano' : 'Iniciar Teste'}
                       </Button>
-                    )}
-                    
-                    {!isCurrentPlan(product.priceId) && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
-                        7 dias grátis • Cancele a qualquer momento
-                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -374,272 +341,140 @@ const Pricing: React.FC = () => {
           ))}
         </div>
 
-        {/* Features Comparison */}
+        {/* Show Comparison Button */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mb-16"
+          className="text-center mb-8"
         >
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  Compare Todos os Recursos
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Veja em detalhes o que cada plano oferece
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-4 px-6 text-gray-900 dark:text-white font-semibold">
-                        Recursos
-                      </th>
-                      {stripeProducts.map(product => (
-                        <th key={product.id} className="text-center py-4 px-6">
-                          <div className="text-lg font-bold text-gray-900 dark:text-white">
-                            {product.name.replace('Meu NPS - ', '')}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            R${product.price}/mês
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-4 px-6 font-medium text-gray-900 dark:text-white">
-                        Respostas por mês
-                      </td>
-                      <td className="py-4 px-6 text-center text-gray-700 dark:text-gray-300">500</td>
-                      <td className="py-4 px-6 text-center text-gray-700 dark:text-gray-300">2.500</td>
-                      <td className="py-4 px-6 text-center text-green-600 dark:text-green-400 font-semibold">Ilimitadas</td>
-                    </tr>
-                    <tr className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-4 px-6 font-medium text-gray-900 dark:text-white">
-                        Campanhas ativas
-                      </td>
-                      <td className="py-4 px-6 text-center text-gray-700 dark:text-gray-300">2</td>
-                      <td className="py-4 px-6 text-center text-green-600 dark:text-green-400 font-semibold">Ilimitadas</td>
-                      <td className="py-4 px-6 text-center text-green-600 dark:text-green-400 font-semibold">Ilimitadas</td>
-                    </tr>
-                    <tr className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-4 px-6 font-medium text-gray-900 dark:text-white">
-                        Relatórios avançados
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <X size={20} className="text-gray-400 mx-auto" />
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <Check size={20} className="text-green-500 mx-auto" />
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <Check size={20} className="text-green-500 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-4 px-6 font-medium text-gray-900 dark:text-white">
-                        Marca personalizada
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <X size={20} className="text-gray-400 mx-auto" />
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <Check size={20} className="text-green-500 mx-auto" />
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <Check size={20} className="text-green-500 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-4 px-6 font-medium text-gray-900 dark:text-white">
-                        Acesso à API
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <X size={20} className="text-gray-400 mx-auto" />
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <Check size={20} className="text-green-500 mx-auto" />
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <Check size={20} className="text-green-500 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 px-6 font-medium text-gray-900 dark:text-white">
-                        Suporte
-                      </td>
-                      <td className="py-4 px-6 text-center text-gray-700 dark:text-gray-300">Email</td>
-                      <td className="py-4 px-6 text-center text-gray-700 dark:text-gray-300">Prioritário</td>
-                      <td className="py-4 px-6 text-center text-green-600 dark:text-green-400 font-semibold">Dedicado</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <Button
+            variant="outline"
+            onClick={() => setShowComparison(!showComparison)}
+            icon={showComparison ? <X size={16} /> : <BarChart3 size={16} />}
+          >
+            {showComparison ? 'Ocultar Comparação' : 'Comparar Recursos'}
+          </Button>
         </motion.div>
 
-        {/* Trust Indicators */}
+        {/* Features Comparison - Collapsible */}
+        {showComparison && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-8"
+          >
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Comparação de Recursos
+                  </h3>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-4 text-gray-900 dark:text-white font-medium">
+                          Recursos
+                        </th>
+                        {stripeProducts.map(product => (
+                          <th key={product.id} className="text-center py-3 px-4">
+                            <div className="text-sm font-bold text-gray-900 dark:text-white">
+                              {product.name.replace('Meu NPS - ', '')}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-gray-100 dark:border-gray-700">
+                        <td className="py-3 px-4 font-medium text-gray-900 dark:text-white text-sm">
+                          Respostas/mês
+                        </td>
+                        <td className="py-3 px-4 text-center text-gray-700 dark:text-gray-300 text-sm">500</td>
+                        <td className="py-3 px-4 text-center text-gray-700 dark:text-gray-300 text-sm">2.500</td>
+                        <td className="py-3 px-4 text-center text-green-600 dark:text-green-400 font-medium text-sm">Ilimitadas</td>
+                      </tr>
+                      <tr className="border-b border-gray-100 dark:border-gray-700">
+                        <td className="py-3 px-4 font-medium text-gray-900 dark:text-white text-sm">
+                          Campanhas
+                        </td>
+                        <td className="py-3 px-4 text-center text-gray-700 dark:text-gray-300 text-sm">2</td>
+                        <td className="py-3 px-4 text-center text-green-600 dark:text-green-400 font-medium text-sm">Ilimitadas</td>
+                        <td className="py-3 px-4 text-center text-green-600 dark:text-green-400 font-medium text-sm">Ilimitadas</td>
+                      </tr>
+                      <tr className="border-b border-gray-100 dark:border-gray-700">
+                        <td className="py-3 px-4 font-medium text-gray-900 dark:text-white text-sm">
+                          Relatórios avançados
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <X size={16} className="text-gray-400 mx-auto" />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <Check size={16} className="text-green-500 mx-auto" />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <Check size={16} className="text-green-500 mx-auto" />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-3 px-4 font-medium text-gray-900 dark:text-white text-sm">
+                          Suporte
+                        </td>
+                        <td className="py-3 px-4 text-center text-gray-700 dark:text-gray-300 text-sm">Email</td>
+                        <td className="py-3 px-4 text-center text-gray-700 dark:text-gray-300 text-sm">Prioritário</td>
+                        <td className="py-3 px-4 text-center text-green-600 dark:text-green-400 font-medium text-sm">Dedicado</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Simple FAQ */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="grid md:grid-cols-4 gap-6 mb-16"
+          className="mb-12"
         >
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield size={32} className="text-blue-600 dark:text-blue-400" />
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Segurança Total</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Dados protegidos com criptografia de ponta a ponta
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Headphones size={32} className="text-green-600 dark:text-green-400" />
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Suporte 24/7</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Equipe especializada sempre disponível
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Globe size={32} className="text-purple-600 dark:text-purple-400" />
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Multi-idioma</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Português, Inglês e Espanhol
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Smartphone size={32} className="text-orange-600 dark:text-orange-400" />
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Mobile First</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Otimizado para todos os dispositivos
-            </p>
-          </div>
-        </motion.div>
-
-        {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mb-16"
-        >
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Perguntas Frequentes
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Tire suas dúvidas sobre nossos planos e funcionalidades
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  🔄 Posso alterar meu plano a qualquer momento?
+              <CardContent className="p-4">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+                  Posso alterar meu plano?
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Sim! Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. 
-                  As alterações são aplicadas imediatamente e o valor é ajustado proporcionalmente.
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  Sim, você pode alterar seu plano a qualquer momento.
                 </p>
               </CardContent>
             </Card>
             
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  🆓 Como funciona o período de teste?
+              <CardContent className="p-4">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+                  Como funciona o teste gratuito?
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Todos os planos incluem 7 dias de teste gratuito com acesso completo. 
-                  Você pode cancelar a qualquer momento durante o período de teste sem cobrança.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  💳 Quais métodos de pagamento são aceitos?
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Aceitamos cartões de crédito e débito das principais bandeiras (Visa, Mastercard, 
-                  American Express) através do Stripe, garantindo segurança total nas transações.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  ❌ Posso cancelar minha assinatura?
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Sim, você pode cancelar sua assinatura a qualquer momento sem multas. 
-                  O acesso continuará até o final do período pago atual.
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  7 dias grátis com acesso completo. Cancele quando quiser.
                 </p>
               </CardContent>
             </Card>
           </div>
         </motion.div>
 
-        {/* Contact Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="text-center"
-        >
-          <Card className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-700 border-0">
-            <CardContent className="p-12">
-              <div className="max-w-3xl mx-auto">
-                <h2 className="text-3xl font-bold text-white mb-6">
-                  Precisa de um plano personalizado?
-                </h2>
-                <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                  Para empresas com necessidades específicas, oferecemos soluções personalizadas 
-                  com recursos exclusivos, integrações customizadas e suporte dedicado.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="bg-white text-gray-900 border-white hover:bg-gray-100 h-14 px-8"
-                    icon={<Headphones size={20} />}
-                  >
-                    Falar com Vendas
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="text-white border-white hover:bg-white hover:text-gray-900 h-14 px-8"
-                    icon={<BarChart3 size={20} />}
-                  >
-                    Agendar Demo
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {/* Simple Contact */}
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
+            Dúvidas? Entre em contato: <a href="mailto:contato@meunps.com" className="text-[#00ac75] hover:underline">contato@meunps.com</a>
+          </p>
+        </div>
       </div>
 
       {/* Cancel Subscription Modal */}
@@ -703,22 +538,11 @@ const Pricing: React.FC = () => {
                     <span className="font-medium text-gray-900 dark:text-white">
                       {subscription.paymentMethodBrand?.toUpperCase()} •••• {subscription.paymentMethodLast4}
                     </span>
-                  </div>
+                  Você perderá acesso aos recursos premium.
                 )}
               </div>
             </div>
           )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Motivo do cancelamento (opcional)
-            </label>
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ac75] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              rows={3}
-              placeholder="Nos ajude a melhorar contando o motivo do cancelamento..."
             />
           </div>
 
@@ -736,7 +560,7 @@ const Pricing: React.FC = () => {
         </div>
       </Modal>
     </div>
-  );
-};
-
-export default Pricing;
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                Seus dados serão preservados e você pode reativar a qualquer momento.
+              </p>
