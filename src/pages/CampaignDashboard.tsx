@@ -432,12 +432,12 @@ const TvDashboard = () => {
         </div>
         
         <div className="flex space-x-3">
-          <Link to={`/campaigns/${id}/responses`}>
+          <Link to={`/dashboard/campaigns/${id}/responses`}>
             <Button variant="outline" size="sm" icon={<Eye size={16} />}>
               Ver Respostas
             </Button>
           </Link>
-          <Link to={`/campaigns/${id}/form`}>
+          <Link to={`/dashboard/campaigns/${id}/form`}>
             <Button variant="outline" size="sm" icon={<Edit size={16} />}>
               Editar
             </Button>
@@ -620,7 +620,7 @@ const TvDashboard = () => {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Compartilhe sua pesquisa NPS com clientes para começar a coletar feedback.
                 </p>
-                <Link to={`/campaigns/${id}/share`}>
+                <Link to={`/dashboard/campaigns/${id}/share`}>
                   <Button variant="primary" icon={<Share2 size={16} />}>
                     Compartilhar Pesquisa
                   </Button>
@@ -645,7 +645,7 @@ const TvDashboard = () => {
             <CardHeader 
               title="Últimas Respostas" 
               action={
-                <Link to={`/campaigns/${id}/responses`}>
+                <Link to={`/dashboard/campaigns/${id}/responses`}>
                   <Button variant="outline" size="sm" icon={<ChevronRight size={16} />}>
                     Ver Todas
                   </Button>
@@ -723,7 +723,7 @@ const TvDashboard = () => {
                 </div>
               </Link>
 
-              <Link to={`/campaigns/${id}/share`}>
+              <Link to={`/dashboard/campaigns/${id}/share`}>
                 <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
                   <div className="flex items-center">
                     <Share2 size={20} className="text-[#073143] dark:text-blue-400 mr-3" />
