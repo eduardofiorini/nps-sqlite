@@ -425,7 +425,7 @@ const Overview: React.FC = () => {
                 
                 {campaignStats.length > 5 && (
                   <div className="text-center pt-4">
-                    <Link to="/">
+                    <Link to="/dashboard/campaigns">
                       <Button variant="outline">
                         {t('overview.viewAllCampaigns')} {campaignStats.length} {t('overview.campaignsText')}
                       </Button>

@@ -86,22 +86,22 @@ const MainLayout: React.FC = () => {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/overview') {
-      return location.pathname === '/overview';
+    if (path === '/dashboard/overview') {
+      return location.pathname === '/dashboard/overview';
     }
-    if (path === '/campaigns') {
-      return location.pathname === '/campaigns' || location.pathname.startsWith('/campaigns');
+    if (path === '/dashboard/campaigns') {
+      return location.pathname === '/dashboard/campaigns' || location.pathname.startsWith('/dashboard/campaigns');
     }
-    if (path === '/reports') {
-      return location.pathname === '/reports' || location.pathname.startsWith('/reports');
+    if (path === '/dashboard/reports') {
+      return location.pathname === '/dashboard/reports' || location.pathname.startsWith('/dashboard/reports');
     }
-    if (path === '/contacts') {
-      return location.pathname === '/contacts' || location.pathname.startsWith('/contacts');
+    if (path === '/dashboard/contacts') {
+      return location.pathname === '/dashboard/contacts' || location.pathname.startsWith('/dashboard/contacts');
     }
     return location.pathname === path;
   };
   
-  const isSettingsActive = () => location.pathname.startsWith('/settings');
+  const isSettingsActive = () => location.pathname.startsWith('/dashboard/settings');
 
   React.useEffect(() => {
     if (isSettingsActive()) {
