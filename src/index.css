@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --theme-color: #073143;
-  --theme-color-hover: #0a4a5c;
+  --theme-color: #00ac75;
+  --theme-color-hover: #009966;
   --theme-color-light: #4a9eff;
-  --theme-color-dark: #052a3a;
-  --theme-color-rgb: 7, 49, 67;
+  --theme-color-dark: #008855;
+  --theme-color-rgb: 0, 172, 117;
 }
 
 /* Dynamic theme color classes */

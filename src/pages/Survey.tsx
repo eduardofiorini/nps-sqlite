@@ -339,7 +339,7 @@ A resposta da pesquisa foi salva com sucesso.`;
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#073143]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00ac75]"></div>
         </div>
       </div>
     );

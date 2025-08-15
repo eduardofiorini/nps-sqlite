@@ -291,7 +291,7 @@ const getDemoCampaigns = (): Campaign[] => [
     surveyCustomization: {
       backgroundType: 'color',
       backgroundColor: '#f8fafc',
-      primaryColor: '#073143',
+      primaryColor: '#00ac75',
       textColor: '#1f2937'
     },
     automation: {
@@ -800,7 +800,7 @@ export const getAppConfig = async (): Promise<AppConfig> => {
   if (!userId) {
     // Return default config when user is not authenticated
     return {
-      themeColor: '#073143',
+      themeColor: '#00ac75',
       language: 'pt-BR',
       company: {
         name: '',
@@ -851,7 +851,7 @@ export const getAppConfig = async (): Promise<AppConfig> => {
   if (error && error.code !== 'PGRST116') throw error;
   
   const defaultConfig: AppConfig = {
-    themeColor: '#073143',
+    themeColor: '#00ac75',
     language: 'pt-BR',
     company: {
       name: '',

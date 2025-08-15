@@ -57,7 +57,7 @@ interface ConfigContextType {
 }
 
 const defaultConfig: AppConfig = {
-  themeColor: '#073143',
+  themeColor: '#00ac75',
   language: 'pt-BR',
   company: {
     name: '',
@@ -109,7 +109,7 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string): string => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!result) return '7, 49, 67'; // fallback RGB for #073143
+    if (!result) return '0, 172, 117'; // fallback RGB for #00ac75
     
     const r = parseInt(result[1], 16);
     const g = parseInt(result[2], 16);

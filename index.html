@@ -12,7 +12,7 @@
         try {
           // Get stored config from localStorage or Supabase auth storage
           const authData = localStorage.getItem('nps_supabase_auth');
-          let themeColor = '#073143'; // default
+          let themeColor = '#00ac75'; // default
           
           if (authData) {
             try {
@@ -35,7 +35,7 @@
               r: parseInt(result[1], 16),
               g: parseInt(result[2], 16),
               b: parseInt(result[3], 16)
-            } : { r: 7, g: 49, b: 67 };
+            } : { r: 0, g: 172, b: 117 };
           }
           
           // Helper function to adjust color brightness
