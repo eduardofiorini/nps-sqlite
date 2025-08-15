@@ -22,6 +22,12 @@ const Pricing: React.FC = () => {
       return;
     }
 
+    // Check if Supabase is properly configured
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      alert('Funcionalidade de assinatura não disponível no modo demo. Configure o Supabase para habilitar pagamentos.');
+      return;
+    }
+
     setLoadingPriceId(priceId);
 
     try {
@@ -29,7 +35,9 @@ const Pricing: React.FC = () => {
       const token = session.session?.access_token;
 
       if (!token) {
-        throw new Error('No authentication token found');
+        alert('Sessão expirada. Faça login novamente para continuar.');
+        navigate('/login');
+        return;
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
