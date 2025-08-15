@@ -295,7 +295,7 @@ const RegisterForm: React.FC = () => {
               <div 
                 className="w-16 h-16 bg-gradient-to-r rounded-2xl flex items-center justify-center mx-auto mb-4"
                 style={{
-                  background: `linear-gradient(to right, ${themeColor}, color-mix(in srgb, ${themeColor} 80%, black 20%))`
+                  background: `linear-gradient(to right, #00ac75, color-mix(in srgb, #00ac75 80%, black 20%))`
                 }}
               >
                 <BarChart3 size={32} className="text-white" />

@@ -400,7 +400,7 @@ const MainLayout: React.FC = () => {
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-lg font-bold dark:text-white" style={{ color: themeColor }}>Meu NPS</span>
+                        <span className="text-lg font-bold text-[#00ac75] dark:text-white">Meu NPS</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Gestão de NPS</span>
                       </div>
                     </div>

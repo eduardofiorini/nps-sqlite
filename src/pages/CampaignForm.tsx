@@ -802,7 +802,7 @@ const CampaignForm: React.FC = () => {
                             // Invalid JSON, keep the text for editing
                           }
                         }}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00ac75] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#073143] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
                         rows={4}
                         placeholder='{"Content-Type": "application/json"}'
                       />
@@ -815,7 +815,7 @@ const CampaignForm: React.FC = () => {
                       <textarea
                         value={campaign.automation?.webhookPayload || ''}
                         onChange={(e) => handleAutomationChange('webhookPayload', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#073143] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00ac75] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
                         rows={3}
                         placeholder='{"custom_field": "valor", "outro_campo": "{{nps_score}}"}'
                       />

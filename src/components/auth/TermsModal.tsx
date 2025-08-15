@@ -95,7 +95,7 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose, onAccept }) =>
         {/* Privacy Policy */}
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
           <div className="flex items-center mb-4">
-            <Shield size={20} className="text-[#073143] dark:text-white mr-2" />
+            <Shield size={20} className="text-[#00ac75] dark:text-white mr-2" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Política de Privacidade
             </h3>

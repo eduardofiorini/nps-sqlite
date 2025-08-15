@@ -232,7 +232,7 @@ const ForgotPasswordForm: React.FC = () => {
               <div className="text-center">
                 <Link 
                   to="/login" 
-                  className="text-sm text-[#073143] hover:text-[#0a4a5c] dark:text-[#4a9eff] font-medium flex items-center justify-center"
+                  className="text-sm text-[#00ac75] hover:text-[#009966] dark:text-[#4a9eff] font-medium flex items-center justify-center"
                 >
                   <ArrowLeft size={16} className="mr-2" />
                   Voltar ao Login
