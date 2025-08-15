@@ -533,7 +533,7 @@ const Contacts: React.FC = () => {
                       <select
                         value={selectedGroup}
                         onChange={(e) => setSelectedGroup(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ac75] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       >
                         <option value="all">Todos os grupos</option>
                         {groups.map(group => (
@@ -1006,7 +1006,7 @@ const Contacts: React.FC = () => {
             <textarea
               value={currentContact.notes || ''}
               onChange={(e) => setCurrentContact({ ...currentContact, notes: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#073143] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00ac75] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Adicione notas sobre este contato..."
               rows={4}
             />
