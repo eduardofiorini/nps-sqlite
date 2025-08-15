@@ -19,6 +19,8 @@ import CampaignResponses from './pages/CampaignResponses';
 import CampaignShare from './pages/CampaignShare';
 import CampaignForm from './pages/CampaignForm';
 import Survey from './pages/Survey';
+import Pricing from './pages/Pricing';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import EmailPreview from './pages/EmailPreview';
 import EntityCrud from './pages/EntityCrud';
 import Settings from './pages/Settings';
@@ -104,6 +106,9 @@ function App() {
                     <Route path="settings/sources" element={<EntityCrud entityType="sources" />} />
                     <Route path="settings/situations" element={<EntityCrud entityType="situations" />} />
                     <Route path="settings/groups" element={<EntityCrud entityType="groups" />} />
+                    
+                    <Route path="pricing" element={<Pricing />} />
+                    <Route path="subscription-success" element={<SubscriptionSuccess />} />
                   </Route>
                   
                   {/* Public survey route - moved outside protected routes */}

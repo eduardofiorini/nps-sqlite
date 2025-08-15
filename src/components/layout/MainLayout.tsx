@@ -20,6 +20,7 @@ import {
   Globe,
   CreditCard,
   PanelLeftClose,
+  Crown,
   PanelLeftOpen,
   FileText,
   Users,
@@ -28,12 +29,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
+import { useSubscription } from '../../hooks/useSubscription';
 
 const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const { config, themeColor } = useConfig();
   const { theme, toggleTheme, isDark } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  const { subscription } = useSubscription();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -66,6 +69,11 @@ const MainLayout: React.FC = () => {
       path: '/reports', 
       label: language === 'pt-BR' ? 'Relatórios' : 'Reports', 
       icon: <FileText size={20} /> 
+    },
+    { 
+      path: '/pricing', 
+      label: language === 'pt-BR' ? 'Planos' : 'Pricing', 
+      icon: <Crown size={20} /> 
     },
   ];
 
@@ -194,6 +202,11 @@ const MainLayout: React.FC = () => {
                         <div className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
                           <div className="font-medium">{user.name}</div>
                           <div className="text-gray-500 dark:text-gray-400">{user.email}</div>
+                          {subscription?.planName && (
+                            <div className="text-xs text-[#00ac75] dark:text-[#4a9eff] font-medium mt-1">
+                              {subscription.planName}
+                            </div>
+                          )}
                         </div>
                         <Link
                           to="/profile"
@@ -488,6 +501,11 @@ const MainLayout: React.FC = () => {
                       <div>
                         <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+                        {subscription?.planName && (
+                          <div className="text-xs text-[#00ac75] dark:text-[#4a9eff] font-medium">
+                            {subscription.planName}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import SubscriptionBanner from '../components/ui/SubscriptionBanner';
 import CampaignCard from '../components/dashboard/CampaignCard';
 import Button from '../components/ui/Button';
 import { Campaign } from '../types';
@@ -89,6 +90,9 @@ const Dashboard: React.FC = () => {
   
   return (
     <div>
+      {/* Subscription Banner */}
+      <SubscriptionBanner />
+      
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{pageTitle}</h1>

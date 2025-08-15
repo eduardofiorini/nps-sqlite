@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { stripeProducts } from '../../stripe-config';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { 
@@ -35,59 +36,16 @@ const RegisterForm: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const plans = [
-    {
-      id: 'iniciante',
-      name: 'Iniciante',
-      price: 49.00,
-      description: 'Perfeito para pequenas equipes começando com NPS',
-      icon: <Users size={24} className="text-white" />,
-      color: 'bg-green-500',
-      features: [
-        'Até 500 respostas/mês',
-        '2 campanhas ativas',
-        'Análises básicas',
-        'Suporte por email',
-        'Templates padrão'
-      ]
-    },
-    {
-      id: 'profissional',
-      name: 'Profissional',
-      price: 99.00,
-      description: 'Recursos avançados para empresas em crescimento',
-      icon: <BarChart3 size={24} className="text-white" />,
-      color: 'bg-[#00ac75]',
-      popular: true,
-      features: [
-        'Até 2.500 respostas/mês',
-        'Campanhas ilimitadas',
-        'Análises e relatórios avançados',
-        'Suporte prioritário',
-        'Marca personalizada',
-        'Acesso à API',
-        'Colaboração em equipe'
-      ]
-    },
-    {
-      id: 'empresarial',
-      name: 'Empresarial',
-      price: 249.00,
-      description: 'Solução completa para grandes organizações',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>,
-      color: 'bg-purple-500',
-      features: [
-        'Respostas ilimitadas',
-        'Campanhas ilimitadas',
-        'Insights avançados com IA',
-        'Gerente de conta dedicado',
-        'Solução white-label',
-        'Integração SSO',
-        'Integrações personalizadas',
-        'Garantia de SLA'
-      ]
+  const getProductIcon = (productName: string) => {
+    if (productName.includes('Iniciante')) {
+      return <Users size={24} className="text-white" />;
+    } else if (productName.includes('Profissional')) {
+      return <BarChart3 size={24} className="text-white" />;
+    } else if (productName.includes('Empresarial')) {
+      return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>;
     }
-  ];
+    return <BarChart3 size={24} className="text-white" />;
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -134,7 +92,7 @@ const RegisterForm: React.FC = () => {
     setShowTermsModal(false);
   };
 
-  const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
+  const selectedPlanData = stripeProducts.find(product => product.id === selectedPlan);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -184,20 +142,20 @@ const RegisterForm: React.FC = () => {
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {plans.map((plan, index) => (
+              {stripeProducts.map((product, index) => (
                 <motion.div
-                  key={plan.id}
+                  key={product.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + index * 0.1 }}
                   className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                    selectedPlan === plan.id
+                    selectedPlan === product.id
                       ? 'border-[#00ac75] bg-[#00ac75]/5 dark:bg-[#00ac75]/10'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
-                  onClick={() => setSelectedPlan(plan.id)}
+                  onClick={() => setSelectedPlan(product.id)}
                 >
-                  {plan.popular && (
+                  {product.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="px-3 py-1 text-xs font-medium text-white bg-[#00ac75] rounded-full">
                         ⭐ Mais Popular
@@ -206,27 +164,27 @@ const RegisterForm: React.FC = () => {
                   )}
                   
                   <div className="text-center">
-                    <div className={`w-12 h-12 ${plan.color} rounded-xl flex items-center justify-center mx-auto mb-4`}>
-                      {plan.icon}
+                    <div className={`w-12 h-12 ${product.color} rounded-xl flex items-center justify-center mx-auto mb-4`}>
+                      {getProductIcon(product.name)}
                     </div>
                     
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      {plan.name}
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2"> 
+                      {product.name.replace('Meu NPS - ', '')}
                     </h4>
                     
                     <div className="mb-4">
                       <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                        R${plan.price.toFixed(0)}
+                        R${product.price.toFixed(0)}
                       </span>
                       <span className="text-gray-600 dark:text-gray-400">/mês</span>
                     </div>
                     
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                      {plan.description}
+                      {product.description}
                     </p>
                     
                     <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 text-left">
-                      {plan.features.map((feature, featureIndex) => (
+                      {product.features.map((feature, featureIndex) => (
                         <li key={featureIndex} className="flex items-center">
                           <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
                           {feature}
@@ -235,7 +193,7 @@ const RegisterForm: React.FC = () => {
                     </ul>
                   </div>
                   
-                  {selectedPlan === plan.id && (
+                  {selectedPlan === product.id && (
                     <div className="absolute top-4 right-4">
                       <div className="w-6 h-6 bg-[#00ac75] rounded-full flex items-center justify-center">
                         <Check size={14} className="text-white" />
@@ -359,7 +317,7 @@ const RegisterForm: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                        Plano Selecionado: {selectedPlanData?.name}
+                        Plano Selecionado: {selectedPlanData?.name.replace('Meu NPS - ', '')}
                       </h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
                         7 dias grátis, depois R${selectedPlanData?.price.toFixed(0)}/mês

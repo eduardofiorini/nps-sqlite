@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import SubscriptionBanner from '../components/ui/SubscriptionBanner';
 import { Campaign, NpsResponse } from '../types';
 import { getCampaigns, getResponses, getSources, getSituations, getGroups } from '../utils/supabaseStorage';
 import { calculateNPS, categorizeResponses } from '../utils/npsCalculator';
@@ -168,6 +169,9 @@ const Overview: React.FC = () => {
 
   return (
     <div className="space-y-8">
+      {/* Subscription Banner */}
+      <SubscriptionBanner />
+      
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
