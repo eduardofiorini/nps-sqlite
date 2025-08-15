@@ -83,8 +83,8 @@ function App() {
                   {/* Public email preview route */}
                   <Route path="/email-preview/:campaignId" element={<EmailPreview />} />
                   
-                  {/* Public landing page as home */}
-                  <Route path="/" element={<Landing />} />
+                  {/* Redirect home to dashboard if authenticated, otherwise landing */}
+                  <Route path="/" element={<HomeRedirect />} />
                   
                   <Route
                     path="/dashboard"
@@ -133,7 +133,7 @@ function App() {
                   {/* Public survey route - moved outside protected routes */}
                   <Route path="/survey/:id" element={<Survey />} />
                   
-                  <Route path="*" element={<Navigate to="/" />} />
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
                 </Routes>
               </AppInitializer>
             </ConfigProvider>
@@ -143,5 +143,19 @@ function App() {
     </Router>
   );
 }
+
+const HomeRedirect: React.FC = () => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00ac75]"></div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />;
+};
 
 export default App;

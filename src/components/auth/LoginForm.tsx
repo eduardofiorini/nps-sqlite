@@ -27,7 +27,7 @@ const LoginForm: React.FC = () => {
   // Redirect if user is already logged in
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/dashboard/campaigns');
     }
   }, [isAuthenticated, navigate]);
 
