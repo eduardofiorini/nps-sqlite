@@ -109,6 +109,7 @@ const Dashboard: React.FC = () => {
               {t('campaigns.newCampaign')}
             </Button>
           </Link>
+          </Link>
         </div>
       </div>
       
