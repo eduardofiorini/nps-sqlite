@@ -176,7 +176,7 @@ const Overview: React.FC = () => {
             {t('overview.subtitle')}
           </p>
         </div>
-        <Link to="/campaigns/new">
+        <Link to="/dashboard/campaigns/new">
           <Button variant="primary" icon={<Plus size={16} />}>
             {t('dashboard.newCampaign')}
           </Button>
