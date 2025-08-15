@@ -6,6 +6,7 @@ import Badge from './Badge';
 import { Crown, AlertTriangle, TrendingUp, Users, MessageSquare, Zap } from 'lucide-react';
 import { PlanLimitInfo } from '../../hooks/usePlanLimits';
 import { stripeProducts } from '../../stripe-config';
+import { useTrial } from '../../hooks/useTrial';
 
 interface PlanLimitModalProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ const PlanLimitModal: React.FC<PlanLimitModalProps> = ({
   limitInfo,
   limitType
 }) => {
+  const { trialInfo } = useTrial();
+
   const getTitle = () => {
     if (limitType === 'campaigns') {
       return 'Limite de Campanhas Atingido';
