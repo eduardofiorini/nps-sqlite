@@ -294,7 +294,7 @@ const Landing: React.FC = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link to="/register">
+                <Link to="/register?plan=profissional">
                   <Button 
                     variant="primary" 
                     size="lg" 
