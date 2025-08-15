@@ -369,6 +369,7 @@ const Settings: React.FC = () => {
                   >
                     <option value="en">English</option>
                     <option value="pt-BR">Português (Brasil)</option>
+                    <option value="es">Español</option>
                   </select>
                 </div>
               </div>

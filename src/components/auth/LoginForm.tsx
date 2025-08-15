@@ -209,7 +209,7 @@ const LoginForm: React.FC = () => {
                   className="text-sm hover:opacity-80"
                   style={{ color: themeColor }}
                 >
-                  Esqueceu a senha?
+                  {language === 'pt-BR' ? 'Esqueceu a senha?' : language === 'es' ? '¿Olvidaste tu contraseña?' : 'Forgot password?'}
                 </a>
               </div>
               
@@ -225,14 +225,14 @@ const LoginForm: React.FC = () => {
               
               <div className="text-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Não tem uma conta?{' '}
+                  {language === 'pt-BR' ? 'Não tem uma conta?' : language === 'es' ? '¿No tienes una cuenta?' : "Don't have an account?"}{' '}
                 </span>
                 <Link 
                   to="/register" 
                   className="text-sm font-medium hover:opacity-80"
                   style={{ color: themeColor }}
                 >
-                  Criar conta
+                  {language === 'pt-BR' ? 'Criar conta' : language === 'es' ? 'Crear cuenta' : 'Create account'}
                 </Link>
               </div>
             </form>
