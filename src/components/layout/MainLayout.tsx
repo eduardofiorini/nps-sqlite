@@ -113,13 +113,13 @@ const MainLayout: React.FC = () => {
 
   const adminItems = [
     { 
-      path: '/user/admin/users', 
+      path: '/admin/users', 
       label: 'Usuários', 
       icon: <Users size={18} />,
       permission: 'view_users'
     },
     { 
-      path: '/user/admin/subscriptions', 
+      path: '/admin/subscriptions', 
       label: 'Assinaturas', 
       icon: <CreditCard size={18} />,
       permission: 'view_subscriptions'

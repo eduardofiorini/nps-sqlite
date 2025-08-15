@@ -116,11 +116,25 @@ function App() {
                     <Route path="settings/groups" element={<EntityCrud entityType="groups" />} />
                     
                     {/* Admin Routes */}
-                    <Route path="admin/users" element={<AdminUsers />} />
-                    <Route path="admin/subscriptions" element={<AdminSubscriptions />} />
+                    
                     
                     <Route path="pricing" element={<Pricing />} />
                     <Route path="subscription-success" element={<SubscriptionSuccess />} />
+                  </Route>
+                  
+                  {/* Admin Routes - Outside user routes */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute>
+                        <TrialGuard>
+                          <MainLayout />
+                        </TrialGuard>
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="subscriptions" element={<AdminSubscriptions />} />
                   </Route>
                   
                   {/* Public survey route - moved outside protected routes */}
