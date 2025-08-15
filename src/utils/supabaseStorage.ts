@@ -400,7 +400,7 @@ export const getCampaignForm = async (campaignId: string): Promise<CampaignForm 
       .from('campaign_forms')
       .select('*')
       .eq('campaign_id', campaignId)
-      .single();
+      .maybeSingle();
     
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
     
