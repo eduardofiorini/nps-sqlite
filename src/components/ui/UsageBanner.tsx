@@ -63,7 +63,6 @@ const UsageBanner: React.FC = () => {
                       <TrendingUp size={16} className="mr-1" />
                       <span>
                         Campanhas: {limitInfo.usage.campaigns}/{limitInfo.limits.campaigns}
-                        {showCampaignWarning && ' ⚠️'}
                       </span>
                     </div>
                   )}
@@ -72,7 +71,6 @@ const UsageBanner: React.FC = () => {
                       <MessageSquare size={16} className="mr-1" />
                       <span>
                         Respostas: {limitInfo.usage.responsesThisMonth}/{limitInfo.limits.responsesPerMonth}
-                        {showResponseWarning && ' ⚠️'}
                       </span>
                     </div>
                   )}
