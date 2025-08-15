@@ -103,12 +103,10 @@ const Dashboard: React.FC = () => {
           >
             {t('common.refresh')}
           </Button>
-          <Link to="/campaigns/new">
           <Link to="/dashboard/campaigns/new">
             <Button variant="primary" icon={<Plus size={16} />}>
               {t('campaigns.newCampaign')}
             </Button>
-          </Link>
           </Link>
         </div>
       </div>
