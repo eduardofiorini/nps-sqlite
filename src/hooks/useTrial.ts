@@ -50,6 +50,8 @@ export const useTrial = () => {
           return;
         }
 
+        let trialStartDate;
+        if (isSupabaseConfigured()) {
           // Use localStorage for trial tracking to avoid RLS issues
           const storedTrialStart = localStorage.getItem(`trial_start_date_${user.id}`);
           if (storedTrialStart) {
