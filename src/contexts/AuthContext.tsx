@@ -248,13 +248,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            name: name
+          }
+        }
       });
 
       if (error) {
         console.error('Registration error:', error.message);
         
         // Handle database errors by falling back to demo mode
-        if ((error.message === 'Database error saving new user' || error.message.includes('unexpected_failure')) && isSupabaseConfigured()) {
+        if (error.message === 'Database error saving new user' || error.message.includes('unexpected_failure')) {
           console.warn('Database error detected during registration, falling back to demo mode');
           if (email && password && name) {
             const mockUser: User = {
@@ -276,6 +281,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (data.user) {
+        // Create user profile after successful registration
+        try {
+          const { saveUserProfile } = await import('../utils/supabaseStorage');
+          const userProfile = {
+            id: '',
+            name: name,
+            email: email,
+            phone: '',
+            company: '',
+            position: '',
+            avatar: '',
+            preferences: {
+              language: 'pt-BR' as const,
+              theme: 'light' as const,
+              emailNotifications: {
+                newResponses: true,
+                weeklyReports: true,
+                productUpdates: false
+              }
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          
+          await saveUserProfile(userProfile);
+          console.log('User profile created successfully');
+        } catch (profileError) {
+          console.warn('Error creating user profile:', profileError);
+          // Don't fail registration if profile creation fails
+        }
+        
         const processedUser = processSupabaseUser(data.user);
         setUser(processedUser);
         
