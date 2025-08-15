@@ -272,7 +272,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
         
-        return false;
       }
 
       if (data.user) {
