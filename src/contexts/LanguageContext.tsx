@@ -265,6 +265,10 @@ const translations: Translations = {
     'profile.avatarTipDesc': 'Use a square image of at least 200x200px for better quality.',
     'profile.active': 'Active',
     'profile.professional': 'Professional',
+    
+    // Common additional
+    'common.created': 'Created on',
+    'common.total': 'Total',
   },
   'pt-BR': {
     // Navigation
@@ -522,6 +526,10 @@ const translations: Translations = {
     'profile.avatarTipDesc': 'Use uma imagem quadrada de pelo menos 200x200px para melhor qualidade.',
     'profile.active': 'Ativo',
     'profile.professional': 'Profissional',
+    
+    // Common additional
+    'common.created': 'Criado em',
+    'common.total': 'Total',
   }
 };
 

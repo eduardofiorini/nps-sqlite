@@ -33,6 +33,7 @@ import { getUserProfile, saveUserProfile } from '../utils/supabaseStorage';
 import type { UserProfile } from '../types';
 
 const Profile: React.FC = () => {
+  const { t } = useLanguage();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
@@ -393,9 +394,9 @@ const Profile: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Perfil</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('profile.title')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Gerencie suas informações pessoais e preferências
+            {t('profile.subtitle')}
           </p>
         </div>
         <div className="flex space-x-3">
@@ -406,7 +407,7 @@ const Profile: React.FC = () => {
                 onClick={handleCancel}
                 disabled={isSaving}
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -414,7 +415,7 @@ const Profile: React.FC = () => {
                 isLoading={isSaving}
                 icon={<Save size={16} />}
               >
-                Salvar Alterações
+                {t('profile.saveChanges')}
               </Button>
             </>
           ) : (
@@ -423,7 +424,7 @@ const Profile: React.FC = () => {
               onClick={() => setIsEditing(true)}
               icon={<Edit size={16} />}
             >
-              Editar Perfil
+              {t('profile.editProfile')}
             </Button>
           )}
         </div>
@@ -449,7 +450,7 @@ const Profile: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Personal Info Card */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Informações Pessoais" />
+            <CardHeader title={t('profile.personalInfo')} />
             <CardContent>
               {/* Avatar Section */}
               <div className="flex items-center mb-6">
@@ -507,7 +508,7 @@ const Profile: React.FC = () => {
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{profile.name}</h3>
                   <p className="text-gray-600 dark:text-gray-400">{profile.email}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Membro desde {new Date(profile.createdAt).toLocaleDateString('pt-BR')}
+                    {t('profile.memberSince')} {new Date(profile.createdAt).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
               </div>
@@ -515,7 +516,7 @@ const Profile: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
                   <Input
-                    label="Nome Completo"
+                    label={t('profile.fullName')}
                     value={profile.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     disabled={!isEditing}
@@ -543,7 +544,7 @@ const Profile: React.FC = () => {
 
                 <div className="relative">
                   <Input
-                    label="Telefone"
+                    label={t('profile.phone')}
                     value={profile.phone || ''}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     disabled={!isEditing}
@@ -558,7 +559,7 @@ const Profile: React.FC = () => {
 
                 <div className="relative">
                   <Input
-                    label="Empresa"
+                    label={t('profile.company')}
                     value={profile.company || ''}
                     onChange={(e) => handleInputChange('company', e.target.value)}
                     disabled={!isEditing}
@@ -573,7 +574,7 @@ const Profile: React.FC = () => {
 
                 <div className="md:col-span-2 relative">
                   <Input
-                    label="Cargo"
+                    label={t('profile.position')}
                     value={profile.position || ''}
                     onChange={(e) => handleInputChange('position', e.target.value)}
                     disabled={!isEditing}
@@ -591,14 +592,14 @@ const Profile: React.FC = () => {
           
           {/* Password and Security */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Senha e Segurança" />
+            <CardHeader title={t('profile.passwordSecurity')} />
             <CardContent>
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">Alterar Senha</h3>
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">{t('profile.changePassword')}</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Atualize sua senha para manter sua conta segura
+                      {t('profile.changePasswordDesc')}
                     </p>
                   </div>
                   <Button
@@ -606,16 +607,16 @@ const Profile: React.FC = () => {
                     onClick={() => setShowPasswordModal(true)}
                     icon={<Key size={16} />}
                   >
-                    Alterar Senha
+                    {t('profile.changePassword')}
                   </Button>
                 </div>
                 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-base font-semibold text-gray-900 dark:text-white">Exportar Meus Dados</h3>
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-white">{t('profile.exportData')}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Baixe uma cópia de todos os seus dados pessoais
+                        {t('profile.exportDataDesc')}
                       </p>
                     </div>
                     <Button
@@ -623,7 +624,7 @@ const Profile: React.FC = () => {
                       onClick={handleDataExport}
                       icon={<Download size={16} />}
                     >
-                      Exportar Dados
+                      {t('profile.exportData')}
                     </Button>
                   </div>
                 </div>
@@ -631,9 +632,9 @@ const Profile: React.FC = () => {
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-base font-semibold text-red-600 dark:text-red-400">Excluir Minha Conta</h3>
+                      <h3 className="text-base font-semibold text-red-600 dark:text-red-400">{t('profile.deleteAccount')}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Exclua permanentemente sua conta e todos os seus dados
+                        {t('profile.deleteAccountDesc')}
                       </p>
                     </div>
                     <Button
@@ -641,7 +642,7 @@ const Profile: React.FC = () => {
                       onClick={() => setShowDeleteModal(true)}
                       icon={<Trash2 size={16} />}
                     >
-                      Excluir Conta
+                      {t('profile.deleteAccount')}
                     </Button>
                   </div>
                 </div>
@@ -651,7 +652,7 @@ const Profile: React.FC = () => {
           
           {/* Privacy and Data Protection */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Privacidade e Proteção de Dados" />
+            <CardHeader title={t('profile.privacyProtection')} />
             <CardContent>
               <div className="space-y-6">
                 <div className="flex items-start space-x-3">
@@ -661,13 +662,13 @@ const Profile: React.FC = () => {
                   <div>
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white">LGPD e GDPR</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Estamos em conformidade com a Lei Geral de Proteção de Dados (LGPD) do Brasil e o Regulamento Geral de Proteção de Dados (GDPR) da União Europeia.
+                      {t('profile.complianceDesc')}
                     </p>
                   </div>
                 </div>
                 
                 <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Seus Direitos de Privacidade</h4>
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('profile.privacyRights')}</h4>
                   
                   <div className="space-y-2">
                     <label className="flex items-center">
@@ -696,7 +697,7 @@ const Profile: React.FC = () => {
                         } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        Aceito receber comunicações de marketing e novidades
+                        {t('profile.marketingConsent')}
                       </span>
                     </label>
                     
@@ -726,7 +727,7 @@ const Profile: React.FC = () => {
                         } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        Aceito o uso de dados para análises e melhorias do serviço
+                        {t('profile.analyticsConsent')}
                       </span>
                     </label>
                     
@@ -756,20 +757,20 @@ const Profile: React.FC = () => {
                         } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        Aceito o compartilhamento de dados com parceiros confiáveis
+                        {t('profile.thirdPartyConsent')}
                       </span>
                     </label>
                   </div>
                 </div>
                 
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Seus Direitos</h4>
+                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">{t('profile.yourRights')}</h4>
                   <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                    <li>• Direito de acesso aos seus dados pessoais</li>
-                    <li>• Direito de retificação de dados incorretos</li>
-                    <li>• Direito ao esquecimento (exclusão de dados)</li>
-                    <li>• Direito à portabilidade dos dados</li>
-                    <li>• Direito de revogar consentimento a qualquer momento</li>
+                    <li>• {t('profile.rightAccess')}</li>
+                    <li>• {t('profile.rightCorrection')}</li>
+                    <li>• {t('profile.rightErasure')}</li>
+                    <li>• {t('profile.rightPortability')}</li>
+                    <li>• {t('profile.rightWithdraw')}</li>
                   </ul>
                 </div>
               </div>
@@ -783,19 +784,19 @@ const Profile: React.FC = () => {
         <div className="space-y-6">
           {/* Account Info */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Informações da Conta" />
+            <CardHeader title={t('profile.accountInfo')} />
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
-                  <span className="text-sm font-medium text-green-600 dark:text-green-400">Ativo</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.status')}:</span>
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">{t('profile.active')}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Plano:</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Profissional</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.plan')}:</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('profile.professional')}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Última atualização:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.lastUpdate')}:</span>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(profile.updatedAt).toLocaleDateString('pt-BR')}
                   </span>
@@ -806,14 +807,14 @@ const Profile: React.FC = () => {
 
           {/* Quick Actions */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Preferências" />
+            <CardHeader title={t('profile.preferences')} />
             <CardContent>
               <div className="space-y-4">
                 {/* Language Preference */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Globe size={16} className="inline mr-2" />
-                    Idioma Preferido
+                    {t('profile.preferredLanguage')}
                   </label>
                   <select
                     value={profile.preferences.language}
@@ -830,11 +831,11 @@ const Profile: React.FC = () => {
                 {/* Theme Preference */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Tema da Interface
+                    {t('profile.interfaceTheme')}
                   </label>
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {isDark ? '🌙 Modo Escuro' : '☀️ Modo Claro'}
+                      {isDark ? `🌙 ${t('profile.darkMode')}` : `☀️ ${t('profile.lightMode')}`}
                     </span>
                     {isEditing && (
                       <Button
@@ -842,7 +843,7 @@ const Profile: React.FC = () => {
                         size="sm"
                         onClick={toggleTheme}
                       >
-                        Alternar Tema
+                        {t('profile.toggleTheme')}
                       </Button>
                     )}
                   </div>
@@ -852,7 +853,7 @@ const Profile: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     <Bell size={16} className="inline mr-2" />
-                    Notificações por Email
+                    {t('profile.emailNotifications')}
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center">
@@ -868,7 +869,7 @@ const Profile: React.FC = () => {
                         } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        Novas respostas NPS
+                        {t('profile.newNpsResponses')}
                       </span>
                     </label>
                     <label className="flex items-center">
@@ -884,7 +885,7 @@ const Profile: React.FC = () => {
                         } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        Relatórios semanais
+                        {t('profile.weeklyReports')}
                       </span>
                     </label>
                     <label className="flex items-center">
@@ -900,7 +901,7 @@ const Profile: React.FC = () => {
                         } as React.CSSProperties}
                       />
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        Atualizações do produto
+                        {t('profile.productUpdates')}
                       </span>
                     </label>
                   </div>
@@ -917,10 +918,10 @@ const Profile: React.FC = () => {
                   <Upload size={16} className="text-blue-600 dark:text-blue-400 mr-2 mt-0.5 flex-shrink-0" />
                   <div>
                     <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
-                      Dica para Avatar
+                      {t('profile.avatarTip')}
                     </h4>
                     <p className="text-xs text-blue-700 dark:text-blue-300">
-                      Use uma imagem quadrada de pelo menos 200x200px para melhor qualidade.
+                      {t('profile.avatarTipDesc')}
                     </p>
                   </div>
                 </div>
