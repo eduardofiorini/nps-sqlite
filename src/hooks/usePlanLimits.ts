@@ -79,7 +79,7 @@ export const usePlanLimits = (): PlanLimitInfo => {
   
   let limits: PlanLimits;
   let planName: string;
-  
+  console.log(isTrialActive);
   if (hasActiveSubscription) {
     limits = getPlanLimits(subscription.priceId);
     planName = subscription.planName || 'Plano Ativo';
