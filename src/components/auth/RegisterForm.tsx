@@ -284,7 +284,7 @@ const RegisterForm: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 mb-8"
         >
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
             Recursos da Plataforma
@@ -331,6 +331,151 @@ const RegisterForm: React.FC = () => {
                 Seus dados estão protegidos com segurança de nível empresarial e conformidade com LGPD.
               </p>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Pricing Plans Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700"
+        >
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Planos e Preços
+            </h3>
+            <div className="inline-flex items-center px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
+              <span className="mr-2">🎉</span>
+              7 dias grátis em todos os planos
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Iniciante Plan */}
+            <div className="border border-gray-200 dark:border-gray-600 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Iniciante
+                </h4>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">R$ 49</span>
+                  <span className="text-gray-600 dark:text-gray-400">/mês</span>
+                </div>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Até 500 respostas/mês
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    3 campanhas ativas
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Relatórios básicos
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Suporte por email
+                  </li>
+                </ul>
+                <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                  Ideal para pequenos negócios
+                </div>
+              </div>
+            </div>
+
+            {/* Profissional Plan */}
+            <div className="border-2 rounded-xl p-6 hover:shadow-lg transition-all duration-200 relative" style={{ borderColor: themeColor }}>
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="px-3 py-1 text-xs font-medium text-white rounded-full" style={{ backgroundColor: themeColor }}>
+                  Mais Popular
+                </span>
+              </div>
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Profissional
+                </h4>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">R$ 99</span>
+                  <span className="text-gray-600 dark:text-gray-400">/mês</span>
+                </div>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Até 2.000 respostas/mês
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Campanhas ilimitadas
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Relatórios avançados
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Integrações API
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Suporte prioritário
+                  </li>
+                </ul>
+                <div className="text-xs font-medium" style={{ color: themeColor }}>
+                  Ideal para empresas em crescimento
+                </div>
+              </div>
+            </div>
+
+            {/* Empresarial Plan */}
+            <div className="border border-gray-200 dark:border-gray-600 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
+              <div className="text-center">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Empresarial
+                </h4>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">R$ 249</span>
+                  <span className="text-gray-600 dark:text-gray-400">/mês</span>
+                </div>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Respostas ilimitadas
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Campanhas ilimitadas
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Relatórios personalizados
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Múltiplos usuários
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    Suporte dedicado
+                  </li>
+                  <li className="flex items-center">
+                    <Check size={16} className="text-green-500 mr-2 flex-shrink-0" />
+                    White-label
+                  </li>
+                </ul>
+                <div className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                  Para grandes empresas
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Todos os planos incluem 7 dias de teste gratuito. Cancele a qualquer momento.
+            </p>
           </div>
         </motion.div>
       </div>
