@@ -184,6 +184,8 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Apply theme color if it was updated
       if (updates.themeColor) {
         applyThemeColor(updates.themeColor);
+        // Store theme color in localStorage for immediate access on page reload
+        localStorage.setItem('theme_color', updates.themeColor);
       }
     } catch (err) {
       console.error('Error updating config:', err);
@@ -199,6 +201,8 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Apply initial theme color on mount
   useEffect(() => {
     applyThemeColor(config.themeColor);
+    // Store theme color in localStorage for immediate access on page reload
+    localStorage.setItem('theme_color', config.themeColor);
   }, []);
 
   const value: ConfigContextType = {

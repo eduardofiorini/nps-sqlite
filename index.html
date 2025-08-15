@@ -6,6 +6,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meu NPS - Plataforma de Gestão de NPS</title>
     <meta name="description" content="Plataforma completa para gestão de NPS. Colete, analise e aja sobre o feedback dos clientes." />
+    <script>
+      // Apply theme color immediately to prevent flash
+      (function() {
+        try {
+          // Get stored config from localStorage or Supabase auth storage
+          const authData = localStorage.getItem('nps_supabase_auth');
+          let themeColor = '#073143'; // default
+          
+          if (authData) {
+            try {
+              const parsed = JSON.parse(authData);
+              // Try to get stored theme color from various possible locations
+              const storedColor = localStorage.getItem('theme_color') || 
+                                localStorage.getItem('app_config_theme_color');
+              if (storedColor) {
+                themeColor = storedColor;
+              }
+            } catch (e) {
+              // Ignore parsing errors, use default
+            }
+          }
+          
+          // Helper function to convert hex to RGB
+          function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+              r: parseInt(result[1], 16),
+              g: parseInt(result[2], 16),
+              b: parseInt(result[3], 16)
+            } : { r: 7, g: 49, b: 67 };
+          }
+          
+          // Helper function to adjust color brightness
+          function adjustColorBrightness(hex, percent) {
+            const num = parseInt(hex.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            
+            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+              (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+              (B < 255 ? B < 1 ? 0 : B : 255))
+              .toString(16).slice(1);
+          }
+          
+          // Apply theme color to CSS custom properties immediately
+          const root = document.documentElement;
+          const rgb = hexToRgb(themeColor);
+          const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+          const hoverColor = adjustColorBrightness(themeColor, 10);
+          const lightColor = adjustColorBrightness(themeColor, 40);
+          const darkColor = adjustColorBrightness(themeColor, -20);
+          
+          root.style.setProperty('--theme-color', themeColor);
+          root.style.setProperty('--theme-color-rgb', rgbString);
+          root.style.setProperty('--theme-color-hover', hoverColor);
+          root.style.setProperty('--theme-color-light', lightColor);
+          root.style.setProperty('--theme-color-dark', darkColor);
+        } catch (error) {
+          // If anything fails, just use the default theme color
+          console.warn('Failed to apply initial theme color:', error);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
