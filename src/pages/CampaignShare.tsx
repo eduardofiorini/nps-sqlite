@@ -76,16 +76,7 @@ const CampaignShare: React.FC = () => {
       // Set default email content
       if (foundCampaign) {
         setEmailSubject(`Pesquisa de Satisfação - ${foundCampaign.name}`);
-        setEmailMessage(`Olá {{nome}},
-
-Gostaríamos de conhecer sua opinião sobre nossos serviços.
-
-Sua participação é muito importante para nós e nos ajuda a melhorar continuamente.
-
-A pesquisa leva apenas alguns minutos para ser respondida.
-
-Atenciosamente,
-Equipe ${foundCampaign.name}`);
+        setEmailMessage('Olá {{nome}},\n\nGostaríamos de conhecer sua opinião sobre nossos serviços.\n\nSua participação é muito importante para nós e nos ajuda a melhorar continuamente.\n\nA pesquisa leva apenas alguns minutos para ser respondida.\n\nAtenciosamente,\nEquipe ' + foundCampaign.name);
       }
     };
 
