@@ -63,6 +63,17 @@ const MainLayout: React.FC = () => {
     };
     
     loadUserProfile();
+    
+    // Listen for profile updates from other components
+    const handleProfileUpdate = (event: CustomEvent) => {
+      setUserProfile(event.detail);
+    };
+    
+    window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    };
   }, [user]);
 
   const handleLogout = () => {

@@ -144,6 +144,11 @@ const Profile: React.FC = () => {
       const savedProfile = await saveUserProfile(profile);
       setProfile(savedProfile);
       
+      // Trigger a custom event to notify other components about profile update
+      window.dispatchEvent(new CustomEvent('profileUpdated', { 
+        detail: savedProfile 
+      }));
+      
       setSaveMessage('Perfil salvo com sucesso!');
       setIsEditing(false);
       
