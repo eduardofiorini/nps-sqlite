@@ -20,9 +20,11 @@ import {
 import { motion } from 'framer-motion';
 import { getCampaigns, getResponses, getSources, getSituations } from '../utils/supabaseStorage';
 import { calculateNPS, categorizeResponses, responsesByScore, npsOverTime } from '../utils/npsCalculator';
+import { useLanguage } from '../contexts/LanguageContext';
 import type { Campaign, NpsResponse } from '../types';
 
 const Reports: React.FC = () => {
+  const { t } = useLanguage();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState('30');
@@ -212,9 +214,9 @@ const Reports: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Relatórios NPS</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('reports.title')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Análise detalhada do desempenho das campanhas NPS
+            {t('reports.subtitle')}
           </p>
         </div>
         <div className="flex space-x-3">
@@ -224,7 +226,7 @@ const Reports: React.FC = () => {
             isLoading={isLoading}
             icon={<RefreshCw size={16} />}
           >
-            Atualizar
+            {t('reports.update')}
           </Button>
           <Button
             variant="primary"
@@ -232,7 +234,7 @@ const Reports: React.FC = () => {
             disabled={!reportData}
             icon={<Download size={16} />}
           >
-            Exportar Relatório
+            {t('reports.exportReport')}
           </Button>
         </div>
       </div>
@@ -242,7 +244,7 @@ const Reports: React.FC = () => {
         {/* Campaigns Filter */}
         <div className="lg:col-span-2">
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Campanhas" />
+            <CardHeader title={t('reports.campaigns')} />
             <CardContent>
               {/* Select All */}
               <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -261,7 +263,7 @@ const Reports: React.FC = () => {
                     )}
                   </div>
                   <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white">
-                    {selectedCampaigns.length === campaigns.length ? 'Desmarcar todas' : 'Selecionar todas'}
+                    {selectedCampaigns.length === campaigns.length ? t('common.cancel') : 'Selecionar todas'}
                   </span>
                 </label>
                 {selectedCampaigns.length > 0 && (
@@ -271,7 +273,7 @@ const Reports: React.FC = () => {
                     onClick={clearFilters}
                     icon={<X size={14} />}
                   >
-                    Limpar
+                    {t('reports.clearFilters')}
                   </Button>
                 )}
               </div>
@@ -297,7 +299,7 @@ const Reports: React.FC = () => {
                           {campaign.name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Criada em {new Date(campaign.startDate).toLocaleDateString('pt-BR')}
+                          {t('common.created')} {new Date(campaign.startDate).toLocaleDateString('pt-BR')}
                         </div>
                       </div>
                     </label>
@@ -305,7 +307,7 @@ const Reports: React.FC = () => {
                       variant={campaign.active ? "success" : "secondary"} 
                       className="text-xs ml-2"
                     >
-                      {campaign.active ? 'Ativa' : 'Inativa'}
+                      {campaign.active ? t('overview.active') : t('overview.inactive')}
                     </Badge>
                   </motion.div>
                 ))}
@@ -314,7 +316,7 @@ const Reports: React.FC = () => {
               {campaigns.length === 0 && (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <BarChart3 size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>Nenhuma campanha encontrada</p>
+                  <p>{t('overview.noCampaigns')}</p>
                 </div>
               )}
             </CardContent>
@@ -325,17 +327,17 @@ const Reports: React.FC = () => {
         <div className="space-y-6">
           {/* Period Filter */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Período" />
+            <CardHeader title={t('reports.period')} />
             <CardContent>
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="7">Últimos 7 dias</option>
-                <option value="30">Últimos 30 dias</option>
-                <option value="90">Últimos 90 dias</option>
-                <option value="365">Último ano</option>
+                <option value="7">{t('reports.last7Days')}</option>
+                <option value="30">{t('reports.last30Days')}</option>
+                <option value="90">{t('reports.last90Days')}</option>
+                <option value="365">{t('reports.lastYear')}</option>
               </select>
             </CardContent>
           </Card>
@@ -343,22 +345,22 @@ const Reports: React.FC = () => {
           {/* Filter Summary */}
           {selectedCampaigns.length > 0 && (
             <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-              <CardHeader title="Filtros Aplicados" />
+              <CardHeader title={t('reports.filtersApplied')} />
               <CardContent>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">Campanhas:</span>
+                    <span className="text-blue-700 dark:text-blue-300">{t('reports.campaigns')}:</span>
                     <span className="font-medium text-blue-900 dark:text-blue-100">
                       {selectedCampaigns.length}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">Período:</span>
+                    <span className="text-blue-700 dark:text-blue-300">{t('reports.period')}:</span>
                     <span className="font-medium text-blue-900 dark:text-blue-100">
-                      {dateRange === '7' && 'Últimos 7 dias'}
-                      {dateRange === '30' && 'Últimos 30 dias'}
-                      {dateRange === '90' && 'Últimos 90 dias'}
-                      {dateRange === '365' && 'Último ano'}
+                      {dateRange === '7' && t('reports.last7Days')}
+                      {dateRange === '30' && t('reports.last30Days')}
+                      {dateRange === '90' && t('reports.last90Days')}
+                      {dateRange === '365' && t('reports.lastYear')}
                     </span>
                   </div>
                 </div>
@@ -375,7 +377,7 @@ const Reports: React.FC = () => {
             icon={<Filter size={16} />}
             className="w-full"
           >
-            Aplicar Filtros
+            {t('reports.applyFilters')}
           </Button>
         </div>
       </div>
@@ -394,7 +396,7 @@ const Reports: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">NPS Score</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reports.nps')} Score</p>
                     <p className={`text-3xl font-bold ${
                       reportData.npsScore >= 50 ? 'text-green-600' : 
                       reportData.npsScore >= 0 ? 'text-yellow-600' : 'text-red-600'
@@ -414,7 +416,7 @@ const Reports: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Respostas</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reports.totalResponses')}</p>
                     <p className="text-3xl font-bold text-gray-900 dark:text-white">
                       {reportData.totalResponses}
                     </p>
@@ -431,12 +433,12 @@ const Reports: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Promotores</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reports.promoters')}</p>
                     <p className="text-3xl font-bold text-green-600">
                       {reportData.promoters}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {reportData.totalResponses > 0 ? Math.round((reportData.promoters / reportData.totalResponses) * 100) : 0}% do total
+                      {reportData.totalResponses > 0 ? Math.round((reportData.promoters / reportData.totalResponses) * 100) : 0}% {t('overview.ofTotal')}
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -451,12 +453,12 @@ const Reports: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Detratores</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reports.detractors')}</p>
                     <p className="text-3xl font-bold text-red-600">
                       {reportData.detractors}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {reportData.totalResponses > 0 ? Math.round((reportData.detractors / reportData.totalResponses) * 100) : 0}% do total
+                      {reportData.totalResponses > 0 ? Math.round((reportData.detractors / reportData.totalResponses) * 100) : 0}% {t('overview.ofTotal')}
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
@@ -471,7 +473,7 @@ const Reports: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* NPS Trend Chart */}
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader title="Tendência NPS" />
+              <CardHeader title={t('reports.npsTrend')} />
               <CardContent>
                 <div className="h-64">
                   {reportData.npsTrend && reportData.npsTrend.length > 1 ? (
@@ -497,7 +499,7 @@ const Reports: React.FC = () => {
                           },
                           title: {
                             display: true,
-                            text: 'NPS ao Longo do Tempo',
+                            text: t('reports.npsOverTime'),
                           },
                         },
                         scales: {
@@ -512,8 +514,8 @@ const Reports: React.FC = () => {
                     <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                       <div className="text-center">
                         <TrendingUp size={48} className="mx-auto mb-4 opacity-50" />
-                        <p>Dados insuficientes para mostrar tendência</p>
-                        <p className="text-sm">Colete mais respostas ao longo do tempo</p>
+                        <p>{t('reports.insufficientData')}</p>
+                        <p className="text-sm">{t('reports.collectMoreData')}</p>
                       </div>
                     </div>
                   )}
@@ -523,12 +525,12 @@ const Reports: React.FC = () => {
             
             {/* Distribution Chart */}
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader title="Distribuição de Respostas" />
+              <CardHeader title={t('reports.responseDistribution')} />
               <CardContent>
                 <div className="h-64">
                   <Doughnut
                     data={{
-                      labels: ['Detratores', 'Neutros', 'Promotores'],
+                      labels: [t('reports.detractors'), t('reports.neutrals'), t('reports.promoters')],
                       datasets: [
                         {
                           data: [reportData.detractors, reportData.passives, reportData.promoters],
@@ -555,7 +557,7 @@ const Reports: React.FC = () => {
             
             {/* Score Distribution Chart */}
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader title="Distribuição por Pontuação" />
+              <CardHeader title={t('reports.scoreDistribution')} />
               <CardContent>
                 <div className="h-64">
                   <Bar
@@ -584,7 +586,7 @@ const Reports: React.FC = () => {
                         },
                         title: {
                           display: true,
-                          text: 'Número de Respostas por Pontuação',
+                          text: t('reports.responsesByScore'),
                         },
                       },
                       scales: {
@@ -603,7 +605,7 @@ const Reports: React.FC = () => {
             
             {/* Responses by Day Chart */}
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader title="Respostas por Dia" />
+              <CardHeader title={t('reports.responsesByDay')} />
               <CardContent>
                 <div className="h-64">
                   <Line
@@ -628,7 +630,7 @@ const Reports: React.FC = () => {
                         },
                         title: {
                           display: true,
-                          text: 'Volume de Respostas Diárias',
+                          text: t('reports.dailyResponseVolume'),
                         },
                       },
                       scales: {
@@ -648,7 +650,7 @@ const Reports: React.FC = () => {
           
           {/* Responses by Source */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Respostas por Fonte" />
+            <CardHeader title={t('reports.responsesBySource')} />
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {sources.map(source => {
@@ -674,7 +676,7 @@ const Reports: React.FC = () => {
                           <div className="text-xl font-bold text-gray-900 dark:text-white">
                             {sourceResponses.length}
                           </div>
-                          <div className="text-xs text-gray-500">Respostas</div>
+                          <div className="text-xs text-gray-500">{t('reports.responses')}</div>
                         </div>
                         <div className="text-center">
                           <div className={`text-xl font-bold ${
@@ -689,7 +691,7 @@ const Reports: React.FC = () => {
                           <div className="text-xl font-bold text-green-600">
                             {promoters}
                           </div>
-                          <div className="text-xs text-gray-500">Promotores</div>
+                          <div className="text-xs text-gray-500">{t('reports.promoters')}</div>
                         </div>
                       </div>
                       
@@ -720,29 +722,29 @@ const Reports: React.FC = () => {
           
           {/* Campaign Comparison */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader title="Comparação de Campanhas" />
+            <CardHeader title={t('reports.campaignComparison')} />
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Campanha
+                        {t('reports.campaign')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Respostas
+                        {t('reports.responses')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        NPS
+                        {t('reports.nps')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Promotores
+                        {t('reports.promoters')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Neutros
+                        {t('reports.neutrals')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Detratores
+                        {t('reports.detractors')}
                       </th>
                     </tr>
                   </thead>
@@ -803,10 +805,10 @@ const Reports: React.FC = () => {
             <div className="text-center py-8">
               <BarChart3 size={64} className="mx-auto mb-4 text-gray-400 dark:text-gray-600" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Selecione campanhas para gerar relatório
+                {t('reports.selectCampaigns')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Escolha uma ou mais campanhas nos filtros acima para visualizar os dados de NPS.
+                {t('reports.selectCampaignsDesc')}
               </p>
             </div>
           </CardContent>

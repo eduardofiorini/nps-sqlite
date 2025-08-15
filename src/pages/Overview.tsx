@@ -22,6 +22,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface CampaignStats {
   campaign: Campaign;
@@ -35,6 +36,7 @@ interface CampaignStats {
 }
 
 const Overview: React.FC = () => {
+  const { t } = useLanguage();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [campaignStats, setCampaignStats] = useState<CampaignStats[]>([]);
   const [totalStats, setTotalStats] = useState({
@@ -169,14 +171,14 @@ const Overview: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Geral</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('overview.title')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Visão geral de todas as campanhas NPS
+            {t('overview.subtitle')}
           </p>
         </div>
         <Link to="/campaigns/new">
           <Button variant="primary" icon={<Plus size={16} />}>
-            Nova Campanha
+            {t('dashboard.newCampaign')}
           </Button>
         </Link>
       </div>
@@ -193,10 +195,10 @@ const Overview: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Campanhas</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('overview.totalCampaigns')}</p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalStats.totalCampaigns}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {totalStats.activeCampaigns} ativas
+                    {totalStats.activeCampaigns} {t('overview.activeCampaigns')}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-[#073143]/10 dark:bg-[#073143]/20 rounded-lg flex items-center justify-center">
@@ -216,7 +218,7 @@ const Overview: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">NPS Médio</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('overview.averageNps')}</p>
                   <p className={`text-3xl font-bold ${
                     totalStats.averageNPS >= 50 ? 'text-green-600' : 
                     totalStats.averageNPS >= 0 ? 'text-yellow-600' : 'text-red-600'
@@ -224,7 +226,7 @@ const Overview: React.FC = () => {
                     {totalStats.averageNPS}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {totalStats.totalResponses} respostas
+                    {totalStats.totalResponses} {t('overview.responses')}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -244,10 +246,10 @@ const Overview: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Respostas</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('overview.totalResponses')}</p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalStats.totalResponses}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Todas as campanhas
+                    {t('overview.allCampaigns')}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -267,10 +269,10 @@ const Overview: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Promotores</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('overview.promoters')}</p>
                   <p className="text-3xl font-bold text-green-600">{totalStats.totalPromoters}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {totalStats.totalResponses > 0 ? Math.round((totalStats.totalPromoters / totalStats.totalResponses) * 100) : 0}% do total
+                    {totalStats.totalResponses > 0 ? Math.round((totalStats.totalPromoters / totalStats.totalResponses) * 100) : 0}% {t('overview.ofTotal')}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -291,13 +293,13 @@ const Overview: React.FC = () => {
             transition={{ delay: 0.5 }}
           >
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader title="NPS Geral" />
+              <CardHeader title={t('overview.generalNps')} />
               <CardContent>
                 <div className="flex justify-center py-4">
                   <NpsDoughnut npsScore={totalStats.averageNPS} width={200} height={200} />
                 </div>
                 <div className="text-center mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Baseado em {totalStats.totalResponses} respostas de {totalStats.totalCampaigns} campanhas
+                  {t('overview.basedOn')} {totalStats.totalResponses} {t('overview.responses')} de {totalStats.totalCampaigns} {t('overview.campaignsText')}
                 </div>
               </CardContent>
             </Card>
@@ -309,7 +311,7 @@ const Overview: React.FC = () => {
             transition={{ delay: 0.6 }}
           >
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader title="Distribuição Geral" />
+              <CardHeader title={t('overview.generalDistribution')} />
               <CardContent>
                 <div className="h-64">
                   <NpsDistribution
@@ -321,15 +323,15 @@ const Overview: React.FC = () => {
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                   <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
                     <div className="text-xl font-bold text-red-500">{totalStats.totalDetractors}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Detratores</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('campaign.detractors')}</div>
                   </div>
                   <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md">
                     <div className="text-xl font-bold text-yellow-500">{totalStats.totalPassives}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Neutros</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('campaign.passives')}</div>
                   </div>
                   <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md">
                     <div className="text-xl font-bold text-green-500">{totalStats.totalPromoters}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Promotores</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('campaign.promoters')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -346,11 +348,11 @@ const Overview: React.FC = () => {
       >
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader 
-            title="Campanhas Ativas" 
+            title={t('overview.activeCampaignsTitle')} 
             action={
               <Link to="/">
                 <Button variant="outline\" size="sm\" icon={<ArrowRight size={16} />}>
-                  Ver Todas
+                  {t('overview.viewAll')}
                 </Button>
               </Link>
             }
@@ -363,11 +365,11 @@ const Overview: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Nenhuma campanha encontrada</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Crie sua primeira campanha NPS para começar a coletar feedback.
+                  {t('overview.noCampaignsDesc')}
                 </p>
                 <Link to="/campaigns/new">
                   <Button variant="outline" size="sm" icon={<ArrowRight size={16} />} className="text-gray-700 dark:text-gray-300">
-                    Criar Primeira Campanha
+                    {t('overview.createFirstCampaign')}
                   </Button>
                 </Link>
               </div>
@@ -395,7 +397,7 @@ const Overview: React.FC = () => {
                         <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                           <span className="flex items-center">
                             <MessageSquare size={14} className="mr-1" />
-                            {stat.totalResponses} respostas
+                            {stat.totalResponses} {t('overview.responses')}
                           </span>
                           <span className="flex items-center">
                             <Calendar size={14} className="mr-1" />
@@ -403,18 +405,18 @@ const Overview: React.FC = () => {
                           </span>
                           <div className={`flex items-center ${getTrendColor(stat.trend)} dark:text-gray-300`}>
                             {getTrendIcon(stat.trend)}
-                            <span className="ml-1 capitalize">{stat.trend === 'up' ? 'Crescendo' : stat.trend === 'down' ? 'Declinando' : 'Estável'}</span>
+                            <span className="ml-1 capitalize">{stat.trend === 'up' ? t('overview.growing') : stat.trend === 'down' ? t('overview.declining') : t('overview.stable')}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Badge variant={stat.campaign.active ? "success" : "danger"}>
-                        {stat.campaign.active ? 'Ativa' : 'Inativa'}
+                        {stat.campaign.active ? t('overview.active') : t('overview.inactive')}
                       </Badge>
                       <Link to={`/campaigns/${stat.campaign.id}`}>
                         <Button variant="outline" size="sm" icon={<Eye size={14} />}>
-                          Ver
+                          {t('overview.view')}
                         </Button>
                       </Link>
                     </div>
@@ -425,7 +427,7 @@ const Overview: React.FC = () => {
                   <div className="text-center pt-4">
                     <Link to="/">
                       <Button variant="outline">
-                        Ver todas as {campaignStats.length} campanhas
+                        {t('overview.viewAllCampaigns')} {campaignStats.length} {t('overview.campaignsText')}
                       </Button>
                     </Link>
                   </div>
