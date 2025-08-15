@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import { saveCampaign, saveCampaignForm, getSources, getGroups } from '../utils/supabaseStorage';
 import { Campaign, CampaignForm, SurveyCustomization, CampaignAutomation, Source, Group } from '../types';
 import Button from '../components/ui/Button';
+import PlanLimitModal from '../components/ui/PlanLimitModal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import FormBuilder from '../components/dashboard/FormBuilder';
@@ -31,9 +33,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 const CampaignCreate: React.FC = () => {
   const navigate = useNavigate();
+  const limitInfo = usePlanLimits();
   const [currentStep, setCurrentStep] = useState(1);
   const [sources, setSources] = useState<Source[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [campaign, setCampaign] = useState<Campaign>({
     id: '',
     name: '',
@@ -126,6 +130,12 @@ const CampaignCreate: React.FC = () => {
   
   const handleNextStep = async () => {
     if (currentStep === 1) {
+      // Check if user can create campaigns
+      if (!limitInfo.canCreateCampaign) {
+        setShowLimitModal(true);
+        return;
+      }
+      
       if (!campaign.name) {
         alert('Por favor, digite o nome da campanha');
         return;
@@ -1143,6 +1153,14 @@ const CampaignCreate: React.FC = () => {
           </div>
         </motion.div>
       )}
+      
+      {/* Plan Limit Modal */}
+      <PlanLimitModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        limitInfo={limitInfo}
+        limitType="campaigns"
+      />
     </div>
   );
 };

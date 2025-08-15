@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import { Campaign, NpsResponse } from '../types';
 import { getCampaigns, getResponses, getSources, getSituations, getGroups } from '../utils/supabaseStorage';
 import { calculateNPS, categorizeResponses } from '../utils/npsCalculator';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import PlanLimitModal from '../components/ui/PlanLimitModal';
 import { NpsDoughnut, NpsDistribution } from '../components/dashboard/NpsChart';
 import { 
   TrendingUp, 
@@ -37,6 +39,7 @@ interface CampaignStats {
 
 const Overview: React.FC = () => {
   const { t } = useLanguage();
+  const limitInfo = usePlanLimits();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [campaignStats, setCampaignStats] = useState<CampaignStats[]>([]);
   const [totalStats, setTotalStats] = useState({
@@ -49,6 +52,7 @@ const Overview: React.FC = () => {
     totalDetractors: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -158,6 +162,15 @@ const Overview: React.FC = () => {
     }
   };
 
+  const handleCreateCampaign = () => {
+    if (!limitInfo.canCreateCampaign) {
+      setShowLimitModal(true);
+      return;
+    }
+    // Navigate to create campaign page
+    window.location.href = '/dashboard/campaigns/new';
+  };
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -176,11 +189,13 @@ const Overview: React.FC = () => {
             {t('overview.subtitle')}
           </p>
         </div>
-        <Link to="/dashboard/campaigns/new">
-          <Button variant="primary" icon={<Plus size={16} />}>
-            {t('dashboard.newCampaign')}
-          </Button>
-        </Link>
+        <Button 
+          variant="primary" 
+          icon={<Plus size={16} />}
+          onClick={handleCreateCampaign}
+        >
+          {t('dashboard.newCampaign')}
+        </Button>
       </div>
 
 
@@ -367,11 +382,15 @@ const Overview: React.FC = () => {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {t('overview.noCampaignsDesc')}
                 </p>
-                <Link to="/dashboard/campaigns/new">
-                  <Button variant="outline" size="sm" icon={<ArrowRight size={16} />} className="text-gray-700 dark:text-gray-300">
-                    {t('overview.createFirstCampaign')}
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  icon={<ArrowRight size={16} />} 
+                  className="text-gray-700 dark:text-gray-300"
+                  onClick={handleCreateCampaign}
+                >
+                  {t('overview.createFirstCampaign')}
+                </Button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -437,6 +456,14 @@ const Overview: React.FC = () => {
           </CardContent>
         </Card>
       </motion.div>
+      
+      {/* Plan Limit Modal */}
+      <PlanLimitModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        limitInfo={limitInfo}
+        limitType="campaigns"
+      />
     </div>
   );
 };

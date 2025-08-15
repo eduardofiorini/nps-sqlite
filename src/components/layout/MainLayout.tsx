@@ -30,6 +30,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
 import UnifiedBanner from '../ui/UnifiedBanner';
+import UsageBanner from '../ui/UsageBanner';
 import { useSubscription } from '../../hooks/useSubscription';
 
 const MainLayout: React.FC = () => {
@@ -549,6 +550,7 @@ const MainLayout: React.FC = () => {
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <UnifiedBanner />
+            <UsageBanner />
             <Outlet />
           </div>
         </main>

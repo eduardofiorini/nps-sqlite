@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import CampaignCard from '../components/dashboard/CampaignCard';
 import Button from '../components/ui/Button';
+import PlanLimitModal from '../components/ui/PlanLimitModal';
 import { Campaign } from '../types';
 import { getCampaigns, initializeDefaultData } from '../utils/supabaseStorage';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -12,7 +14,9 @@ const Dashboard: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const { t, language } = useLanguage();
+  const limitInfo = usePlanLimits();
   
   useEffect(() => {
     const loadData = async () => {
@@ -68,6 +72,15 @@ const Dashboard: React.FC = () => {
     }, 500);
   };
   
+  const handleCreateCampaign = () => {
+    if (!limitInfo.canCreateCampaign) {
+      setShowLimitModal(true);
+      return;
+    }
+    // Navigate to create campaign page
+    window.location.href = '/dashboard/campaigns/new';
+  };
+  
   // Animation variants for staggered animations
   const container = {
     hidden: { opacity: 0 },
@@ -103,11 +116,13 @@ const Dashboard: React.FC = () => {
           >
             {t('common.refresh')}
           </Button>
-          <Link to="/dashboard/campaigns/new">
-            <Button variant="primary" icon={<Plus size={16} />}>
-              {t('campaigns.newCampaign')}
-            </Button>
-          </Link>
+          <Button 
+            variant="primary" 
+            icon={<Plus size={16} />}
+            onClick={handleCreateCampaign}
+          >
+            {t('campaigns.newCampaign')}
+          </Button>
         </div>
       </div>
       
@@ -143,11 +158,13 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             {t('campaigns.noCampaignsDesc')}
           </p>
-          <Link to="/dashboard/campaigns/new">
-            <Button variant="primary" icon={<Plus size={16} />}>
-              {t('campaigns.createCampaign')}
-            </Button>
-          </Link>
+          <Button 
+            variant="primary" 
+            icon={<Plus size={16} />}
+            onClick={handleCreateCampaign}
+          >
+            {t('campaigns.createCampaign')}
+          </Button>
         </motion.div>
       ) : (
         <motion.div
@@ -174,6 +191,14 @@ const Dashboard: React.FC = () => {
           </p>
         </div>
       )}
+      
+      {/* Plan Limit Modal */}
+      <PlanLimitModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        limitInfo={limitInfo}
+        limitType="campaigns"
+      />
     </div>
   );
 };

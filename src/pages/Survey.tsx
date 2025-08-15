@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import { Campaign, CampaignForm, NpsResponse } from '../types';
 import { getCampaigns, getCampaignForm, saveResponse, getSituations, isSupabaseConfigured } from '../utils/supabaseStorage';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -111,6 +112,9 @@ const Survey: React.FC = () => {
   const [webhookRetryCount, setWebhookRetryCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Plan limits check
+  const limitInfo = usePlanLimits();
   
   // Detect browser language for survey
   const [surveyLanguage] = useState<'en' | 'pt-BR' | 'es'>(detectBrowserLanguage());
@@ -341,6 +345,13 @@ const Survey: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if campaign can receive more responses
+    if (!limitInfo.canReceiveResponse) {
+      setAutomationError('Limite de respostas do plano atingido. Faça upgrade para continuar coletando feedback.');
+      return;
+    }
+    
     setIsProcessing(true);
     setAutomationError(''); // Clear any previous errors
     setWebhookRetryCount(0); // Reset retry count
