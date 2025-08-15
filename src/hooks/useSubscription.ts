@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { getProductByPriceId } from '../stripe-config';
 
@@ -35,14 +36,23 @@ export const useSubscription = () => {
         setLoading(true);
         setError(null);
 
+        // Check if Supabase is configured
+        if (!isSupabaseConfigured()) {
+          console.log('Supabase not configured, skipping subscription fetch');
+          setSubscription(null);
+          setLoading(false);
+          return;
+        }
+
         const { data, error: fetchError } = await supabase
           .from('stripe_user_subscriptions')
           .select('*')
           .maybeSingle();
 
         if (fetchError) {
-          console.error('Error fetching subscription:', fetchError);
-          setError('Failed to fetch subscription data');
+          console.warn('Error fetching subscription:', fetchError);
+          // Don't set error for missing data, just set null subscription
+          setSubscription(null);
           return;
         }
 
@@ -66,8 +76,10 @@ export const useSubscription = () => {
           setSubscription(null);
         }
       } catch (err) {
-        console.error('Error in fetchSubscription:', err);
-        setError('An unexpected error occurred');
+        console.warn('Error in fetchSubscription:', err);
+        // In case of network errors or other issues, just set null subscription
+        setSubscription(null);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -79,6 +91,12 @@ export const useSubscription = () => {
   const refreshSubscription = async () => {
     if (!user) return;
     
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured()) {
+      console.log('Supabase not configured, skipping subscription refresh');
+      return;
+    }
+    
     setLoading(true);
     try {
       const { data, error: fetchError } = await supabase
@@ -87,8 +105,8 @@ export const useSubscription = () => {
         .maybeSingle();
 
       if (fetchError) {
-        console.error('Error refreshing subscription:', fetchError);
-        setError('Failed to refresh subscription data');
+        console.warn('Error refreshing subscription:', fetchError);
+        setSubscription(null);
         return;
       }
 
@@ -112,8 +130,9 @@ export const useSubscription = () => {
         setSubscription(null);
       }
     } catch (err) {
-      console.error('Error refreshing subscription:', err);
-      setError('An unexpected error occurred while refreshing');
+      console.warn('Error refreshing subscription:', err);
+      setSubscription(null);
+      setError(null);
     } finally {
       setLoading(false);
     }
