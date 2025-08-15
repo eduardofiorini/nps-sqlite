@@ -29,6 +29,8 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import TrialExpired from './pages/TrialExpired';
 import { initializeDefaultData } from './utils/supabaseStorage';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -112,6 +114,10 @@ function App() {
                     <Route path="settings/sources" element={<EntityCrud entityType="sources" />} />
                     <Route path="settings/situations" element={<EntityCrud entityType="situations" />} />
                     <Route path="settings/groups" element={<EntityCrud entityType="groups" />} />
+                    
+                    {/* Admin Routes */}
+                    <Route path="admin/users" element={<AdminUsers />} />
+                    <Route path="admin/subscriptions" element={<AdminSubscriptions />} />
                     
                     <Route path="pricing" element={<Pricing />} />
                     <Route path="subscription-success" element={<SubscriptionSuccess />} />

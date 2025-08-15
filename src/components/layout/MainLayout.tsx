@@ -34,6 +34,7 @@ import UsageBanner from '../ui/UsageBanner';
 import { useSubscription } from '../../hooks/useSubscription';
 import { getUserProfile } from '../../utils/supabaseStorage';
 import type { UserProfile } from '../../types';
+import { useAdmin } from '../../hooks/useAdmin';
 
 const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -48,6 +49,7 @@ const MainLayout: React.FC = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = React.useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
+  const { isAdmin, permissions } = useAdmin();
 
   // Load user profile to get avatar
   React.useEffect(() => {
@@ -106,6 +108,21 @@ const MainLayout: React.FC = () => {
       path: '/user/pricing', 
       label: language === 'pt-BR' ? 'Planos' : 'Pricing', 
       icon: <Crown size={20} /> 
+    },
+  ];
+
+  const adminItems = [
+    { 
+      path: '/user/admin/users', 
+      label: 'Usuários', 
+      icon: <Users size={18} />,
+      permission: 'view_users'
+    },
+    { 
+      path: '/user/admin/subscriptions', 
+      label: 'Assinaturas', 
+      icon: <CreditCard size={18} />,
+      permission: 'view_subscriptions'
     },
   ];
 
@@ -411,6 +428,47 @@ const MainLayout: React.FC = () => {
                   )}
                 </AnimatePresence>
               </div>
+              
+              {/* Admin Section */}
+              {isAdmin && (
+                <div className="mt-6">
+                  <div className={`${
+                    isSidebarCollapsed 
+                      ? 'px-3 mb-2' 
+                      : 'px-4 py-2 mb-2'
+                  } text-xs font-semibold text-yellow-600 dark:text-yellow-400 uppercase tracking-wider flex items-center`}>
+                    {isSidebarCollapsed ? (
+                      <Crown size={16} title="Administração" />
+                    ) : (
+                      <>
+                        <Crown size={16} className="mr-2" />
+                        Administração
+                      </>
+                    )}
+                  </div>
+                  {adminItems
+                    .filter(item => permissions[item.permission as keyof typeof permissions])
+                    .map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`${
+                          isSidebarCollapsed 
+                            ? 'flex items-center justify-center p-3 text-sm font-medium rounded-lg transition-all duration-200' 
+                            : 'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200'
+                        } ${
+                          isActive(item.path)
+                            ? 'text-white shadow-md bg-yellow-600'
+                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-yellow-600 dark:hover:text-yellow-400'
+                        }`}
+                        title={isSidebarCollapsed ? item.label : undefined}
+                      >
+                        <span className={`${isSidebarCollapsed ? 'mr-0' : 'mr-3'}`}>{item.icon}</span>
+                        {!isSidebarCollapsed && item.label}
+                      </Link>
+                    ))}
+                </div>
+              )}
             </div>
             
             <div className={`mt-auto ${isSidebarCollapsed ? 'px-3' : 'px-6'} py-4 border-t border-gray-200 dark:border-gray-700`}>
@@ -531,6 +589,33 @@ const MainLayout: React.FC = () => {
                         </Link>
                       ))}
                     </div>
+                    
+                    {/* Mobile Admin */}
+                    {isAdmin && (
+                      <div className="mt-6">
+                        <div className="px-4 py-2 text-xs font-semibold text-yellow-600 dark:text-yellow-400 uppercase tracking-wider flex items-center">
+                          <Crown size={16} className="mr-2" />
+                          Administração
+                        </div>
+                        {adminItems
+                          .filter(item => permissions[item.permission as keyof typeof permissions])
+                          .map((item) => (
+                            <Link
+                              key={item.path}
+                              to={item.path}
+                              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                isActive(item.path)
+                                  ? 'text-white shadow-md bg-yellow-600'
+                                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-yellow-600 dark:hover:text-yellow-400'
+                              }`}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              <span className="mr-3">{item.icon}</span>
+                              {item.label}
+                            </Link>
+                          ))}
+                      </div>
+                    )}
                   </nav>
                 </div>
                 <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
