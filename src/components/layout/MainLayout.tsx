@@ -533,7 +533,7 @@ const MainLayout: React.FC = () => {
                   )}
                   <div className="space-y-2">
                     <Link
-                      to="/dashboard/profile"
+                      to="/profile"
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
