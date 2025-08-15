@@ -94,7 +94,6 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onDelete }) => {
             </div>
           }
           description={
-                }
             <div className="flex items-center text-gray-500 dark:text-gray-400 mt-2 text-sm">
               <Calendar size={14} className="mr-1" />
               <span>
