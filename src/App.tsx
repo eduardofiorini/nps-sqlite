@@ -83,8 +83,11 @@ function App() {
                   {/* Public email preview route */}
                   <Route path="/email-preview/:campaignId" element={<EmailPreview />} />
                   
+                  {/* Public landing page as home */}
+                  <Route path="/" element={<Landing />} />
+                  
                   <Route
-                    path="/"
+                    path="/dashboard"
                     element={
                       <ProtectedRoute>
                         <TrialGuard>
@@ -119,7 +122,7 @@ function App() {
                   {/* Public survey route - moved outside protected routes */}
                   <Route path="/survey/:id" element={<Survey />} />
                   
-                  <Route path="*" element={<Navigate to="/overview" />} />
+                  <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </AppInitializer>
             </ConfigProvider>
