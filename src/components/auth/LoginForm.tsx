@@ -16,7 +16,7 @@ const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { themeColor } = useConfig();
   const navigate = useNavigate();
   
