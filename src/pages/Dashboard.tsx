@@ -86,6 +86,8 @@ const Dashboard: React.FC = () => {
 
   const pageTitle = language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns';
   const pageSubtitle = language === 'pt-BR' ? 'Monitore e gerencie suas campanhas NPS' : 'Monitor and manage your NPS campaigns';
+  const pageTitle = t('campaigns.title');
+  const pageSubtitle = t('campaigns.subtitle');
   
   return (
     <div>
@@ -101,11 +103,11 @@ const Dashboard: React.FC = () => {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            {language === 'pt-BR' ? 'Atualizar' : 'Refresh'}
+            {t('common.refresh')}
           </Button>
           <Link to="/campaigns/new">
             <Button variant="primary" icon={<Plus size={16} />}>
-              {language === 'pt-BR' ? 'Nova Campanha' : 'New Campaign'}
+              {t('campaigns.newCampaign')}
             </Button>
           </Link>
         </div>
@@ -138,17 +140,14 @@ const Dashboard: React.FC = () => {
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            {language === 'pt-BR' ? 'Nenhuma campanha ainda' : 'No campaigns yet'}
+            {t('campaigns.noCampaigns')}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {language === 'pt-BR' 
-              ? 'Crie sua primeira campanha NPS para começar a coletar feedback dos clientes.'
-              : 'Create your first NPS campaign to start collecting customer feedback.'
-            }
+            {t('campaigns.noCampaignsDesc')}
           </p>
           <Link to="/campaigns/new">
             <Button variant="primary" icon={<Plus size={16} />}>
-              {language === 'pt-BR' ? 'Criar Campanha' : 'Create Campaign'}
+              {t('campaigns.createCampaign')}
             </Button>
           </Link>
         </motion.div>
@@ -173,10 +172,7 @@ const Dashboard: React.FC = () => {
       {campaigns.length > 0 && (
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {campaigns.length} {campaigns.length === 1 
-              ? (language === 'pt-BR' ? 'campanha' : 'campaign')
-              : (language === 'pt-BR' ? 'campanhas' : 'campaigns')
-            } {language === 'pt-BR' ? 'no total' : 'total'}
+            {campaigns.length} {campaigns.length === 1 ? t('campaigns.campaign') : t('campaigns.campaigns')} {t('campaigns.total')}
           </p>
         </div>
       )}

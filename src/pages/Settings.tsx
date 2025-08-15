@@ -331,12 +331,12 @@ const Settings: React.FC = () => {
 
         {/* Configurações Gerais */}
         <Card>
-          <CardHeader title="Configurações Gerais" />
+          <CardHeader title={t('settings.generalSettings')} />
           <CardContent>
             <div className="space-y-6">
               <div>
                 <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
-                  Cor do Tema
+                  {t('settings.themeColorLabel')}
                 </label>
                 <div className="flex items-center">
                   <input
@@ -410,15 +410,15 @@ const Settings: React.FC = () => {
 
         {/* Dados da Empresa */}
         <Card>
-          <CardHeader title="Dados da Empresa" />
+          <CardHeader title={t('settings.companyData')} />
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="relative">
                 <Input
-                  label="Nome da Empresa"
+                  label={t('settings.companyName')}
                   value={formData.company?.name || ''}
                   onChange={(e) => handleChange('company.name', e.target.value)}
-                  placeholder="Nome da sua empresa"
+                  placeholder={language === 'pt-BR' ? 'Nome da sua empresa' : 'Your company name'}
                   fullWidth
                   className="pl-10"
                 />
@@ -429,7 +429,7 @@ const Settings: React.FC = () => {
 
               <div className="relative">
                 <Input
-                  label="Documento (CNPJ/CPF)"
+                  label={t('settings.document')}
                   value={formData.company?.document || ''}
                   onChange={(e) => handleChange('company.document', e.target.value)}
                   placeholder="00.000.000/0000-00"
@@ -443,10 +443,10 @@ const Settings: React.FC = () => {
 
               <div className="md:col-span-2 relative">
                 <Input
-                  label="Endereço"
+                  label={t('settings.address')}
                   value={formData.company?.address || ''}
                   onChange={(e) => handleChange('company.address', e.target.value)}
-                  placeholder="Endereço completo da empresa"
+                  placeholder={language === 'pt-BR' ? 'Endereço completo da empresa' : 'Complete company address'}
                   fullWidth
                   className="pl-10"
                 />
@@ -461,7 +461,7 @@ const Settings: React.FC = () => {
                   type="email"
                   value={formData.company?.email || ''}
                   onChange={(e) => handleChange('company.email', e.target.value)}
-                  placeholder="contato@empresa.com"
+                  placeholder={language === 'pt-BR' ? 'contato@empresa.com' : 'contact@company.com'}
                   fullWidth
                   className="pl-10"
                 />
@@ -472,7 +472,7 @@ const Settings: React.FC = () => {
 
               <div className="relative">
                 <Input
-                  label="Telefone"
+                  label={t('profile.phone')}
                   value={formData.company?.phone || ''}
                   onChange={(e) => handleChange('company.phone', e.target.value)}
                   placeholder="(11) 99999-9999"
@@ -489,7 +489,7 @@ const Settings: React.FC = () => {
 
         {/* Configurações de E-mail */}
         <Card>
-          <CardHeader title="Configurações de E-mail" />
+          <CardHeader title={t('settings.emailSettings')} />
           <CardContent>
             <div className="space-y-8">
               {/* SMTP Configuration */}
@@ -509,7 +509,7 @@ const Settings: React.FC = () => {
                         isLoading={testingConnection.SMTP}
                         icon={<CheckCircle size={14} />}
                       >
-                        Testar Conexão
+                        {t('settings.testConnection')}
                       </Button>
                     )}
                     <label className="inline-flex items-center cursor-pointer">
@@ -527,7 +527,7 @@ const Settings: React.FC = () => {
                 {formData.integrations?.smtp?.enabled && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
-                      label="Servidor SMTP"
+                      label={t('settings.smtpServer')}
                       value={formData.integrations?.smtp?.host || ''}
                       onChange={(e) => handleChange('integrations.smtp.host', e.target.value)}
                       placeholder="smtp.gmail.com"
@@ -536,7 +536,7 @@ const Settings: React.FC = () => {
 
                     <div className="grid grid-cols-2 gap-2">
                       <Input
-                        label="Porta"
+                        label={t('settings.port')}
                         type="number"
                         value={formData.integrations?.smtp?.port || 587}
                         onChange={(e) => handleChange('integrations.smtp.port', parseInt(e.target.value))}
@@ -557,16 +557,16 @@ const Settings: React.FC = () => {
                     </div>
 
                     <Input
-                      label="Usuário"
+                      label={t('settings.username')}
                       value={formData.integrations?.smtp?.username || ''}
                       onChange={(e) => handleChange('integrations.smtp.username', e.target.value)}
-                      placeholder="seu@email.com"
+                      placeholder={language === 'pt-BR' ? 'seu@email.com' : 'your@email.com'}
                       fullWidth
                     />
 
                     <div className="relative">
                       <Input
-                        label="Senha"
+                        label={t('settings.password')}
                         type={showPasswords.smtp ? 'text' : 'password'}
                         value={formData.integrations?.smtp?.password || ''}
                         onChange={(e) => handleChange('integrations.smtp.password', e.target.value)}
@@ -584,19 +584,19 @@ const Settings: React.FC = () => {
                     </div>
 
                     <Input
-                      label="Nome do Remetente"
+                      label={t('settings.senderName')}
                       value={formData.integrations?.smtp?.fromName || ''}
                       onChange={(e) => handleChange('integrations.smtp.fromName', e.target.value)}
-                      placeholder="Minha Empresa"
+                      placeholder={language === 'pt-BR' ? 'Minha Empresa' : 'My Company'}
                       fullWidth
                     />
 
                     <Input
-                      label="E-mail do Remetente"
+                      label={t('settings.senderEmail')}
                       type="email"
                       value={formData.integrations?.smtp?.fromEmail || ''}
                       onChange={(e) => handleChange('integrations.smtp.fromEmail', e.target.value)}
-                      placeholder="noreply@empresa.com"
+                      placeholder={language === 'pt-BR' ? 'noreply@empresa.com' : 'noreply@company.com'}
                       fullWidth
                     />
                   </div>
@@ -621,7 +621,7 @@ const Settings: React.FC = () => {
                         isLoading={testingConnection['ZenVia E-mail']}
                         icon={<CheckCircle size={14} />}
                       >
-                        Testar API
+                        {t('common.test')} API
                       </Button>
                     )}
                     <label className="inline-flex items-center cursor-pointer">
@@ -640,7 +640,7 @@ const Settings: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative">
                       <Input
-                        label="API Key"
+                        label={t('settings.apiKey')}
                         type={showPasswords.zenviaEmail ? 'text' : 'password'}
                         value={formData.integrations?.zenvia?.email?.apiKey || ''}
                         onChange={(e) => handleChange('integrations.zenvia.email.apiKey', e.target.value)}
@@ -658,20 +658,20 @@ const Settings: React.FC = () => {
                     </div>
 
                     <Input
-                      label="E-mail do Remetente"
+                      label={t('settings.senderEmail')}
                       type="email"
                       value={formData.integrations?.zenvia?.email?.fromEmail || ''}
                       onChange={(e) => handleChange('integrations.zenvia.email.fromEmail', e.target.value)}
-                      placeholder="noreply@empresa.com"
+                      placeholder={language === 'pt-BR' ? 'noreply@empresa.com' : 'noreply@company.com'}
                       fullWidth
                     />
 
                     <div className="md:col-span-2">
                       <Input
-                        label="Nome do Remetente"
+                        label={t('settings.senderName')}
                         value={formData.integrations?.zenvia?.email?.fromName || ''}
                         onChange={(e) => handleChange('integrations.zenvia.email.fromName', e.target.value)}
-                        placeholder="Minha Empresa"
+                        placeholder={language === 'pt-BR' ? 'Minha Empresa' : 'My Company'}
                         fullWidth
                       />
                     </div>
@@ -684,7 +684,7 @@ const Settings: React.FC = () => {
 
         {/* Configurações de SMS e WhatsApp */}
         <Card>
-          <CardHeader title="Configurações de SMS e WhatsApp" />
+          <CardHeader title={t('settings.smsWhatsappSettings')} />
           <CardContent>
             <div className="space-y-8">
               {/* ZenVia SMS Configuration */}
@@ -705,7 +705,7 @@ const Settings: React.FC = () => {
                         isLoading={testingConnection['ZenVia SMS']}
                         icon={<CheckCircle size={14} />}
                       >
-                        Testar API
+                        {t('common.test')} API
                       </Button>
                     )}
                     <label className="inline-flex items-center cursor-pointer">
@@ -724,7 +724,7 @@ const Settings: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative">
                       <Input
-                        label="API Key"
+                        label={t('settings.apiKey')}
                         type={showPasswords.zenviaSms ? 'text' : 'password'}
                         value={formData.integrations?.zenvia?.sms?.apiKey || ''}
                         onChange={(e) => handleChange('integrations.zenvia.sms.apiKey', e.target.value)}
@@ -742,10 +742,10 @@ const Settings: React.FC = () => {
                     </div>
 
                     <Input
-                      label="Remetente (From)"
+                      label={language === 'pt-BR' ? 'Remetente (From)' : 'Sender (From)'}
                       value={formData.integrations?.zenvia?.sms?.from || ''}
                       onChange={(e) => handleChange('integrations.zenvia.sms.from', e.target.value)}
-                      placeholder="MinhaEmpresa"
+                      placeholder={language === 'pt-BR' ? 'MinhaEmpresa' : 'MyCompany'}
                       fullWidth
                     />
                   </div>
@@ -770,7 +770,7 @@ const Settings: React.FC = () => {
                         isLoading={testingConnection['ZenVia WhatsApp']}
                         icon={<CheckCircle size={14} />}
                       >
-                        Testar API
+                        {t('common.test')} API
                       </Button>
                     )}
                     <label className="inline-flex items-center cursor-pointer">
@@ -789,7 +789,7 @@ const Settings: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative">
                       <Input
-                        label="API Key"
+                        label={t('settings.apiKey')}
                         type={showPasswords.zenviaWhatsapp ? 'text' : 'password'}
                         value={formData.integrations?.zenvia?.whatsapp?.apiKey || ''}
                         onChange={(e) => handleChange('integrations.zenvia.whatsapp.apiKey', e.target.value)}
@@ -807,7 +807,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <Input
-                      label="Número do Remetente"
+                      label={t('settings.senderNumber')}
                       value={formData.integrations?.zenvia?.whatsapp?.from || ''}
                       onChange={(e) => handleChange('integrations.zenvia.whatsapp.from', e.target.value)}
                       placeholder="5511999999999"
@@ -838,11 +838,12 @@ const Settings: React.FC = () => {
         isOpen={showTestEmailModal}
         onClose={() => setShowTestEmailModal(false)}
         title={testEmailResult?.success ? "Email de Teste Enviado" : "Erro ao Enviar Email"}
+        title={testEmailResult?.success ? t('settings.emailTestSent') : t('settings.emailTestError')}
         size="md"
         footer={
           <div className="flex justify-end">
             <Button variant="primary" onClick={() => setShowTestEmailModal(false)}>
-              Fechar
+              {t('common.close')}
             </Button>
           </div>
         }
@@ -862,7 +863,7 @@ const Settings: React.FC = () => {
               <h3 className={`font-medium ${
                 testEmailResult?.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
               }`}>
-                {testEmailResult?.success ? 'Sucesso' : 'Erro'}
+                {testEmailResult?.success ? t('common.success') : t('common.error')}
               </h3>
               <p className={`mt-1 text-sm ${
                 testEmailResult?.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
@@ -872,19 +873,19 @@ const Settings: React.FC = () => {
               
               {testEmailResult?.success && (
                 <div className="mt-3 text-sm text-green-700 dark:text-green-300">
-                  <p>Verifique sua caixa de entrada para confirmar o recebimento do email de teste.</p>
+                  <p>{language === 'pt-BR' ? 'Verifique sua caixa de entrada para confirmar o recebimento do email de teste.' : 'Check your inbox to confirm receipt of the test email.'}</p>
                 </div>
               )}
               
               {!testEmailResult?.success && (
                 <div className="mt-3 text-sm text-red-700 dark:text-red-300">
-                  <p>Dicas para resolver problemas comuns:</p>
+                  <p>{t('settings.troubleshootingTips')}</p>
                   <ul className="list-disc list-inside mt-1 space-y-1">
-                    <li>Verifique se o host e porta estão corretos</li>
-                    <li>Confirme se o usuário e senha estão corretos</li>
-                    <li>Verifique se a opção SSL/TLS está configurada corretamente</li>
-                    <li>Alguns provedores de email exigem uma "senha de aplicativo" específica</li>
-                    <li>Verifique se o provedor de email permite acesso SMTP</li>
+                    <li>{language === 'pt-BR' ? 'Verifique se o host e porta estão corretos' : 'Check if host and port are correct'}</li>
+                    <li>{language === 'pt-BR' ? 'Confirme se o usuário e senha estão corretos' : 'Confirm if username and password are correct'}</li>
+                    <li>{language === 'pt-BR' ? 'Verifique se a opção SSL/TLS está configurada corretamente' : 'Check if SSL/TLS option is configured correctly'}</li>
+                    <li>{language === 'pt-BR' ? 'Alguns provedores de email exigem uma "senha de aplicativo" específica' : 'Some email providers require a specific "app password"'}</li>
+                    <li>{language === 'pt-BR' ? 'Verifique se o provedor de email permite acesso SMTP' : 'Check if email provider allows SMTP access'}</li>
                   </ul>
                 </div>
               )}
@@ -899,17 +900,17 @@ const Settings: React.FC = () => {
         onClose={() => setShowZenviaTestModal(false)}
         title={zenviaTestResult?.success 
           ? zenviaTestResult.service === 'email' 
-            ? "Email de Teste ZenVia Enviado" 
+            ? t('settings.zenviaTestSent') + ' (Email)'
             : zenviaTestResult.service === 'sms'
-              ? "SMS de Teste ZenVia Enviado"
-              : "WhatsApp de Teste ZenVia Enviado"
-          : "Erro ao Enviar Mensagem de Teste"
+              ? t('settings.zenviaTestSent') + ' (SMS)'
+              : t('settings.zenviaTestSent') + ' (WhatsApp)'
+          : t('settings.zenviaTestError')
         }
         size="md"
         footer={
           <div className="flex justify-end">
             <Button variant="primary" onClick={() => setShowZenviaTestModal(false)}>
-              Fechar
+              {t('common.close')}
             </Button>
           </div>
         }
@@ -929,7 +930,7 @@ const Settings: React.FC = () => {
               <h3 className={`font-medium ${
                 zenviaTestResult?.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
               }`}>
-                {zenviaTestResult?.success ? 'Sucesso' : 'Erro'}
+                {zenviaTestResult?.success ? t('common.success') : t('common.error')}
               </h3>
               <p className={`mt-1 text-sm ${
                 zenviaTestResult?.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
@@ -939,7 +940,9 @@ const Settings: React.FC = () => {
               
               {zenviaTestResult?.success && zenviaTestResult.details && (
                 <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded border border-green-200 dark:border-green-800">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Detalhes do Envio:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                    {language === 'pt-BR' ? 'Detalhes do Envio:' : 'Sending Details:'}
+                  </h4>
                   <div className="space-y-1 text-sm">
                     {Object.entries(zenviaTestResult.details).map(([key, value]) => (
                       <div key={key} className="flex">
@@ -953,19 +956,19 @@ const Settings: React.FC = () => {
               
               {!zenviaTestResult?.success && (
                 <div className="mt-3 text-sm text-red-700 dark:text-red-300">
-                  <p>Dicas para resolver problemas comuns:</p>
+                  <p>{t('settings.troubleshootingTips')}</p>
                   <ul className="list-disc list-inside mt-1 space-y-1">
-                    <li>Verifique se a API key está correta</li>
-                    <li>Confirme se o serviço está ativo na sua conta ZenVia</li>
+                    <li>{t('settings.checkCredentials')}</li>
+                    <li>{t('settings.checkService')}</li>
                     {zenviaTestResult?.service === 'sms' || zenviaTestResult?.service === 'whatsapp' ? (
                       <>
-                        <li>Verifique se o número de telefone do remetente está no formato correto</li>
-                        <li>Confirme se você tem um número de telefone válido no seu perfil</li>
+                        <li>{language === 'pt-BR' ? 'Verifique se o número de telefone do remetente está no formato correto' : 'Check if sender phone number is in correct format'}</li>
+                        <li>{t('settings.phoneRequired')}</li>
                       </>
                     ) : (
                       <>
-                        <li>Verifique se o email do remetente está correto</li>
-                        <li>Confirme se o domínio do email está configurado na ZenVia</li>
+                        <li>{language === 'pt-BR' ? 'Verifique se o email do remetente está correto' : 'Check if sender email is correct'}</li>
+                        <li>{t('settings.domainConfiguration')}</li>
                       </>
                     )}
                   </ul>

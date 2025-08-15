@@ -93,7 +93,7 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
   
   const handleSave = async () => {
     if (!currentEntity.name) {
-      alert('Name is required');
+      alert(t('entity.nameRequired'));
       return;
     }
     
@@ -118,7 +118,7 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
       setIsEditing(false);
     } catch (error) {
       console.error('Error saving entity:', error);
-      alert('Error saving. Please try again.');
+      alert(t('entity.saveError'));
     }
     
     loadEntities();
@@ -134,7 +134,7 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
   };
   
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
+    if (window.confirm(t('entity.deleteConfirm'))) {
       try {
         switch (entityType) {
           case 'sources':
@@ -153,7 +153,7 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
         await loadEntities();
       } catch (error) {
         console.error('Error deleting entity:', error);
-        alert('Error deleting. Please try again.');
+        alert(t('entity.deleteError'));
       }
     }
   };
@@ -201,13 +201,13 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    d="M9 13h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No {getEntityName()} Found</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('entity.noItemsFound')}</h3>
               <p className="text-gray-600 dark:text-gray-400 mt-1 mb-4">
-                Click the button above to add your first {getEntityName().toLowerCase().slice(0, -1)}.
+                {t('entity.addFirstItem')}
               </p>
             </div>
           ) : (
@@ -252,7 +252,7 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
                               <span className="text-sm text-gray-500 dark:text-gray-400">{entity.color}</span>
                             </div>
                           ) : (
-                            <span className="text-sm text-gray-500 dark:text-gray-400">No color</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{t('entity.noColor')}</span>
                           )}
                         </td>
                       )}
@@ -334,7 +334,7 @@ const EntityCrud: React.FC<EntityCrudProps> = ({ entityType }) => {
               value={currentEntity.description || ''}
               onChange={(e) => setCurrentEntity({ ...currentEntity, description: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Enter a description"
+              placeholder={t('entity.enterDescription')}
             />
           </div>
         </div>
