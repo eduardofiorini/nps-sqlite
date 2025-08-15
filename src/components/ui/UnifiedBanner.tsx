@@ -20,6 +20,17 @@ const UnifiedBanner: React.FC = () => {
     return null;
   }
 
+  // Don't show banner if user has unlimited trial
+  if (trialInfo.isTrialActive) {
+    const { daysRemaining, hoursRemaining, minutesRemaining } = trialInfo;
+    const isUrgent = daysRemaining <= 1;
+
+    // Only show banner if trial is urgent (1 day or less)
+    if (!isUrgent) {
+      return null;
+    }
+  }
+
   // Show trial countdown if trial is active
   if (trialInfo.isTrialActive) {
     const { daysRemaining, hoursRemaining, minutesRemaining } = trialInfo;
