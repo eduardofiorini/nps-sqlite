@@ -52,42 +52,42 @@ const MainLayout: React.FC = () => {
 
   const navItems = [
     { 
-      path: '/overview', 
+      path: '/dashboard', 
       label: language === 'pt-BR' ? 'Dashboard Geral' : 'General Dashboard', 
       icon: <LayoutGrid size={20} /> 
     },
     { 
-      path: '/campaigns', 
+      path: '/dashboard/campaigns', 
       label: language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns', 
       icon: <TrendingUp size={20} /> 
     },
     { 
-      path: '/contacts', 
+      path: '/dashboard/contacts', 
       label: language === 'pt-BR' ? 'Contatos' : 'Contacts', 
       icon: <Users size={20} /> 
     },
     { 
-      path: '/reports', 
+      path: '/dashboard/reports', 
       label: language === 'pt-BR' ? 'Relatórios' : 'Reports', 
       icon: <FileText size={20} /> 
     },
     { 
-      path: '/pricing', 
+      path: '/dashboard/pricing', 
       label: language === 'pt-BR' ? 'Planos' : 'Pricing', 
       icon: <Crown size={20} /> 
     },
   ];
 
   const settingsItems = [
-    { path: '/settings', label: t('nav.settings'), icon: <Settings size={20} /> },
-    { path: '/settings/sources', label: t('settings.sources'), icon: <Globe size={18} /> },
-    { path: '/settings/situations', label: t('settings.situations'), icon: <Tag size={18} /> },
-    { path: '/settings/groups', label: t('settings.groups'), icon: <Users size={18} /> },
+    { path: '/dashboard/settings', label: t('nav.settings'), icon: <Settings size={20} /> },
+    { path: '/dashboard/settings/sources', label: t('settings.sources'), icon: <Globe size={18} /> },
+    { path: '/dashboard/settings/situations', label: t('settings.situations'), icon: <Tag size={18} /> },
+    { path: '/dashboard/settings/groups', label: t('settings.groups'), icon: <Users size={18} /> },
   ];
 
   const isActive = (path: string) => {
-    if (path === '/dashboard/overview') {
-      return location.pathname === '/dashboard/overview';
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard' || location.pathname === '/overview';
     }
     if (path === '/dashboard/campaigns') {
       return location.pathname === '/dashboard/campaigns' || location.pathname.startsWith('/dashboard/campaigns');

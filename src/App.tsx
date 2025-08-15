@@ -96,9 +96,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   >
-                    {/* Redirect root to overview */}
-                    <Route index element={<Navigate to="/overview" replace />} />
-                    <Route path="overview" element={<Overview />} />
+                    <Route index element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="reports" element={<Reports />} />
                     <Route path="contacts" element={<Contacts />} />
@@ -117,6 +115,20 @@ function App() {
                     
                     <Route path="pricing" element={<Pricing />} />
                     <Route path="subscription-success" element={<SubscriptionSuccess />} />
+                  </Route>
+                  
+                  {/* Direct overview route for easier access */}
+                  <Route
+                    path="/overview"
+                    element={
+                      <ProtectedRoute>
+                        <TrialGuard>
+                          <MainLayout />
+                        </TrialGuard>
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Overview />} />
                   </Route>
                   
                   {/* Public survey route - moved outside protected routes */}
