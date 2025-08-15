@@ -2,13 +2,101 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Campaign, CampaignForm, NpsResponse } from '../types';
 import { getCampaigns, getCampaignForm, saveResponse, getSituations, isSupabaseConfigured } from '../utils/supabaseStorage';
-import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import { v4 as uuidv4 } from 'uuid';
 import { motion } from 'framer-motion';
+
+// Language detection and translations for Survey page
+const detectBrowserLanguage = (): 'en' | 'pt-BR' | 'es' => {
+  const browserLang = navigator.language || navigator.languages?.[0] || 'en';
+  
+  if (browserLang.startsWith('pt')) {
+    return 'pt-BR';
+  } else if (browserLang.startsWith('es')) {
+    return 'es';
+  } else {
+    return 'en'; // Default fallback
+  }
+};
+
+// Survey-specific translations
+const surveyTranslations = {
+  'en': {
+    thankYou: 'Thank You!',
+    notFound: 'Survey not found',
+    notFoundDesc: 'The survey you are looking for does not exist or has been removed.',
+    submitFeedback: 'Submit Feedback',
+    sending: 'Sending...',
+    shareFeedback: 'Please share your feedback',
+    selectOption: 'Select an option',
+    chooseOption: 'Choose an option',
+    notLikely: 'Not likely',
+    extremelyLikely: 'Extremely likely',
+    respondAgain: 'Respond Again',
+    close: 'Close',
+    redirectingIn: 'Redirecting in',
+    returningIn: 'Returning to survey in',
+    seconds: 'seconds',
+    continue: 'Continue',
+    processingAutomation: 'Processing automation...',
+    automationWarning: 'Automation Warning',
+    tryAgain: 'Try Again',
+    attempt: 'Attempt',
+    youCanRespond: 'You can respond as many times as you want.',
+    helpImprove: 'Your responses help us improve our services.'
+  },
+  'pt-BR': {
+    thankYou: 'Obrigado!',
+    notFound: 'Pesquisa não encontrada',
+    notFoundDesc: 'A pesquisa que você está procurando não existe ou foi removida.',
+    submitFeedback: 'Enviar Feedback',
+    sending: 'Enviando...',
+    shareFeedback: 'Por favor, compartilhe seu feedback',
+    selectOption: 'Selecione uma opção',
+    chooseOption: 'Escolha uma opção',
+    notLikely: 'Nada provável',
+    extremelyLikely: 'Extremamente provável',
+    respondAgain: 'Responder Novamente',
+    close: 'Fechar',
+    redirectingIn: 'Redirecionando em',
+    returningIn: 'Retornando à pesquisa em',
+    seconds: 'segundos',
+    continue: 'Continuar',
+    processingAutomation: 'Processando automação...',
+    automationWarning: 'Aviso sobre Automação',
+    tryAgain: 'Tentar novamente',
+    attempt: 'Tentativa',
+    youCanRespond: 'Você pode responder quantas vezes quiser.',
+    helpImprove: 'Suas respostas nos ajudam a melhorar nossos serviços.'
+  },
+  'es': {
+    thankYou: '¡Gracias!',
+    notFound: 'Encuesta no encontrada',
+    notFoundDesc: 'La encuesta que buscas no existe o ha sido eliminada.',
+    submitFeedback: 'Enviar Comentarios',
+    sending: 'Enviando...',
+    shareFeedback: 'Por favor, comparte tus comentarios',
+    selectOption: 'Selecciona una opción',
+    chooseOption: 'Elige una opción',
+    notLikely: 'Nada probable',
+    extremelyLikely: 'Extremadamente probable',
+    respondAgain: 'Responder Nuevamente',
+    close: 'Cerrar',
+    redirectingIn: 'Redirigiendo en',
+    returningIn: 'Volviendo a la encuesta en',
+    seconds: 'segundos',
+    continue: 'Continuar',
+    processingAutomation: 'Procesando automatización...',
+    automationWarning: 'Advertencia de Automatización',
+    tryAgain: 'Intentar de nuevo',
+    attempt: 'Intento',
+    youCanRespond: 'Puedes responder tantas veces como quieras.',
+    helpImprove: 'Tus respuestas nos ayudan a mejorar nuestros servicios.'
+  }
+};
 
 const Survey: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,9 +109,23 @@ const Survey: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [automationError, setAutomationError] = useState<string>('');
   const [webhookRetryCount, setWebhookRetryCount] = useState(0);
-  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Detect browser language for survey
+  const [surveyLanguage] = useState<'en' | 'pt-BR' | 'es'>(detectBrowserLanguage());
+  
+  // Translation function for survey
+  const t = (key: string): string => {
+    const keys = key.split('.');
+    let value: any = surveyTranslations[surveyLanguage];
+    
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    
+    return value || key;
+  };
 
   // Helper function to extract valid UUID from input string
   const extractValidUUID = (input: string): string | null => {
@@ -350,10 +452,10 @@ A resposta da pesquisa foi salva com sucesso.`;
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {error || t('survey.notFound')}
+            {error || t('notFound')}
           </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {error ? 'Tente novamente mais tarde.' : t('survey.notFoundDesc')}
+            {error ? (surveyLanguage === 'pt-BR' ? 'Tente novamente mais tarde.' : surveyLanguage === 'es' ? 'Inténtalo de nuevo más tarde.' : 'Try again later.') : t('notFoundDesc')}
           </p>
         </div>
       </div>
@@ -419,7 +521,7 @@ A resposta da pesquisa foi salva com sucesso.`;
               transition={{ delay: 0.3 }}
               className="text-2xl font-semibold text-gray-900 mb-2"
             >
-              {t('survey.thankYou')}
+              {t('thankYou')}
             </motion.h2>
             
             <motion.p 
@@ -519,7 +621,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                 </div>
                 
                 <p className="text-sm text-gray-500 mb-4">
-                  Retornando à pesquisa em {countdown} segundos...
+                  {t('returningIn')} {countdown} {t('seconds')}...
                 </p>
                 
                 <Button
@@ -527,7 +629,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                   onClick={handleReturnToSurvey}
                   className="mr-3"
                 >
-                  Responder Novamente
+                  {t('respondAgain')}
                 </Button>
                 
                 <Button
@@ -535,7 +637,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                   onClick={() => window.close()}
                   style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
                 >
-                  Fechar
+                  {t('close')}
                 </Button>
               </motion.div>
             )}
@@ -550,7 +652,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                 className="mb-6"
               >
                 <p className="text-sm text-gray-500 mb-4">
-                  Redirecionando em {countdown} segundos...
+                  {t('redirectingIn')} {countdown} {t('seconds')}...
                 </p>
                 
                 <Button
@@ -562,7 +664,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                   }}
                   style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
                 >
-                  Continuar
+                  {t('continue')}
                 </Button>
               </motion.div>
             )}
@@ -602,7 +704,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                 </div>
                 
                 <p className="text-sm text-gray-500 mb-4">
-                  Retornando à pesquisa em {countdown} segundos...
+                  {t('returningIn')} {countdown} {t('seconds')}...
                 </p>
                 
                 <Button
@@ -610,7 +712,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                   onClick={handleReturnToSurvey}
                   className="mr-3"
                 >
-                  Responder Novamente
+                  {t('respondAgain')}
                 </Button>
                 
                 <Button
@@ -618,15 +720,15 @@ A resposta da pesquisa foi salva com sucesso.`;
                   onClick={() => window.close()}
                   style={{ backgroundColor: customization?.primaryColor || '#3b82f6' }}
                 >
-                  Fechar
+                  {t('close')}
                 </Button>
               </motion.div>
             )}
 
             {/* Additional Info */}
             <div className="text-xs text-gray-400 border-t border-gray-200 pt-4">
-              <p>Você pode responder quantas vezes quiser.</p>
-              <p>Suas respostas nos ajudam a melhorar nossos serviços.</p>
+              <p>{t('youCanRespond')}</p>
+              <p>{t('helpImprove')}</p>
             </div>
           </motion.div>
         </div>
@@ -701,8 +803,8 @@ A resposta da pesquisa foi salva com sucesso.`;
                       </label>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between text-xs" style={{ color: customization?.textColor || '#6b7280' }}>
-                          <span>Nada provável</span>
-                          <span>Extremamente provável</span>
+                          <span>{t('notLikely')}</span>
+                          <span>{t('extremelyLikely')}</span>
                         </div>
                         <div className="flex justify-between space-x-1">
                           {Array.from({ length: 11 }, (_, i) => (
@@ -755,7 +857,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                         value={formData[field.id] || ''}
                         onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
                         required={field.required}
-                        placeholder="Compartilhe seus comentários..."
+                        placeholder={t('shareFeedback')}
                       />
                     </div>
                   );
@@ -777,7 +879,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                         onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
                         required={field.required}
                       >
-                        <option value="">Selecione uma opção</option>
+                        <option value="">{t('selectOption')}</option>
                         {field.options?.map((option) => (
                           <option key={option} value={option}>
                             {option}
@@ -840,7 +942,7 @@ A resposta da pesquisa foi salva com sucesso.`;
                   focusRingColor: customization?.primaryColor || '#3b82f6'
                 }}
               >
-                {isProcessing ? 'Enviando...' : 'Enviar Feedback'}
+                {isProcessing ? t('sending') : t('submitFeedback')}
               </motion.button>
             </form>
           </div>
