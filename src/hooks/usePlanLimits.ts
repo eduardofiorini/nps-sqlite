@@ -29,7 +29,7 @@ export interface PlanLimitInfo {
 const getTrialLimits = (): PlanLimits => ({
   campaigns: 'unlimited',
   responsesPerMonth: 'unlimited',
-  users: 'unlimited'
+  users: 1
 });
 
 const getPlanLimits = (priceId: string | null): PlanLimits => {
@@ -42,7 +42,7 @@ const getPlanLimits = (priceId: string | null): PlanLimits => {
   // Map plan features to limits
   if (product.name.includes('Iniciante')) {
     return {
-      campaigns: 2,
+      campaigns: 5,
       responsesPerMonth: 500,
       users: 1
     };

@@ -10,13 +10,8 @@ import { motion } from 'framer-motion';
 const UsageBanner: React.FC = () => {
   const limitInfo = usePlanLimits();
 
-  // Don't show banner if user has unlimited plan, is in trial, or no usage
+  // Don't show banner if user has unlimited plan or no usage
   if (limitInfo.limits.campaigns === 'unlimited' && limitInfo.limits.responsesPerMonth === 'unlimited') {
-    return null;
-  }
-
-  // Don't show banner during trial period
-  if (limitInfo.isTrialActive) {
     return null;
   }
 
