@@ -363,8 +363,11 @@ const Settings: React.FC = () => {
                     <Globe size={20} />
                   </div>
                   <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR')}
+                    value={formData.language}
+                    onChange={(e) => {
+                      handleChange('language', e.target.value);
+                      setLanguage(e.target.value as 'en' | 'pt-BR' | 'es');
+                    }}
                     className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="en">English</option>
