@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import LegalModals from '../components/legal/LegalModals';
 import { 
   ArrowRight, 
   BarChart3, 
@@ -36,6 +37,9 @@ import { Card, CardContent } from '../components/ui/Card';
 const Landing: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showLgpdModal, setShowLgpdModal] = useState(false);
   const { scrollY } = useScroll();
 
   // Auto-rotate testimonials
@@ -887,19 +891,38 @@ const Landing: React.FC = () => {
               © 2025 Meu NPS. Todos os direitos reservados.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <button 
+                onClick={() => setShowPrivacyModal(true)}
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 Política de Privacidade
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              </button>
+              <button 
+                onClick={() => setShowTermsModal(true)}
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 Termos de Uso
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              </button>
+              <button 
+                onClick={() => setShowLgpdModal(true)}
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 LGPD
-              </a>
+              </button>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Legal Modals */}
+      <LegalModals
+        privacyOpen={showPrivacyModal}
+        termsOpen={showTermsModal}
+        lgpdOpen={showLgpdModal}
+        onClosePrivacy={() => setShowPrivacyModal(false)}
+        onCloseTerms={() => setShowTermsModal(false)}
+        onCloseLgpd={() => setShowLgpdModal(false)}
+      />
     </div>
   );
 };
