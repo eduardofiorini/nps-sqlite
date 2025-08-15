@@ -77,8 +77,8 @@ const Pricing: React.FC = () => {
         body: JSON.stringify({
           price_id: priceId,
           mode: 'subscription',
-          success_url: `${window.location.origin}/subscription-success`,
-          cancel_url: `${window.location.origin}/pricing`,
+          success_url: `${window.location.origin}/dashboard/subscription-success`,
+          cancel_url: `${window.location.origin}/dashboard/pricing`,
         }),
       });
 
