@@ -40,7 +40,7 @@ const getPlanLimits = (priceId: string | null): PlanLimits => {
   }
 
   // Map plan features to limits
-  if (product.name.includes('Iniciante')) {
+  if (product.name.includes('iniciante')) {
     return {
       campaigns: 5,
       responsesPerMonth: 500,
