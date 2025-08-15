@@ -142,12 +142,13 @@ const MainLayout: React.FC = () => {
               <div className="relative">
                 <select
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR')}
+                  onChange={(e) => setLanguage(e.target.value as 'en' | 'pt-BR' | 'es')}
                   className="appearance-none bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pr-8 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 transition-colors"
                   style={{ '--tw-ring-color': themeColor } as React.CSSProperties}
                 >
                   <option value="en">🇺🇸 EN</option>
                   <option value="pt-BR">🇧🇷 PT</option>
+                  <option value="es">🇪🇸 ES</option>
                 </select>
                 <Globe size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
