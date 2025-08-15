@@ -635,7 +635,7 @@ const Landing: React.FC = () => {
                       ))}
                     </ul>
                     
-                    <Link to="/register?plan=iniciante">
+                    <Link to={"/register?plan=" + plan.name.toLowerCase()}>
                       <Button
                         variant={plan.buttonStyle as any}
                         fullWidth
