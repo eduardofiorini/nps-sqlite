@@ -824,7 +824,7 @@ const Landing: React.FC = () => {
       {/* Footer */}
       <footer id="contact" className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-5 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center mb-6">
                 <img src="/icone.png" alt="Meu NPS" className="w-10 h-10 mr-3" />
@@ -911,8 +911,8 @@ const Landing: React.FC = () => {
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">Central de Ajuda</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Documentação</a></li>
-                <li><a href="mailto:contato@meunps.com" className="hover:text-white transition-colors">Contato</a></li>
-                <li><a href="tel:+5511999999999" className="hover:text-white transition-colors">(11) 99999-9999</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Tutoriais</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Status do Sistema</a></li>
               </ul>
             </div>
             
