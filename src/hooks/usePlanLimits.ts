@@ -87,8 +87,8 @@ export const usePlanLimits = (): PlanLimitInfo => {
     limits = getTrialLimits();
     planName = 'Período de Teste';
   } else {
-    // Trial expired or no subscription - use trial limits for demo/development
-    limits = getTrialLimits();
+    // Trial expired or no subscription
+    limits = { campaigns: 0, responsesPerMonth: 0, users: 0 };
     planName = 'Sem Plano Ativo';
   }
 
