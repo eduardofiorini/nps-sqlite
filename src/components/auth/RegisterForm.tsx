@@ -96,7 +96,7 @@ const RegisterForm: React.FC = () => {
       const result = await register(formData.email, formData.password, formData.name);
       
       if (result.success) {
-         navigate('/dashboard/campaigns');
+         navigate('/user/campaigns');
       } else {
         setError(result.message || 'Falha no registro. Verifique os dados e tente novamente.');
       }

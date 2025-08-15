@@ -210,7 +210,7 @@ const CampaignResponses: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Link to={`/dashboard/campaigns/${id}`}>
+          <Link to={`/user/campaigns/${id}`}>
             <Button variant="outline" size="sm" icon={<ChevronLeft size={16} />}>
               Voltar ao Dashboard
             </Button>

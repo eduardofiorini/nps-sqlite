@@ -65,7 +65,7 @@ const UnifiedBanner: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <Link to="/pricing">
+              <Link to="/user/pricing">
                 <Button
                   variant="outline"
                   className="bg-white text-gray-900 border-white hover:bg-gray-100"
@@ -101,7 +101,7 @@ const UnifiedBanner: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <Link to="/pricing">
+              <Link to="/user/pricing">
                 <Button
                   variant="outline"
                   className="bg-white text-[#00ac75] border-white hover:bg-gray-100"
@@ -141,7 +141,7 @@ const UnifiedBanner: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <Link to="/pricing">
+              <Link to="/user/pricing">
                 <Button
                   variant="danger"
                   icon={<CreditCard size={16} />}

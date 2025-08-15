@@ -27,7 +27,7 @@ const LoginForm: React.FC = () => {
   // Redirect if user is already logged in
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard/campaigns');
+      navigate('/user/campaigns');
     }
   }, [isAuthenticated, navigate]);
 
@@ -48,7 +48,7 @@ const LoginForm: React.FC = () => {
       const result = await login(email, password);
       
       if (result.success) {
-        navigate('/overview');
+        navigate('/user/overview');
       } else {
         // Check if it's an email confirmation error
         if (result.message?.includes('confirmado') || result.message?.includes('confirmed')) {

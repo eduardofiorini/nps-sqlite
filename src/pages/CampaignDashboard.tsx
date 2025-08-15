@@ -432,17 +432,17 @@ const TvDashboard = () => {
         </div>
         
         <div className="flex space-x-3">
-          <Link to={`/dashboard/campaigns/${id}/responses`}>
+          <Link to={`/user/campaigns/${id}/responses`}>
             <Button variant="outline" size="sm" icon={<Eye size={16} />}>
               Ver Respostas
             </Button>
           </Link>
-          <Link to={`/dashboard/campaigns/${id}/form`}>
+          <Link to={`/user/campaigns/${id}/form`}>
             <Button variant="outline" size="sm" icon={<Edit size={16} />}>
               Editar
             </Button>
           </Link>
-          <Link to={`/dashboard/campaigns/${id}/share`}>
+          <Link to={`/user/campaigns/${id}/share`}>
             <Button variant="primary" size="sm" icon={<Share2 size={16} />}>
               Compartilhar
             </Button>
@@ -620,7 +620,7 @@ const TvDashboard = () => {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Compartilhe sua pesquisa NPS com clientes para começar a coletar feedback.
                 </p>
-                <Link to={`/dashboard/campaigns/${id}/share`}>
+                <Link to={`/user/campaigns/${id}/share`}>
                   <Button variant="primary" icon={<Share2 size={16} />}>
                     Compartilhar Pesquisa
                   </Button>
@@ -645,7 +645,7 @@ const TvDashboard = () => {
             <CardHeader 
               title="Últimas Respostas" 
               action={
-                <Link to={`/dashboard/campaigns/${id}/responses`}>
+                <Link to={`/user/campaigns/${id}/responses`}>
                   <Button variant="outline" size="sm" icon={<ChevronRight size={16} />}>
                     Ver Todas
                   </Button>

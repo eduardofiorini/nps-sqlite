@@ -87,7 +87,7 @@ function App() {
                   <Route path="/" element={<HomeRedirect />} />
                   
                   <Route
-                    path="/dashboard"
+                    path="/user"
                     element={
                       <ProtectedRoute>
                         <TrialGuard>
@@ -96,7 +96,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   >
-                    <Route index element={<Navigate to="/dashboard/campaigns" replace />} />
+                    <Route index element={<Navigate to="/user/campaigns" replace />} />
                     <Route path="overview" element={<Overview />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="campaigns/new" element={<CampaignCreate />} />
@@ -117,12 +117,10 @@ function App() {
                     <Route path="subscription-success" element={<SubscriptionSuccess />} />
                   </Route>
                   
-                  {/* Direct overview route for easier access */}
-                  
                   {/* Public survey route - moved outside protected routes */}
                   <Route path="/survey/:id" element={<Survey />} />
                   
-                  <Route path="*" element={<Navigate to="/dashboard/campaigns" />} />
+                  <Route path="*" element={<Navigate to="/user/campaigns" />} />
                 </Routes>
               </AppInitializer>
             </ConfigProvider>

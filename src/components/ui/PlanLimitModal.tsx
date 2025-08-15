@@ -71,7 +71,7 @@ const PlanLimitModal: React.FC<PlanLimitModalProps> = ({
             Fechar
           </Button>
           <div className="flex space-x-3">
-            <Link to="/dashboard/pricing">
+            <Link to="/user/pricing">
               <Button variant="primary" icon={<Crown size={16} />}>
                 Ver Planos
               </Button>

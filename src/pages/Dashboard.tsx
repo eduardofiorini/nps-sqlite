@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
       return;
     }
     // Navigate to create campaign page
-    window.location.href = '/dashboard/campaigns/new';
+    window.location.href = '/user/campaigns/new';
   };
   
   // Animation variants for staggered animations

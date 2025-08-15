@@ -83,56 +83,56 @@ const MainLayout: React.FC = () => {
 
   const navItems = [
     { 
-      path: '/dashboard/overview', 
+      path: '/user/overview', 
       label: language === 'pt-BR' ? 'Dashboard Geral' : 'General Dashboard', 
       icon: <LayoutGrid size={20} /> 
     },
     { 
-      path: '/dashboard/campaigns',
+      path: '/user/campaigns',
       label: language === 'pt-BR' ? 'Campanhas NPS' : 'NPS Campaigns', 
       icon: <TrendingUp size={20} /> 
     },
     { 
-      path: '/dashboard/contacts', 
+      path: '/user/contacts', 
       label: language === 'pt-BR' ? 'Contatos' : 'Contacts', 
       icon: <Users size={20} /> 
     },
     { 
-      path: '/dashboard/reports', 
+      path: '/user/reports', 
       label: language === 'pt-BR' ? 'Relatórios' : 'Reports', 
       icon: <FileText size={20} /> 
     },
     { 
-      path: '/dashboard/pricing', 
+      path: '/user/pricing', 
       label: language === 'pt-BR' ? 'Planos' : 'Pricing', 
       icon: <Crown size={20} /> 
     },
   ];
 
   const settingsItems = [
-    { path: '/dashboard/settings', label: t('nav.settings'), icon: <Settings size={20} /> },
-    { path: '/dashboard/settings/sources', label: t('settings.sources'), icon: <Globe size={18} /> },
-    { path: '/dashboard/settings/situations', label: t('settings.situations'), icon: <Tag size={18} /> },
-    { path: '/dashboard/settings/groups', label: t('settings.groups'), icon: <Users size={18} /> },
+    { path: '/user/settings', label: t('nav.settings'), icon: <Settings size={20} /> },
+    { path: '/user/settings/sources', label: t('settings.sources'), icon: <Globe size={18} /> },
+    { path: '/user/settings/situations', label: t('settings.situations'), icon: <Tag size={18} /> },
+    { path: '/user/settings/groups', label: t('settings.groups'), icon: <Users size={18} /> },
   ];
 
   const isActive = (path: string) => {
-    if (path === '/dashboard/overview') {
-      return location.pathname === '/dashboard/overview' || location.pathname === '/overview';
+    if (path === '/user/overview') {
+      return location.pathname === '/user/overview' || location.pathname === '/overview';
     }
-    if (path === '/dashboard/campaigns') {
-      return location.pathname === '/dashboard/campaigns' || location.pathname.startsWith('/dashboard/campaigns/');
+    if (path === '/user/campaigns') {
+      return location.pathname === '/user/campaigns' || location.pathname.startsWith('/user/campaigns/');
     }
-    if (path === '/dashboard/reports') {
-      return location.pathname === '/dashboard/reports' || location.pathname.startsWith('/dashboard/reports/');
+    if (path === '/user/reports') {
+      return location.pathname === '/user/reports' || location.pathname.startsWith('/user/reports/');
     }
-    if (path === '/dashboard/contacts') {
-      return location.pathname === '/dashboard/contacts' || location.pathname.startsWith('/dashboard/contacts/');
+    if (path === '/user/contacts') {
+      return location.pathname === '/user/contacts' || location.pathname.startsWith('/user/contacts/');
     }
     return location.pathname === path;
   };
   
-  const isSettingsActive = () => location.pathname.startsWith('/dashboard/settings');
+  const isSettingsActive = () => location.pathname.startsWith('/user/settings');
 
   React.useEffect(() => {
     if (isSettingsActive()) {
@@ -161,7 +161,7 @@ const MainLayout: React.FC = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               {/* Logo */}
-              <Link to="/dashboard/campaigns" className="flex items-center">
+              <Link to="/user/campaigns" className="flex items-center">
                 <div className="w-10 h-10 mr-3 flex items-center justify-center">
                   <img 
                     src="/icone.png" 
@@ -262,7 +262,7 @@ const MainLayout: React.FC = () => {
                           </div>
                         </div>
                         <Link
-                          to="/dashboard/profile"
+                          to="/user/profile"
                           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >
@@ -563,7 +563,7 @@ const MainLayout: React.FC = () => {
                   )}
                   <div className="space-y-2">
                     <Link
-                      to="/profile"
+                      to="/user/profile"
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >

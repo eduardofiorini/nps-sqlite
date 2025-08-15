@@ -78,7 +78,7 @@ const Pricing: React.FC = () => {
           price_id: priceId,
           mode: 'subscription',
           success_url: `${window.location.origin}/dashboard/subscription-success`,
-          cancel_url: `${window.location.origin}/dashboard/pricing`,
+          cancel_url: `${window.location.origin}/user/pricing`,
         }),
       });
 

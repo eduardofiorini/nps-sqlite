@@ -150,7 +150,7 @@ const SubscriptionSuccess: React.FC = () => {
                   <Button
                     variant="primary"
                     fullWidth
-                    onClick={() => navigate('/campaigns/new')}
+                    onClick={() => navigate('/user/campaigns/new')}
                     icon={<ArrowRight size={18} />}
                     className="h-12 text-base font-medium"
                   >
@@ -160,7 +160,7 @@ const SubscriptionSuccess: React.FC = () => {
                   <Button
                     variant="outline"
                     fullWidth
-                    onClick={() => navigate('/overview')}
+                    onClick={() => navigate('/user/overview')}
                     className="h-12 text-base font-medium"
                   >
                     Ir para Dashboard

@@ -81,7 +81,7 @@ const TrialExpired: React.FC = () => {
             
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/pricing">
+              <Link to="/user/pricing">
                 <Button
                   variant="primary"
                   size="lg"

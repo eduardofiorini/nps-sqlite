@@ -168,7 +168,7 @@ const Overview: React.FC = () => {
       return;
     }
     // Navigate to create campaign page
-    window.location.href = '/dashboard/campaigns/new';
+    window.location.href = '/user/campaigns/new';
   };
   
   if (isLoading) {
@@ -365,7 +365,7 @@ const Overview: React.FC = () => {
           <CardHeader 
             title={t('overview.activeCampaignsTitle')} 
             action={
-              <Link to="/dashboard/campaigns">
+              <Link to="/user/campaigns">
                 <Button variant="outline" size="sm" icon={<ArrowRight size={16} />}>
                   {t('overview.viewAll')}
                 </Button>
@@ -444,7 +444,7 @@ const Overview: React.FC = () => {
                 
                 {campaignStats.length > 5 && (
                   <div className="text-center pt-4">
-                    <Link to="/dashboard/campaigns">
+                    <Link to="/user/campaigns">
                       <Button variant="outline">
                         {t('overview.viewAllCampaigns')} {campaignStats.length} {t('overview.campaignsText')}
                       </Button>
