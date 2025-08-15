@@ -312,33 +312,49 @@ const Landing: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                  alt="Dashboard Preview"
-                  className="rounded-2xl shadow-2xl"
+                  src="https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                  alt="Business professionals shaking hands"
+                  className="w-full h-auto"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                 
                 {/* Floating Stats */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1 }}
-                  className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg"
+                  className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-white/20"
                 >
-                  <div className="text-2xl font-bold text-[#00ac75]">+78</div>
-                  <div className="text-xs text-gray-600">NPS Score</div>
+                  <div className="text-3xl font-bold text-[#00ac75] mb-1">+78</div>
+                  <div className="text-sm text-gray-600 font-medium">NPS Score</div>
                 </motion.div>
                 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.2 }}
-                  className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg"
+                  className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-white/20"
                 >
-                  <div className="text-lg font-bold text-gray-900">2,847</div>
-                  <div className="text-xs text-gray-600">Respostas este mês</div>
+                  <div className="text-2xl font-bold text-gray-900 mb-1">2,847</div>
+                  <div className="text-sm text-gray-600 font-medium">Respostas este mês</div>
+                </motion.div>
+                
+                {/* Additional floating element for more visual interest */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.4 }}
+                  className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-gradient-to-r from-[#00ac75] to-[#009966] text-white rounded-xl p-3 shadow-xl"
+                >
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp size={20} />
+                    <div>
+                      <div className="text-lg font-bold">+32%</div>
+                      <div className="text-xs opacity-90">Crescimento</div>
+                    </div>
+                  </div>
                 </motion.div>
               </div>
             </motion.div>
