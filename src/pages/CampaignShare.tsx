@@ -367,7 +367,7 @@ Equipe ${foundCampaign.name}`);
                 required
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Use variáveis: {{nome}}, {{email}}, {{empresa}}, {{cargo}}, {{campanha}}, {{link_pesquisa}}
+                {'Use variáveis: {{nome}}, {{email}}, {{empresa}}, {{cargo}}, {{campanha}}, {{link_pesquisa}}'}
               </p>
             </div>
             
