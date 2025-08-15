@@ -77,8 +77,8 @@ export const usePlanLimits = (): PlanLimitInfo => {
   const isTrialActive = trialInfo.isTrialActive && !subscription?.status;
   const hasActiveSubscription = subscription?.status === 'active';
   
-  let limits: PlanLimits;
-  let planName: string;
+  let limits: PlanLimits = getTrialLimits();
+  let planName: string = 'Plano Gratuito';
   console.log(isTrialActive);
   if (hasActiveSubscription) {
     limits = getPlanLimits(subscription.priceId);
@@ -86,7 +86,7 @@ export const usePlanLimits = (): PlanLimitInfo => {
   } else if (isTrialActive) {
     limits = getTrialLimits();
     planName = 'Período de Teste';
-  } 
+  }
 
   useEffect(() => {
     const calculateUsage = async () => {
