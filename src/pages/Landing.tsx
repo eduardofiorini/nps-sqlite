@@ -915,6 +915,16 @@ const Landing: React.FC = () => {
                 <li><a href="tel:+5511999999999" className="hover:text-white transition-colors">(11) 99999-9999</a></li>
               </ul>
             </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Contato</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="mailto:contato@meunps.com" className="hover:text-white transition-colors">contato@meunps.com</a></li>
+                <li><a href="tel:+5511999999999" className="hover:text-white transition-colors">(11) 99999-9999</a></li>
+                <li className="text-gray-400">Rua das Empresas, 123<br />São Paulo, SP - 01234-567</li>
+                <li><a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">WhatsApp</a></li>
+              </ul>
+            </div>
           </div>
           
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
