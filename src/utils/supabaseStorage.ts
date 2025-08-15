@@ -15,12 +15,16 @@ import {
 // Helper function to get current user ID
 const getCurrentUserId = async () => {
   try {
+    if (!isSupabaseConfigured()) {
+      return 'demo-user';
+    }
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
     return user.id;
   } catch (error) {
     console.error('Error getting current user:', error);
-    return null;
+    return 'demo-user';
   }
 };
 
@@ -36,7 +40,10 @@ export const getSources = async (): Promise<Source[]> => {
       .select('*')
       .order('name');
     
-    if (error) throw error;
+    if (error) {
+      console.warn('Error fetching sources:', error);
+      return getDemoSources();
+    }
     return data || [];
   } catch (error) {
     console.error('Error fetching sources:', error);
@@ -118,7 +125,10 @@ export const getSituations = async (): Promise<Situation[]> => {
       .select('*')
       .order('name');
     
-    if (error) throw error;
+    if (error) {
+      console.warn('Error fetching situations:', error);
+      return getDemoSituations();
+    }
     return data || [];
   } catch (error) {
     console.error('Error fetching situations:', error);
@@ -180,7 +190,10 @@ export const getGroups = async (): Promise<Group[]> => {
       .select('*')
       .order('name');
     
-    if (error) throw error;
+    if (error) {
+      console.warn('Error fetching groups:', error);
+      return getDemoGroups();
+    }
     return data || [];
   } catch (error) {
     console.error('Error fetching groups:', error);
@@ -238,62 +251,26 @@ export const getCampaigns = async (): Promise<Campaign[]> => {
       return getDemoCampaigns();
     }
     
-    try {
-      // Try to get the current user ID
-      const userId = await getCurrentUserId();
-      
-      // If we have a user ID, get their campaigns
-      if (userId) {
-        const { data, error } = await supabase
-          .from('campaigns')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        return data?.map(campaign => ({
-          ...campaign,
-          startDate: campaign.start_date,
-          endDate: campaign.end_date,
-          defaultSourceId: campaign.default_source_id,
-          defaultGroupId: campaign.default_group_id,
-          surveyCustomization: campaign.survey_customization,
-          createdAt: campaign.created_at,
-          updatedAt: campaign.updated_at
-        })) || [];
-      } else {
-        // For public access (survey page), get campaign by ID from query param
-        const urlParams = new URLSearchParams(window.location.search);
-        const campaignId = window.location.pathname.split('/').pop();
-        
-        if (campaignId) {
-          const { data, error } = await supabase
-            .from('campaigns')
-            .select('*')
-            .eq('id', campaignId)
-            .single();
-          
-          if (error) throw error;
-          
-          return data ? [{
-            ...data,
-            startDate: data.start_date,
-            endDate: data.end_date,
-            defaultSourceId: data.default_source_id,
-            defaultGroupId: data.default_group_id,
-            surveyCustomization: data.survey_customization,
-            createdAt: data.created_at,
-            updatedAt: data.updated_at
-          }] : [];
-        }
-      }
-      
-      // If we get here, return empty array
-      return [];
-    } catch (fetchError) {
-      console.warn('Fetch error in getCampaigns:', fetchError);
+    const { data, error } = await supabase
+      .from('campaigns')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.warn('Error fetching campaigns from Supabase:', error);
       return getDemoCampaigns();
     }
+    
+    return data?.map(campaign => ({
+      ...campaign,
+      startDate: campaign.start_date,
+      endDate: campaign.end_date,
+      defaultSourceId: campaign.default_source_id,
+      defaultGroupId: campaign.default_group_id,
+      surveyCustomization: campaign.survey_customization,
+      createdAt: campaign.created_at,
+      updatedAt: campaign.updated_at
+    })) || [];
     
   } catch (error) {
     console.error('Error fetching campaigns:', error);

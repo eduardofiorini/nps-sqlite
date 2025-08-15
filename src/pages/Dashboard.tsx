@@ -18,14 +18,21 @@ const Dashboard: React.FC = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        // Initialize default data if first time
-        await initializeDefaultData();
         
         // Load campaigns
         const loadedCampaigns = await getCampaigns();
         setCampaigns(loadedCampaigns);
+        
+        // Initialize default data if no campaigns exist
+        if (loadedCampaigns.length === 0) {
+          await initializeDefaultData();
+          // Reload campaigns after initialization
+          const reloadedCampaigns = await getCampaigns();
+          setCampaigns(reloadedCampaigns);
+        }
       } catch (error) {
         console.error('Error loading campaigns:', error);
+        setCampaigns([]);
       } finally {
         setIsLoading(false);
       }
