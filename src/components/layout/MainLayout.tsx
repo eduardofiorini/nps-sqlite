@@ -325,7 +325,7 @@ const MainLayout: React.FC = () => {
                     </>
                   )}
                 </button>
-                
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Gestão Inteligente de NPS</span>
                 <AnimatePresence>
                   {isSettingsExpanded && !isSidebarCollapsed && (
                     <motion.div

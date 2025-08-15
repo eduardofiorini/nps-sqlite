@@ -8,6 +8,7 @@ import TrialGuard from './components/layout/TrialGuard';
 import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
+import Landing from './pages/Landing';
 import ForgotPasswordForm from './components/auth/ForgotPasswordForm';
 import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import Dashboard from './pages/Dashboard';
@@ -73,6 +74,7 @@ function App() {
             <ConfigProvider>
               <AppInitializer>
                 <Routes>
+                  <Route path="/landing" element={<Landing />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordForm />} />
