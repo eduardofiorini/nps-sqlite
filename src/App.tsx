@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ConfigProvider } from './contexts/ConfigContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import TrialGuard from './components/layout/TrialGuard';
 import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
@@ -84,7 +85,9 @@ function App() {
                     path="/"
                     element={
                       <ProtectedRoute>
-                        <MainLayout />
+                        <TrialGuard>
+                          <MainLayout />
+                        </TrialGuard>
                       </ProtectedRoute>
                     }
                   >

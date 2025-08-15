@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfig } from '../contexts/ConfigContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { supabase } from '../lib/supabase';
 import { stripeProducts } from '../stripe-config';
@@ -30,6 +31,7 @@ import { motion } from 'framer-motion';
 
 const Pricing: React.FC = () => {
   const { user } = useAuth();
+  const { themeColor } = useConfig();
   const { subscription, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
