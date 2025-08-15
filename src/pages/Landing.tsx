@@ -787,7 +787,7 @@ const Landing: React.FC = () => {
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center mb-6">
-                <img src="/logo-white.png" alt="Meu NPS" className="w-10 h-10 mr-3" />
+                <img src="/icone.png" alt="Meu NPS" className="w-10 h-10 mr-3" />
                 <div>
                   <span className="text-xl font-bold">Meu NPS</span>
                   <div className="text-sm text-gray-400">Gestão Inteligente de NPS</div>
