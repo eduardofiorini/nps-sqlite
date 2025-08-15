@@ -96,7 +96,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   >
-                    <Route index element={<Overview />} />
+                    <Route index element={<Navigate to="/dashboard/campaigns" replace />} />
                     <Route path="campaigns" element={<Dashboard />} />
                     <Route path="campaigns/new" element={<CampaignCreate />} />
                     <Route path="campaigns/:id" element={<CampaignDashboard />} />
