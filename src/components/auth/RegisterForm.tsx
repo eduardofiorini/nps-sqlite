@@ -253,6 +253,7 @@ const RegisterForm: React.FC = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
+              key="registration-form"
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 sticky top-8"
             >
               <div className="mb-6">
@@ -420,7 +421,7 @@ const RegisterForm: React.FC = () => {
                   Seus dados estão protegidos e serão usados conforme nossa Política de Privacidade
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
