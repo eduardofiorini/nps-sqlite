@@ -483,7 +483,7 @@ const TvDashboard = () => {
                   </div>
                 </div>
                 <div className="w-12 h-12 bg-[#073143]/10 dark:bg-[#073143]/20 rounded-lg flex items-center justify-center">
-                  <BarChart3 size={24} className="text-[#073143] dark:text-[#4a9eff]" />
+                  <BarChart3 size={24} className="text-[#00ac75] dark:text-[#4a9eff]" />
                 </div>
               </div>
             </CardContent>

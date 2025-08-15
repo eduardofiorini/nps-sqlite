@@ -558,7 +558,7 @@ const CampaignResponses: React.FC = () => {
                                 onClick={() => handlePageChange(page)}
                                 className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                                   currentPage === page
-                                    ? 'bg-[#073143] text-white'
+                                    ? 'bg-[#00ac75] text-white'
                                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
                               >

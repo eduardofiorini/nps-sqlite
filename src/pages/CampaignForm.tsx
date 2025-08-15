@@ -763,7 +763,7 @@ const CampaignForm: React.FC = () => {
                         </div>
                         {campaign.automation?.action === action.value && (
                           <div className="absolute top-2 right-2">
-                            <CheckCircle size={20} className="text-[#073143]" />
+                            <CheckCircle size={20} className="text-[#00ac75]" />
                           </div>
                         )}
                       </motion.div>
