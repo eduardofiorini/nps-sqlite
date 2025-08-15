@@ -124,7 +124,7 @@ const ForgotPasswordForm: React.FC = () => {
     <div className="min-h-screen flex">
       {/* Left side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#073143] via-[#0a4a5c] to-[#0d5a75]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00ac75] via-[#009966] to-[#008855]">
           <img
             src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
             alt="Business analytics"
