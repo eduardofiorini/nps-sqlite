@@ -39,6 +39,10 @@ const Pricing: React.FC = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
+  const isSupabaseConfigured = () => {
+    return import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+  };
+
   const handleSubscribe = async (priceId: string) => {
     if (!user) {
       navigate('/login');
@@ -100,13 +104,36 @@ const Pricing: React.FC = () => {
     setIsCancelling(true);
 
     try {
-      // In a real implementation, you would call Stripe API to cancel the subscription
-      // For now, we'll simulate the cancellation
-      console.log('Cancelling subscription:', subscription.subscriptionId);
-      console.log('Reason:', cancelReason);
+      if (isSupabaseConfigured()) {
+        // Call Stripe API to cancel subscription
+        const { data: session } = await supabase.auth.getSession();
+        const token = session.session?.access_token;
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        if (!token) {
+          throw new Error('Authentication token not found');
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-cancel-subscription`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            subscription_id: subscription.subscriptionId,
+            reason: cancelReason
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to cancel subscription');
+        }
+      } else {
+        // Demo mode - simulate cancellation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
 
       // Refresh subscription data
       await refreshSubscription();
