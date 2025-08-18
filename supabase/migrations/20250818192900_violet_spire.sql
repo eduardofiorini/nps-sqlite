@@ -33,7 +33,7 @@
   3. Functions
     - `generate_affiliate_code()` - generates unique codes
     - `update_affiliate_stats()` - updates affiliate statistics
-</*/
+*/
 
 -- Create enum for commission status
 CREATE TYPE commission_status AS ENUM ('pending', 'paid', 'cancelled');
