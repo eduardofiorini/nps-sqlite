@@ -318,13 +318,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Don't fail registration if profile creation fails
         }
         
-        const processedUser = processSupabaseUser(data.user);
-        setUser(processedUser);
-        
-        // Store user in localStorage
-        if (processedUser) {
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
-        }
+        // Don't set user session after registration - let them login manually
+        console.log('User registered successfully, redirecting to login');
         
         return { success: true };
       }

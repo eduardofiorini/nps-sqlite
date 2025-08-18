@@ -972,11 +972,16 @@ export const initializeDefaultData = async (): Promise<void> => {
     console.log('Initializing default data for user:', userId);
     
     // Check if user already has data
-    const { data: existingSources } = await supabase
+    const { data: existingSources, error: checkError } = await supabase
       .from('sources')
       .select('id')
       .eq('user_id', userId)
       .limit(1);
+    
+    if (checkError) {
+      console.error('Error checking existing data:', checkError);
+      return;
+    }
     
     if (existingSources && existingSources.length > 0) {
       console.log('User already has data, skipping initialization');
@@ -992,7 +997,11 @@ export const initializeDefaultData = async (): Promise<void> => {
     ];
     
     console.log('Creating default sources');
-    await supabase.from('sources').insert(defaultSources);
+    const { error: sourcesError } = await supabase.from('sources').insert(defaultSources);
+    if (sourcesError) {
+      console.error('Error creating default sources:', sourcesError);
+      return;
+    }
     
     // Create default situations
     const defaultSituations = [
@@ -1002,7 +1011,11 @@ export const initializeDefaultData = async (): Promise<void> => {
     ];
     
     console.log('Creating default situations');
-    await supabase.from('situations').insert(defaultSituations);
+    const { error: situationsError } = await supabase.from('situations').insert(defaultSituations);
+    if (situationsError) {
+      console.error('Error creating default situations:', situationsError);
+      return;
+    }
     
     // Create default groups
     const defaultGroups = [
@@ -1012,7 +1025,11 @@ export const initializeDefaultData = async (): Promise<void> => {
     ];
     
     console.log('Creating default groups');
-    await supabase.from('groups').insert(defaultGroups);
+    const { error: groupsError } = await supabase.from('groups').insert(defaultGroups);
+    if (groupsError) {
+      console.error('Error creating default groups:', groupsError);
+      return;
+    }
     
     console.log('Default data initialization complete');
   } catch (error) {

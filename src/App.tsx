@@ -52,15 +52,16 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
   useEffect(() => {
     // Only initialize data when user is authenticated and auth loading is complete
     if (!loading && isAuthenticated) {
-    const initData = async () => {
-      try {
-        await initializeDefaultData();
-      } catch (error) {
-        console.error('Error initializing default data:', error);
-      }
-    };
-    
-    initData();
+      const initData = async () => {
+        try {
+          await initializeDefaultData();
+        } catch (error) {
+          console.error('Error initializing default data:', error);
+        }
+      };
+      
+      // Add a small delay to ensure user session is fully established
+      setTimeout(initData, 1000);
     }
   }, [isAuthenticated, loading]);
 
