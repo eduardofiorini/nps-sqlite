@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { createAffiliateReferral } from '../../utils/affiliateStorage';
+import { supabase } from '../../lib/supabase';
 import { stripeProducts } from '../../stripe-config';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -96,6 +98,21 @@ const RegisterForm: React.FC = () => {
       const result = await register(formData.email, formData.password, formData.name);
       
       if (result.success) {
+        // Check if there's an affiliate referral code
+        const refCode = searchParams.get('ref');
+        if (refCode) {
+          try {
+            // Get the newly created user ID from the auth response
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await createAffiliateReferral(refCode, user.id);
+            }
+          } catch (affiliateError) {
+            console.error('Error creating affiliate referral:', affiliateError);
+            // Don't fail registration if affiliate creation fails
+          }
+        }
+        
         navigate('/login');
       } else {
         setError(result.message || 'Falha no registro. Verifique os dados e tente novamente.');

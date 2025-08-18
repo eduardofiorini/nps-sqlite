@@ -105,6 +105,11 @@ const MainLayout: React.FC = () => {
       icon: <FileText size={20} /> 
     },
     { 
+      path: '/user/affiliate', 
+      label: language === 'pt-BR' ? 'Afiliados' : 'Affiliates', 
+      icon: <Users size={20} /> 
+    },
+    { 
       path: '/user/pricing', 
       label: language === 'pt-BR' ? 'Planos' : 'Pricing', 
       icon: <Crown size={20} /> 
@@ -123,6 +128,12 @@ const MainLayout: React.FC = () => {
       label: 'Assinaturas', 
       icon: <CreditCard size={18} />,
       permission: 'view_subscriptions'
+    },
+    { 
+      path: '/admin/affiliate', 
+      label: 'Afiliados', 
+      icon: <Users size={18} />,
+      permission: 'view_users'
     },
   ];
 

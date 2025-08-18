@@ -196,6 +196,58 @@ export type Subscription = {
   updatedAt: string;
 };
 
+export type UserAffiliate = {
+  id: string;
+  userId: string;
+  affiliateCode: string;
+  bankAccount: {
+    type: 'bank' | 'pix' | '';
+    bank: string;
+    agency: string;
+    account: string;
+    pixKey: string;
+    pixType: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random' | '';
+  };
+  totalReferrals: number;
+  totalEarnings: number;
+  totalReceived: number;
+  totalPending: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AffiliateReferral = {
+  id: string;
+  affiliateUserId: string;
+  referredUserId: string;
+  subscriptionId?: string;
+  commissionAmount: number;
+  commissionStatus: 'pending' | 'paid' | 'cancelled';
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Additional fields for display
+  referredEmail?: string;
+  planName?: string;
+  subscriptionStatus?: string;
+};
+
+export type AdminAffiliateReferral = {
+  id: string;
+  createdAt: string;
+  commissionAmount: number;
+  commissionStatus: 'pending' | 'paid' | 'cancelled';
+  paidAt?: string;
+  subscriptionId?: string;
+  affiliateCode: string;
+  affiliateName: string;
+  affiliateEmail: string;
+  referredName: string;
+  referredEmail: string;
+  priceId?: string;
+  subscriptionStatus?: string;
+};
+
 export type Plan = {
   id: string;
   name: string;

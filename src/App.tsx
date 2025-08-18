@@ -28,9 +28,11 @@ import EntityCrud from './pages/EntityCrud';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import TrialExpired from './pages/TrialExpired';
+import Affiliate from './pages/Affiliate';
 import { initializeDefaultData } from './utils/supabaseStorage';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminSubscriptions from './pages/admin/AdminSubscriptions';
+import AdminAffiliate from './pages/admin/AdminAffiliate';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -110,6 +112,7 @@ function App() {
                     <Route path="reports" element={<Reports />} />
                     <Route path="contacts" element={<Contacts />} />
                     <Route path="profile" element={<Profile />} />
+                    <Route path="affiliate" element={<Affiliate />} />
                     
                     <Route path="settings" element={<Settings />} />
                     <Route path="settings/sources" element={<EntityCrud entityType="sources" />} />
@@ -136,6 +139,7 @@ function App() {
                   >
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="subscriptions" element={<AdminSubscriptions />} />
+                    <Route path="affiliate" element={<AdminAffiliate />} />
                   </Route>
                   
                   {/* Public survey route - moved outside protected routes */}
