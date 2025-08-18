@@ -102,11 +102,8 @@ const RegisterForm: React.FC = () => {
         const refCode = searchParams.get('ref');
         if (refCode) {
           try {
-            // Get the newly created user ID from the auth response
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              await createAffiliateReferral(refCode, user.id);
-            }
+            // Store the referral code for later processing after login
+            sessionStorage.setItem('pending_affiliate_code', refCode);
           } catch (affiliateError) {
             console.error('Error creating affiliate referral:', affiliateError);
             // Don't fail registration if affiliate creation fails

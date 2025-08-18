@@ -105,6 +105,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const processedUser = processSupabaseUser(session.user);
         setUser(processedUser);
         
+        // Check for pending affiliate referral after login
+        const pendingRefCode = sessionStorage.getItem('pending_affiliate_code');
+        if (pendingRefCode) {
+          try {
+            const { createAffiliateReferral } = await import('../utils/affiliateStorage');
+            await createAffiliateReferral(pendingRefCode, session.user.id);
+            sessionStorage.removeItem('pending_affiliate_code');
+          } catch (error) {
+            console.error('Error processing pending affiliate referral:', error);
+          }
+        }
+        
         // Update localStorage when auth state changes
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
         console.log('Updated user in localStorage:', processedUser.email);
