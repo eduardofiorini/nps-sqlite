@@ -287,37 +287,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (data.user) {
-        // Create user profile after successful registration
-        try {
-          const { saveUserProfile } = await import('../utils/supabaseStorage');
-          const userProfile = {
-            id: '',
-            name: name,
-            email: email,
-            phone: '',
-            company: '',
-            position: '',
-            avatar: '',
-            preferences: {
-              language: 'pt-BR' as const,
-              theme: 'light' as const,
-              emailNotifications: {
-                newResponses: true,
-                weeklyReports: true,
-                productUpdates: false
-              }
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          };
-          
-          await saveUserProfile(userProfile);
-          console.log('User profile created successfully');
-        } catch (profileError) {
-          console.warn('Error creating user profile:', profileError);
-          // Don't fail registration if profile creation fails
-        }
-        
         // Don't set user session after registration - let them login manually
         console.log('User registered successfully, redirecting to login');
         
