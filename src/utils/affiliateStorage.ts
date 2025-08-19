@@ -222,8 +222,8 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       .from('affiliate_referrals')
       .select(`
         *,
-        referred_user(email),
-        subscription(price_id, status)
+       user_profiles!referred_user_id(name, user_id),
+       stripe_subscriptions!subscription_id(price_id, status)
       `)
       .eq('affiliate_user_id', userId)
       .order('created_at', { ascending: false });
@@ -243,9 +243,9 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       paidAt: referral.paid_at,
       createdAt: referral.created_at,
       updatedAt: referral.updated_at,
-      referredEmail: referral.referred_user?.email,
-      planName: referral.subscription?.price_id ? 'Plano Pago' : 'Período de Teste',
-      subscriptionStatus: referral.subscription?.status
+     referredEmail: referral.user_profiles?.name || 'Usuário',
+     planName: referral.stripe_subscriptions?.price_id ? 'Plano Pago' : 'Período de Teste',
+     subscriptionStatus: referral.stripe_subscriptions?.status
     })) || [];
   } catch (error) {
     console.error('Error fetching affiliate referrals:', error);
