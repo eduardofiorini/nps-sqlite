@@ -448,7 +448,7 @@ const Reports: React.FC = () => {
                     <span className="text-blue-700 dark:text-blue-300">{t('reports.period')}:</span>
                     <span className="font-medium text-blue-900 dark:text-blue-100">
                       {isCustomRange 
-                        ? `${customStartDate ? new Date(customStartDate).toLocaleDateString('pt-BR') : ''} - ${customEndDate ? new Date(customEndDate).toLocaleDateString('pt-BR') : ''}`
+                        ? `${customStartDate ? new Date(customStartDate).toLocaleDateString('pt-BR') : 'N/A'} - ${customEndDate ? new Date(customEndDate).toLocaleDateString('pt-BR') : 'N/A'}`
                         : dateRange === '7' ? t('reports.last7Days')
                         : dateRange === '30' ? t('reports.last30Days')
                         : dateRange === '90' ? t('reports.last90Days')
@@ -457,6 +457,14 @@ const Reports: React.FC = () => {
                       }
                     </span>
                   </div>
+                  {reportData && (
+                    <div className="flex justify-between">
+                      <span className="text-blue-700 dark:text-blue-300">Respostas no período:</span>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {reportData.totalResponses}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
