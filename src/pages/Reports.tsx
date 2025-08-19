@@ -28,6 +28,9 @@ const Reports: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState('30');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [isCustomRange, setIsCustomRange] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [sources, setSources] = useState<any[]>([]);
@@ -74,7 +77,7 @@ const Reports: React.FC = () => {
     if (selectedCampaigns.length > 0) {
       loadReportData();
     }
-  }, [selectedCampaigns, dateRange]);
+  }, [selectedCampaigns, dateRange, customStartDate, customEndDate, isCustomRange]);
 
   const handleCampaignToggle = (campaignId: string) => {
     setSelectedCampaigns(prev => 
@@ -95,6 +98,9 @@ const Reports: React.FC = () => {
   const clearFilters = () => {
     setSelectedCampaigns([]);
     setDateRange('30');
+    setIsCustomRange(false);
+    setCustomStartDate('');
+    setCustomEndDate('');
     setReportData(null);
   };
 
@@ -111,12 +117,23 @@ const Reports: React.FC = () => {
       );
 
       // Calculate date range
-      const now = new Date();
-      const daysAgo = new Date(now.getTime() - (parseInt(dateRange) * 24 * 60 * 60 * 1000));
+      let startDate: Date;
+      let endDate: Date = new Date();
       
-      const dateFilteredResponses = filteredResponses.filter(response => 
-        new Date(response.createdAt) >= daysAgo
-      );
+      if (isCustomRange && customStartDate && customEndDate) {
+        startDate = new Date(customStartDate);
+        endDate = new Date(customEndDate);
+        // Set end date to end of day
+        endDate.setHours(23, 59, 59, 999);
+      } else {
+        const now = new Date();
+        startDate = new Date(now.getTime() - (parseInt(dateRange) * 24 * 60 * 60 * 1000));
+      }
+      
+      const dateFilteredResponses = filteredResponses.filter(response => {
+        const responseDate = new Date(response.createdAt);
+        return responseDate >= startDate && responseDate <= endDate;
+      });
 
       // Calculate metrics
       const npsScore = calculateNPS(dateFilteredResponses);
@@ -136,17 +153,39 @@ const Reports: React.FC = () => {
       
       // Calculate responses by day for the last 30 days
       const byDay: {date: string, count: number}[] = [];
-      for (let i = 0; i < parseInt(dateRange); i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
+      let daysToShow: number;
+      
+      if (isCustomRange && customStartDate && customEndDate) {
+        const start = new Date(customStartDate);
+        const end = new Date(customEndDate);
+        daysToShow = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
         
-        const count = dateFilteredResponses.filter(r => {
-          const responseDate = new Date(r.createdAt).toISOString().split('T')[0];
-          return responseDate === dateStr;
-        }).length;
-        
-        byDay.unshift({ date: dateStr, count });
+        for (let i = 0; i < daysToShow; i++) {
+          const date = new Date(start);
+          date.setDate(date.getDate() + i);
+          const dateStr = date.toISOString().split('T')[0];
+          
+          const count = dateFilteredResponses.filter(r => {
+            const responseDate = new Date(r.createdAt).toISOString().split('T')[0];
+            return responseDate === dateStr;
+          }).length;
+          
+          byDay.push({ date: dateStr, count });
+        }
+      } else {
+        daysToShow = parseInt(dateRange);
+        for (let i = 0; i < daysToShow; i++) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          const dateStr = date.toISOString().split('T')[0];
+          
+          const count = dateFilteredResponses.filter(r => {
+            const responseDate = new Date(r.createdAt).toISOString().split('T')[0];
+            return responseDate === dateStr;
+          }).length;
+          
+          byDay.unshift({ date: dateStr, count });
+        }
       }
       setResponsesByDay(byDay);
       
@@ -329,16 +368,67 @@ const Reports: React.FC = () => {
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader title={t('reports.period')} />
             <CardContent>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="7">{t('reports.last7Days')}</option>
-                <option value="30">{t('reports.last30Days')}</option>
-                <option value="90">{t('reports.last90Days')}</option>
-                <option value="365">{t('reports.lastYear')}</option>
-              </select>
+              <div className="space-y-4">
+                <select
+                  value={isCustomRange ? 'custom' : dateRange}
+                  onChange={(e) => {
+                    if (e.target.value === 'custom') {
+                      setIsCustomRange(true);
+                      // Set default dates if not set
+                      if (!customStartDate) {
+                        const thirtyDaysAgo = new Date();
+                        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                        setCustomStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+                      }
+                      if (!customEndDate) {
+                        setCustomEndDate(new Date().toISOString().split('T')[0]);
+                      }
+                    } else {
+                      setIsCustomRange(false);
+                      setDateRange(e.target.value);
+                    }
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="7">{t('reports.last7Days')}</option>
+                  <option value="30">{t('reports.last30Days')}</option>
+                  <option value="90">{t('reports.last90Days')}</option>
+                  <option value="365">{t('reports.lastYear')}</option>
+                  <option value="custom">Período Personalizado</option>
+                </select>
+                
+                {isCustomRange && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Data Inicial
+                      </label>
+                      <input
+                        type="date"
+                        value={customStartDate}
+                        onChange={(e) => setCustomStartDate(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Data Final
+                      </label>
+                      <input
+                        type="date"
+                        value={customEndDate}
+                        onChange={(e) => setCustomEndDate(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#073143] bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                      />
+                    </div>
+                    {customStartDate && customEndDate && new Date(customStartDate) > new Date(customEndDate) && (
+                      <div className="text-xs text-red-600 dark:text-red-400">
+                        A data inicial deve ser anterior à data final
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -357,10 +447,14 @@ const Reports: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-blue-700 dark:text-blue-300">{t('reports.period')}:</span>
                     <span className="font-medium text-blue-900 dark:text-blue-100">
-                      {dateRange === '7' && t('reports.last7Days')}
-                      {dateRange === '30' && t('reports.last30Days')}
-                      {dateRange === '90' && t('reports.last90Days')}
-                      {dateRange === '365' && t('reports.lastYear')}
+                      {isCustomRange 
+                        ? `${customStartDate ? new Date(customStartDate).toLocaleDateString('pt-BR') : ''} - ${customEndDate ? new Date(customEndDate).toLocaleDateString('pt-BR') : ''}`
+                        : dateRange === '7' ? t('reports.last7Days')
+                        : dateRange === '30' ? t('reports.last30Days')
+                        : dateRange === '90' ? t('reports.last90Days')
+                        : dateRange === '365' ? t('reports.lastYear')
+                        : ''
+                      }
                     </span>
                   </div>
                 </div>
@@ -373,7 +467,7 @@ const Reports: React.FC = () => {
             variant="primary"
             onClick={loadReportData}
             isLoading={isLoading}
-            disabled={selectedCampaigns.length === 0}
+            disabled={selectedCampaigns.length === 0 || (isCustomRange && (!customStartDate || !customEndDate || new Date(customStartDate) > new Date(customEndDate)))}
             icon={<Filter size={16} />}
             className="w-full"
           >
