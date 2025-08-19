@@ -222,7 +222,6 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       .from('affiliate_referrals')
       .select(`
         *,
-       referred_user:auth.users!referred_user_id(email),
        stripe_subscriptions(price_id, status)
       `)
       .eq('affiliate_user_id', userId)
@@ -243,7 +242,7 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       paidAt: referral.paid_at,
       createdAt: referral.created_at,
       updatedAt: referral.updated_at,
-     referredEmail: referral.referred_user?.email || 'Usuário',
+     referredEmail: 'Usuário Indicado',
      planName: referral.stripe_subscriptions?.price_id ? 'Plano Pago' : 'Período de Teste',
      subscriptionStatus: referral.stripe_subscriptions?.status
     })) || [];
