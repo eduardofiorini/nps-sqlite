@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { createAffiliateReferral } from '../../utils/affiliateStorage';
+import { createAffiliateReferral, getAffiliateCodeFromUrl } from '../../utils/affiliateStorage';
 import { supabase } from '../../lib/supabase';
 import { stripeProducts } from '../../stripe-config';
 import Button from '../ui/Button';
@@ -56,6 +56,15 @@ const RegisterForm: React.FC = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   
+  // Check for affiliate code on component mount
+  React.useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      console.log('Affiliate code detected in URL:', refCode);
+      sessionStorage.setItem('pending_affiliate_code', refCode);
+    }
+  }, [searchParams]);
+  
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -98,19 +107,7 @@ const RegisterForm: React.FC = () => {
       const result = await register(formData.email, formData.password, formData.name);
       
       if (result.success) {
-        // Check if there's an affiliate referral code
-        const refCode = searchParams.get('ref');
-        if (refCode) {
-          try {
-            // Store the referral code for later processing after login
-            sessionStorage.setItem('pending_affiliate_code', refCode);
-            console.log('Stored pending affiliate code:', refCode);
-          } catch (affiliateError) {
-            console.error('Error creating affiliate referral:', affiliateError);
-            // Don't fail registration if affiliate creation fails
-          }
-        }
-        
+        console.log('Registration successful, redirecting to login');
         navigate('/login');
       } else {
         setError(result.message || 'Falha no registro. Verifique os dados e tente novamente.');

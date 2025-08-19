@@ -382,13 +382,17 @@ export const createAffiliateReferral = async (
   referredUserId: string, 
   subscriptionId?: string
 ): Promise<void> => {
+  console.log('Creating affiliate referral:', { affiliateCode, referredUserId, subscriptionId });
+  
   try {
     if (!isSupabaseConfigured()) {
+      console.log('Supabase not configured, using local storage');
       createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
       return;
     }
     
     // Find affiliate by code
+    console.log('Looking for affiliate with code:', affiliateCode);
     const { data: affiliate, error: affiliateError } = await supabase
       .from('user_affiliates')
       .select('user_id')
@@ -397,12 +401,15 @@ export const createAffiliateReferral = async (
     
     if (affiliateError || !affiliate) {
       console.error('Affiliate not found:', affiliateCode, affiliateError);
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
+      // Don't create local referral if affiliate doesn't exist
       return;
     }
     
+    console.log('Found affiliate:', affiliate.user_id);
+    
     // Calculate commission
     const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
+    console.log('Commission amount:', commissionAmount);
     
     // Create referral record
     const { data: newReferral, error: referralError } = await supabase
@@ -419,13 +426,11 @@ export const createAffiliateReferral = async (
     
     if (referralError) {
       console.error('Error creating referral:', referralError);
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
     } else {
       console.log('Successfully created affiliate referral:', newReferral);
     }
   } catch (error) {
     console.error('Error creating affiliate referral:', error);
-    createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
   }
 };
 
