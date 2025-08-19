@@ -28,9 +28,10 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    // Removed backdrop click to close - only close via X button
+    // if (e.target === e.currentTarget) {
+    //   onClose();
+    // }
   };
 
   return (
@@ -38,7 +39,6 @@ const Modal: React.FC<ModalProps> = ({
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto"
-          onClick={handleBackdropClick}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
