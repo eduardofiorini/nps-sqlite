@@ -322,61 +322,9 @@ const getLocalAdminReferrals = (): AdminAffiliateReferral[] => {
     };
   });
 };
-      
-      return {
-        id: referral.id,
-        createdAt: referral.createdAt,
-        commissionAmount: referral.commissionAmount,
-        commissionStatus: referral.commissionStatus,
-        paidAt: referral.paidAt,
-        subscriptionId: referral.subscriptionId,
-        affiliateCode: affiliate?.affiliateCode || 'UNKNOWN',
-        affiliateName: 'Usuário Afiliado',
-        affiliateEmail: 'afiliado@exemplo.com',
-        referredName: 'Usuário Indicado',
-        referredEmail: referral.referredEmail || 'indicado@exemplo.com',
-        priceId: referral.subscriptionId ? 'price_demo' : undefined,
-        subscriptionStatus: referral.subscriptionStatus
-      };
-    });
-  } catch (error) {
-    console.error('Error fetching admin affiliate referrals:', error);
-    return [];
-  }
-};
 
 export const updateReferralStatus = async (referralId: string, status: 'pending' | 'paid' | 'cancelled'): Promise<void> => {
-  try {
-    if (!isSupabaseConfigured()) {
-      updateLocalReferralStatus(referralId, status);
-      return;
-    }
-    
-    const updateData: any = {
-      commission_status: status,
-      updated_at: new Date().toISOString()
-    };
-    
-    if (status === 'paid') {
-      updateData.paid_at = new Date().toISOString();
-    }
-    
-    const { error } = await supabase
-      .from('affiliate_referrals')
-      .update(updateData)
-      .eq('id', referralId);
-    
-    if (error) {
-      console.error('Error updating referral status:', error);
-      updateLocalReferralStatus(referralId, status);
-    }
-  } catch (error) {
-    console.error('Error updating referral status:', error);
-    updateLocalReferralStatus(referralId, status);
-  }
-};
-
-const updateLocalReferralStatus = (referralId: string, status: 'pending' | 'paid' | 'cancelled'): void => {
+  // Update local storage
   const localReferrals = getLocalReferralsData();
   const referralIndex = localReferrals.findIndex(r => r.id === referralId);
   
@@ -390,6 +338,7 @@ const updateLocalReferralStatus = (referralId: string, status: 'pending' | 'paid
     
     saveLocalReferralsData(localReferrals);
   }
+};
 
 // Function to create referral when user signs up with affiliate code
 export const createAffiliateReferral = async (
@@ -398,98 +347,27 @@ export const createAffiliateReferral = async (
   subscriptionId?: string
 ): Promise<void> => {
   try {
-    if (!isSupabaseConfigured()) {
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
+    // Find affiliate by code in local storage
+    const localAffiliates = getLocalAffiliateData();
+    const affiliateEntry = Object.entries(localAffiliates).find(([_, affiliate]) => 
+      affiliate.affiliateCode === affiliateCode
+    );
+    
+    if (!affiliateEntry) {
+      console.error('Affiliate not found:', affiliateCode);
       return;
     }
     
-    // Find affiliate by code
-    const { data: affiliate, error: affiliateError } = await supabase
-      .from('user_affiliates')
-      .select('user_id')
-      .eq('affiliate_code', affiliateCode)
-      .maybeSingle();
-    
-    if (affiliateError || !affiliate) {
-      console.error('Affiliate not found:', affiliateCode, affiliateError);
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
-      return;
-    }
+    const [_, affiliate] = affiliateEntry;
     
     // Calculate commission
     const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
     
-    // Create referral record
-    const { error: referralError } = await supabase
-      .from('affiliate_referrals')
-      .insert({
-        affiliate_user_id: affiliate.user_id,
-        referred_user_id: referredUserId,
-        subscription_id: subscriptionId,
-        commission_amount: commissionAmount,
-        commission_status: 'pending'
-      });
-    
-    if (referralError) {
-      console.error('Error creating referral:', referralError);
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
-    }
-  } catch (error) {
-    console.error('Error creating affiliate referral:', error);
-    createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
-  }
-};
-
-const createLocalAffiliateReferral = (
-  affiliateCode: string, 
-  referredUserId: string, 
-  subscriptionId?: string
-): void => {
-  // Find affiliate by code in local storage
-  const localAffiliates = getLocalAffiliateData();
-  const affiliateEntry = Object.entries(localAffiliates).find(([_, affiliate]) => 
-    affiliate.affiliateCode === affiliateCode
-  );
-  
-  if (!affiliateEntry) {
-    console.error('Affiliate not found:', affiliateCode);
-    return;
-  }
-  
-  const [_, affiliate] = affiliateEntry;
-  
-  // Calculate commission
-  const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
-  
-  // Create referral record in local storage
-  const localReferrals = getLocalReferralsData();
-  const newReferral: AffiliateReferral = {
-    id: `referral_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    affiliateUserId: affiliate.userId,
-    referredUserId,
-    subscriptionId,
-    commissionAmount,
-    commissionStatus: 'pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    referredEmail: 'usuario@exemplo.com',
-    planName: subscriptionId ? 'Plano Pago' : 'Período de Teste'
-  };
-  
-  localReferrals.push(newReferral);
-  saveLocalReferralsData(localReferrals);
-  
-  // Update affiliate stats
-  affiliate.totalReferrals += 1;
-  affiliate.totalEarnings += commissionAmount;
-  affiliate.totalPending += commissionAmount;
-  affiliate.updatedAt = new Date().toISOString();
-  
-  const updatedAffiliates = { ...localAffiliates };
-  const userKey = `affiliate_${affiliate.userId}`;
-  updatedAffiliates[userKey] = affiliate;
-  saveLocalAffiliateData(updatedAffiliates);
-};
+    // Create referral record in local storage
+    const localReferrals = getLocalReferralsData();
+    const newReferral: AffiliateReferral = {
+      id: `referral_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      affiliateUserId: affiliate.userId,
       referredUserId,
       subscriptionId,
       commissionAmount,
