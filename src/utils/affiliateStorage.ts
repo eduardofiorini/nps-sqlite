@@ -324,7 +324,37 @@ const getLocalAdminReferrals = (): AdminAffiliateReferral[] => {
 };
 
 export const updateReferralStatus = async (referralId: string, status: 'pending' | 'paid' | 'cancelled'): Promise<void> => {
-  // Update local storage
+  try {
+    if (!isSupabaseConfigured()) {
+      updateLocalReferralStatus(referralId, status);
+      return;
+    }
+    
+    const updateData: any = {
+      commission_status: status,
+      updated_at: new Date().toISOString()
+    };
+    
+    if (status === 'paid') {
+      updateData.paid_at = new Date().toISOString();
+    }
+    
+    const { error } = await supabase
+      .from('affiliate_referrals')
+      .update(updateData)
+      .eq('id', referralId);
+    
+    if (error) {
+      console.error('Error updating referral status:', error);
+      updateLocalReferralStatus(referralId, status);
+    }
+  } catch (error) {
+    console.error('Error updating referral status:', error);
+    updateLocalReferralStatus(referralId, status);
+  }
+};
+
+const updateLocalReferralStatus = (referralId: string, status: 'pending' | 'paid' | 'cancelled'): void => {
   const localReferrals = getLocalReferralsData();
   const referralIndex = localReferrals.findIndex(r => r.id === referralId);
   
