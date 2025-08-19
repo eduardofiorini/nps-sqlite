@@ -71,7 +71,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Get initial session
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        // Check for invalid JWT or user not found errors
+        if (sessionError && (
+          sessionError.message.includes('user_not_found') || 
+          sessionError.message.includes('invalid_jwt') ||
+          sessionError.message.includes('User from sub claim in JWT does not exist')
+        )) {
+          console.log('Invalid JWT detected, clearing auth state:', sessionError.message);
+          await logout();
+          setLoading(false);
+          return;
+        }
+        
         console.log('Initial auth session check:', session?.user?.email || 'No session');
         
         if (session?.user) {
