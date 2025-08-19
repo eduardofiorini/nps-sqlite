@@ -238,20 +238,40 @@ const Profile: React.FC = () => {
     setIsDeleting(true);
     
     try {
-      const { supabase } = await import('../lib/supabase');
+      const { supabase, isSupabaseConfigured } = await import('../lib/supabase');
       
-      // Delete user data
-      const { error: deleteError } = await supabase.rpc('delete_user_data');
-      
-      if (deleteError) {
-        throw deleteError;
+      if (!isSupabaseConfigured()) {
+        // Demo mode - just logout
+        await logout();
+        navigate('/login');
+        return;
       }
       
-      // Delete user account
-      const { error } = await supabase.auth.admin.deleteUser(user.id);
+      // Get current session token
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
       
-      if (error) {
-        throw error;
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+      
+      // Call edge function to delete all user data
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          confirmation_email: user.email
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Falha ao excluir conta');
       }
       
       // Log out and redirect to login page
@@ -262,7 +282,12 @@ const Profile: React.FC = () => {
       console.error('Error deleting account:', error);
       setIsDeleting(false);
       setShowDeleteModal(false);
-      setSaveMessage('Erro ao excluir conta. Entre em contato com o suporte.');
+      setSaveMessage(`Erro ao excluir conta: ${error.message}. Entre em contato com o suporte se o problema persistir.`);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => {
+        setSaveMessage('');
+      }, 5000);
     }
   };
   
