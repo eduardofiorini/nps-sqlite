@@ -104,6 +104,7 @@ const RegisterForm: React.FC = () => {
           try {
             // Store the referral code for later processing after login
             sessionStorage.setItem('pending_affiliate_code', refCode);
+            console.log('Stored pending affiliate code:', refCode);
           } catch (affiliateError) {
             console.error('Error creating affiliate referral:', affiliateError);
             // Don't fail registration if affiliate creation fails

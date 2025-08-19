@@ -218,6 +218,8 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
     const userId = await getCurrentUserId();
     if (!userId) return getLocalAffiliateReferrals();
     
+    console.log('Fetching affiliate referrals for user:', userId);
+    
     const { data, error } = await supabase
       .from('affiliate_referrals')
       .select(`
@@ -232,6 +234,8 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       return getLocalAffiliateReferrals();
     }
     
+    console.log('Fetched affiliate referrals:', data?.length || 0, 'records');
+    
     return data?.map(referral => ({
       id: referral.id,
       affiliateUserId: referral.affiliate_user_id,
@@ -242,7 +246,7 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       paidAt: referral.paid_at,
       createdAt: referral.created_at,
       updatedAt: referral.updated_at,
-     referredEmail: 'Usuário Indicado',
+     referredEmail: `usuario-${referral.referred_user_id.slice(0, 8)}@exemplo.com`,
      planName: referral.stripe_subscriptions?.price_id ? 'Plano Pago' : 'Período de Teste',
      subscriptionStatus: referral.stripe_subscriptions?.status
     })) || [];
@@ -265,6 +269,8 @@ export const getAdminAffiliateReferrals = async (): Promise<AdminAffiliateReferr
       return getLocalAdminReferrals();
     }
     
+    console.log('Fetching admin affiliate referrals');
+    
     const { data, error } = await supabase
       .from('admin_affiliate_referrals')
       .select('*')
@@ -274,6 +280,8 @@ export const getAdminAffiliateReferrals = async (): Promise<AdminAffiliateReferr
       console.warn('Error fetching admin affiliate referrals:', error);
       return getLocalAdminReferrals();
     }
+    
+    console.log('Fetched admin affiliate referrals:', data?.length || 0, 'records');
     
     return data?.map(referral => ({
       id: referral.id,
@@ -398,7 +406,7 @@ export const createAffiliateReferral = async (
     const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
     
     // Create referral record
-    const { error: referralError } = await supabase
+    const { data: newReferral, error: referralError } = await supabase
       .from('affiliate_referrals')
       .insert({
         affiliate_user_id: affiliate.user_id,
@@ -406,11 +414,15 @@ export const createAffiliateReferral = async (
         subscription_id: subscriptionId,
         commission_amount: commissionAmount,
         commission_status: 'pending'
-      });
+      })
+      .select()
+      .single();
     
     if (referralError) {
       console.error('Error creating referral:', referralError);
       createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
+    } else {
+      console.log('Successfully created affiliate referral:', newReferral);
     }
   } catch (error) {
     console.error('Error creating affiliate referral:', error);
