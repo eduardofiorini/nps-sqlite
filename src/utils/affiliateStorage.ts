@@ -222,8 +222,8 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       .from('affiliate_referrals')
       .select(`
         *,
-        referred_user:users!affiliate_referrals_referred_user_id_fkey(email),
-        subscription:stripe_subscriptions!affiliate_referrals_subscription_id_fkey(price_id, status)
+        referred_user(email),
+        subscription(price_id, status)
       `)
       .eq('affiliate_user_id', userId)
       .order('created_at', { ascending: false });
