@@ -94,45 +94,47 @@ Deno.serve(async (req) => {
     // Delete user data in the correct order (respecting foreign key constraints)
     const deletionSteps = [
       // 1. Delete NPS responses first (no foreign key dependencies)
-      { table: 'nps_responses', condition: `campaign_id IN (SELECT id FROM campaigns WHERE user_id = '${user_id}')` },
+      { table: 'nps_responses', condition: `campaign_id IN (SELECT id FROM campaigns WHERE user_id = '${user_id}')`, description: 'NPS responses' },
       
       // 2. Delete campaign forms
-      { table: 'campaign_forms', condition: `user_id = '${user_id}'` },
+      { table: 'campaign_forms', condition: `user_id = '${user_id}'`, description: 'Campaign forms' },
       
       // 3. Delete campaigns
-      { table: 'campaigns', condition: `user_id = '${user_id}'` },
+      { table: 'campaigns', condition: `user_id = '${user_id}'`, description: 'Campaigns' },
       
       // 4. Delete contacts
-      { table: 'contacts', condition: `user_id = '${user_id}'` },
+      { table: 'contacts', condition: `user_id = '${user_id}'`, description: 'Contacts' },
       
       // 5. Delete affiliate referrals (both as affiliate and referred)
-      { table: 'affiliate_referrals', condition: `affiliate_user_id = '${user_id}' OR referred_user_id = '${user_id}'` },
+      { table: 'affiliate_referrals', condition: `affiliate_user_id = '${user_id}' OR referred_user_id = '${user_id}'`, description: 'Affiliate referrals' },
       
       // 6. Delete user affiliate data
-      { table: 'user_affiliates', condition: `user_id = '${user_id}'` },
+      { table: 'user_affiliates', condition: `user_id = '${user_id}'`, description: 'User affiliate data' },
       
       // 7. Delete sources, situations, groups
-      { table: 'sources', condition: `user_id = '${user_id}'` },
-      { table: 'situations', condition: `user_id = '${user_id}'` },
-      { table: 'groups', condition: `user_id = '${user_id}'` },
+      { table: 'sources', condition: `user_id = '${user_id}'`, description: 'Sources' },
+      { table: 'situations', condition: `user_id = '${user_id}'`, description: 'Situations' },
+      { table: 'groups', condition: `user_id = '${user_id}'`, description: 'Groups' },
       
       // 8. Delete app config
-      { table: 'app_configs', condition: `user_id = '${user_id}'` },
+      { table: 'app_configs', condition: `user_id = '${user_id}'`, description: 'App configurations' },
       
       // 9. Delete user profile
-      { table: 'user_profiles', condition: `user_id = '${user_id}'` },
+      { table: 'user_profiles', condition: `user_id = '${user_id}'`, description: 'User profile' },
       
       // 10. Delete admin permissions if any
-      { table: 'user_admin', condition: `user_id = '${user_id}'` },
+      { table: 'user_admin', condition: `user_id = '${user_id}'`, description: 'Admin permissions' },
       
       // 11. Delete Stripe data (keep for audit purposes, just mark as deleted)
-      { table: 'stripe_customers', condition: `user_id = '${user_id}'`, soft: true },
-      { table: 'stripe_subscriptions', condition: `customer_id IN (SELECT customer_id FROM stripe_customers WHERE user_id = '${user_id}')`, soft: true },
+      { table: 'stripe_customers', condition: `user_id = '${user_id}'`, soft: true, description: 'Stripe customers (soft delete)' },
+      { table: 'stripe_subscriptions', condition: `customer_id IN (SELECT customer_id FROM stripe_customers WHERE user_id = '${user_id}')`, soft: true, description: 'Stripe subscriptions (soft delete)' },
     ];
 
     // Execute deletions
     for (const step of deletionSteps) {
       try {
+        console.log(`Deleting ${step.description}...`);
+        
         if (step.soft) {
           // Soft delete - just mark as deleted
           const { error } = await supabase
@@ -141,9 +143,9 @@ Deno.serve(async (req) => {
             .eq('user_id', user_id);
           
           if (error) {
-            console.warn(`Warning: Could not soft delete from ${step.table}:`, error);
+            console.warn(`Warning: Could not soft delete ${step.description}:`, error);
           } else {
-            console.log(`Soft deleted data from ${step.table}`);
+            console.log(`✓ Soft deleted ${step.description}`);
           }
         } else {
           // Hard delete
@@ -153,30 +155,54 @@ Deno.serve(async (req) => {
           });
           
           if (error) {
-            console.warn(`Warning: Could not delete from ${step.table}:`, error);
+            console.warn(`Warning: Could not delete ${step.description}:`, error);
             // Continue with other deletions even if one fails
           } else {
-            console.log(`Deleted data from ${step.table}`);
+            console.log(`✓ Deleted ${step.description}`);
           }
         }
       } catch (error) {
-        console.warn(`Error deleting from ${step.table}:`, error);
+        console.warn(`Error deleting ${step.description}:`, error);
         // Continue with other deletions
       }
     }
 
-    // Finally, delete the auth user account
+    // Finally, delete the auth user account from Supabase Authentication
+    console.log('Deleting authentication user account...');
     try {
       const { error: deleteUserError } = await supabase.auth.admin.deleteUser(user_id);
       
       if (deleteUserError) {
         console.error('Error deleting auth user:', deleteUserError);
-        // Even if auth deletion fails, we've cleaned up the data
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Failed to delete authentication user: ${deleteUserError.message}`,
+            partial_success: true,
+            message: 'User data was deleted but authentication account could not be removed'
+          }),
+          {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          }
+        );
       } else {
-        console.log('Successfully deleted auth user');
+        console.log('✓ Successfully deleted authentication user account');
       }
     } catch (error) {
-      console.warn('Warning: Could not delete auth user:', error);
+      console.error('Critical error deleting auth user:', error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Critical error deleting authentication user: ${error.message}`,
+          partial_success: true,
+          message: 'User data was deleted but authentication account could not be removed'
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        }
+      );
     }
 
     console.log(`Account deletion completed for user: ${user_id}`);
@@ -184,7 +210,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Account deleted successfully',
+        message: 'Account and all associated data deleted successfully',
         deleted_at: new Date().toISOString()
       }),
       {

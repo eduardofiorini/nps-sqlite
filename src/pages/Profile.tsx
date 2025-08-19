@@ -55,6 +55,7 @@ const Profile: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -232,16 +233,19 @@ const Profile: React.FC = () => {
   
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== user?.email) {
+      setPasswordError('Email de confirmação não confere');
       return;
     }
     
     setIsDeleting(true);
+    setPasswordError('');
     
     try {
       const { supabase, isSupabaseConfigured } = await import('../lib/supabase');
       
       if (!isSupabaseConfigured()) {
         // Demo mode - just logout
+        console.log('Demo mode: simulating account deletion');
         await logout();
         navigate('/login');
         return;
@@ -254,6 +258,8 @@ const Profile: React.FC = () => {
       if (!token) {
         throw new Error('Token de autenticação não encontrado');
       }
+      
+      console.log('Starting account deletion process...');
       
       // Call edge function to delete all user data
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user-account`, {
@@ -269,10 +275,27 @@ const Profile: React.FC = () => {
       });
       
       const result = await response.json();
+      console.log('Account deletion response:', result);
       
       if (!result.success) {
-        throw new Error(result.error || 'Falha ao excluir conta');
+        if (result.partial_success) {
+          // Some data was deleted but auth user deletion failed
+          console.warn('Partial deletion success:', result.message);
+          setSaveMessage(`Aviso: ${result.message}. Entre em contato com o suporte.`);
+          
+          // Still logout the user since their data was deleted
+          setTimeout(async () => {
+            await logout();
+            navigate('/login');
+          }, 3000);
+          
+          return;
+        } else {
+          throw new Error(result.error || 'Falha ao excluir conta');
+        }
       }
+      
+      console.log('Account deletion completed successfully');
       
       // Log out and redirect to login page
       await logout();
@@ -280,14 +303,14 @@ const Profile: React.FC = () => {
       
     } catch (error) {
       console.error('Error deleting account:', error);
-      setIsDeleting(false);
-      setShowDeleteModal(false);
-      setSaveMessage(`Erro ao excluir conta: ${error.message}. Entre em contato com o suporte se o problema persistir.`);
+      setPasswordError(`Erro ao excluir conta: ${error.message}`);
       
-      // Clear message after 5 seconds
+      // Clear error after 5 seconds
       setTimeout(() => {
-        setSaveMessage('');
+        setPasswordError('');
       }, 5000);
+    } finally {
+      setIsDeleting(false);
     }
   };
   
@@ -1054,7 +1077,11 @@ const Profile: React.FC = () => {
           <div className="flex justify-end space-x-3">
             <Button 
               variant="outline" 
-              onClick={() => setShowDeleteModal(false)}
+              onClick={() => {
+                setShowDeleteModal(false);
+                setDeleteConfirmation('');
+                setDeleteError('');
+              }}
               disabled={isDeleting}
             >
               Cancelar
@@ -1071,6 +1098,12 @@ const Profile: React.FC = () => {
         }
       >
         <div className="space-y-4">
+          {deleteError && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 rounded-lg text-sm">
+              {deleteError}
+            </div>
+          )}
+          
           <div className="flex items-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
             <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 mr-3 flex-shrink-0" />
             <div>
@@ -1085,6 +1118,7 @@ const Profile: React.FC = () => {
                 <li>Contatos e grupos</li>
                 <li>Configurações e preferências</li>
                 <li>Histórico de pagamentos</li>
+                <li>Conta de autenticação (login)</li>
               </ul>
             </div>
           </div>
@@ -1095,7 +1129,10 @@ const Profile: React.FC = () => {
           
           <Input
             value={deleteConfirmation}
-            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            onChange={(e) => {
+              setDeleteConfirmation(e.target.value);
+              setDeleteError('');
+            }}
             placeholder={user?.email}
             fullWidth
           />
@@ -1107,7 +1144,7 @@ const Profile: React.FC = () => {
             <p className="text-xs text-yellow-700 dark:text-yellow-300">
               De acordo com a Lei Geral de Proteção de Dados (LGPD) e o Regulamento Geral de Proteção de Dados (GDPR), 
               você tem o direito de solicitar a exclusão de seus dados pessoais. Esta ação excluirá permanentemente 
-              sua conta e todos os dados associados a ela.
+              sua conta de autenticação e todos os dados associados a ela de nossos servidores.
             </p>
           </div>
         </div>
