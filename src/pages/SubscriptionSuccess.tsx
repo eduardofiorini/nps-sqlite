@@ -18,14 +18,19 @@ const SubscriptionSuccess: React.FC = () => {
     // Refresh subscription data after successful payment
     const refreshData = async () => {
       setIsLoading(true);
-      // Wait a bit for Stripe webhook to process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      await refreshSubscription();
-      setIsLoading(false);
+      try {
+        // Wait a bit for Stripe webhook to process
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await refreshSubscription();
+      } catch (error) {
+        console.error('Error refreshing subscription:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     refreshData();
-  }, [refreshSubscription]);
+  }, []); // Remove refreshSubscription dependency to prevent infinite loop
 
   const formatDate = (timestamp: number | null) => {
     if (!timestamp) return 'N/A';
