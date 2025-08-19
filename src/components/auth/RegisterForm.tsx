@@ -62,6 +62,10 @@ const RegisterForm: React.FC = () => {
     if (refCode) {
       console.log('Affiliate code detected in URL:', refCode);
       sessionStorage.setItem('pending_affiliate_code', refCode);
+      
+      // Also store in localStorage as backup
+      localStorage.setItem('pending_affiliate_code', refCode);
+      console.log('Stored affiliate code in session and local storage:', refCode);
     }
   }, [searchParams]);
   

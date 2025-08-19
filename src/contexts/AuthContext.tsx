@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const processedUser = processSupabaseUser(session.user);
         setUser(processedUser);
         
-        // Check for pending affiliate referral after login
+        // Check for pending affiliate referral after login/signup
         const pendingRefCode = sessionStorage.getItem('pending_affiliate_code');
         if (pendingRefCode) {
           console.log('Processing pending affiliate referral for code:', pendingRefCode, 'user:', session.user.id);

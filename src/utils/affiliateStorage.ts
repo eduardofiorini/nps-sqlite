@@ -23,6 +23,8 @@ export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
     const userId = await getCurrentUserId();
     if (!userId) return getLocalUserAffiliate();
     
+    console.log('Fetching user affiliate for user:', userId);
+    
     const { data, error } = await supabase
       .from('user_affiliates')
       .select('*')
@@ -35,6 +37,7 @@ export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
     }
     
     if (!data) {
+      console.log('No affiliate record found, creating new one');
       // Create new affiliate record
       const newAffiliate = {
         user_id: userId,
@@ -60,6 +63,8 @@ export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
         return getLocalUserAffiliate();
       }
       
+      console.log('Created new affiliate record:', created);
+      
       return {
         id: created.id,
         userId: created.user_id,
@@ -73,6 +78,8 @@ export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
         updatedAt: created.updated_at
       };
     }
+    
+    console.log('Found existing affiliate record:', data);
     
     return {
       id: data.id,
@@ -159,7 +166,10 @@ const createLocalAffiliate = (userId: string): UserAffiliate => {
 };
 
 const generateAffiliateCode = (): string => {
-  return Math.random().toString(36).substring(2, 10).toUpperCase();
+  // Generate a more unique affiliate code
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 6);
+  return (timestamp + random).toUpperCase().substring(0, 8);
 };
 
 export const saveUserAffiliate = async (affiliate: UserAffiliate): Promise<UserAffiliate> => {
@@ -401,7 +411,8 @@ export const createAffiliateReferral = async (
     
     if (affiliateError || !affiliate) {
       console.error('Affiliate not found:', affiliateCode, affiliateError);
-      // Don't create local referral if affiliate doesn't exist
+      // Create local referral for demo purposes
+      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
       return;
     }
     
@@ -426,11 +437,19 @@ export const createAffiliateReferral = async (
     
     if (referralError) {
       console.error('Error creating referral:', referralError);
+      // Fallback to local storage
+      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
     } else {
       console.log('Successfully created affiliate referral:', newReferral);
+      
+      // Clear the stored affiliate code after successful creation
+      sessionStorage.removeItem('pending_affiliate_code');
+      localStorage.removeItem('pending_affiliate_code');
     }
   } catch (error) {
     console.error('Error creating affiliate referral:', error);
+    // Fallback to local storage
+    createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
   }
 };
 
@@ -495,7 +514,7 @@ const calculateCommission = (priceId: string): number => {
     case 'price_1RjVpRJwPeWVIUa9ECuvA3FX': // Empresarial
       return 62.25; // 25% of R$249
     default:
-      return 0;
+      return 25.00; // Default commission for unknown plans
   }
 };
 
