@@ -167,9 +167,7 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
     
     const { data, error } = await supabase
       .from('affiliate_referrals')
-      .select(`
-        *,
-      `)
+      .select('*')
       .eq('affiliate_user_id', userId)
       .order('created_at', { ascending: false });
     
