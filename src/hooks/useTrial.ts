@@ -111,14 +111,18 @@ export const useTrial = () => {
         setTrialInfo({
           isTrialActive: false,
           isTrialExpired: true,
+        // Demo mode - no trial restrictions
+        setTrialInfo({
+          isTrialActive: false,
+          isTrialExpired: false,
           daysRemaining: 0,
           hoursRemaining: 0,
           minutesRemaining: 0,
           trialStartDate: null,
           trialEndDate: null,
         });
-      } finally {
         setLoading(false);
+        return;
       }
     };
 

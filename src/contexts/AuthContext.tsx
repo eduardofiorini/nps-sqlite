@@ -358,9 +358,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await supabase.auth.signOut();
       setUser(null);
       
-      // Clear all auth data from localStorage
+      // Clear only essential auth data from localStorage
       localStorage.removeItem(USER_STORAGE_KEY);
       localStorage.removeItem('nps_supabase_auth');
+      
+      // Clean up all other unnecessary data
+      const { cleanupLocalStorage } = await import('../utils/supabaseStorage');
+      cleanupLocalStorage();
     } catch (error) {
       console.error('Logout error:', error);
     }

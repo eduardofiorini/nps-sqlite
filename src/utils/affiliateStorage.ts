@@ -17,11 +17,12 @@ const getCurrentUserId = async () => {
 export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
   try {
     if (!isSupabaseConfigured()) {
-      return getLocalUserAffiliate();
+      cleanupAffiliateLocalStorage();
+      return null;
     }
     
     const userId = await getCurrentUserId();
-    if (!userId) return getLocalUserAffiliate();
+    if (!userId) return null;
     
     console.log('Fetching user affiliate for user:', userId);
     
@@ -32,8 +33,8 @@ export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
       .maybeSingle();
     
     if (error) {
-      console.warn('Error fetching user affiliate:', error);
-      return getLocalUserAffiliate();
+      console.error('Error fetching user affiliate:', error);
+      return null;
     }
     
     if (!data) {
@@ -60,7 +61,7 @@ export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
       
       if (createError) {
         console.error('Error creating affiliate:', createError);
-        return getLocalUserAffiliate();
+        return null;
       }
       
       console.log('Created new affiliate record:', created);
@@ -95,74 +96,22 @@ export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
     };
   } catch (error) {
     console.error('Error fetching user affiliate:', error);
-    return getLocalUserAffiliate();
+    return null;
   }
 };
 
-const getLocalUserAffiliate = (): UserAffiliate => {
-  const localData = getLocalAffiliateData();
-  const userId = 'demo-user'; // Use demo user for local storage
-  const userKey = `affiliate_${userId}`;
+// Clean up affiliate localStorage data
+const cleanupAffiliateLocalStorage = () => {
+  const keysToRemove = [
+    'affiliate_data',
+    'referrals_data'
+  ];
   
-  if (localData[userKey]) {
-    return localData[userKey];
-  }
+  keysToRemove.forEach(key => {
+    localStorage.removeItem(key);
+  });
   
-  // Create new affiliate if doesn't exist
-  const newAffiliate = createLocalAffiliate(userId);
-  localData[userKey] = newAffiliate;
-  saveLocalAffiliateData(localData);
-  
-  return newAffiliate;
-};
-
-const getDemoAffiliate = (): UserAffiliate => ({
-  id: 'demo-affiliate',
-  userId: 'demo-user',
-  affiliateCode: 'DEMO123',
-  bankAccount: {
-    type: '',
-    bank: '',
-    agency: '',
-    account: '',
-    pixKey: '',
-    pixType: ''
-  },
-  totalReferrals: 0,
-  totalEarnings: 0,
-  totalReceived: 0,
-  totalPending: 0,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-});
-
-const createUserAffiliate = async (): Promise<UserAffiliate> => {
-  const userId = await getCurrentUserId();
-  if (!userId) throw new Error('User not authenticated');
-  
-  return createLocalAffiliate(userId);
-};
-
-const createLocalAffiliate = (userId: string): UserAffiliate => {
-  return {
-    id: `affiliate_${userId}`,
-    userId,
-    affiliateCode: generateAffiliateCode(),
-    bankAccount: {
-      type: '',
-      bank: '',
-      agency: '',
-      account: '',
-      pixKey: '',
-      pixType: ''
-    },
-    totalReferrals: 0,
-    totalEarnings: 0,
-    totalReceived: 0,
-    totalPending: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
+  console.log('Cleaned up affiliate localStorage data');
 };
 
 const generateAffiliateCode = (): string => {
@@ -175,7 +124,7 @@ const generateAffiliateCode = (): string => {
 export const saveUserAffiliate = async (affiliate: UserAffiliate): Promise<UserAffiliate> => {
   try {
     if (!isSupabaseConfigured()) {
-      return saveLocalUserAffiliate(affiliate);
+      throw new Error('Supabase not configured');
     }
     
     const { data, error } = await supabase
@@ -190,7 +139,7 @@ export const saveUserAffiliate = async (affiliate: UserAffiliate): Promise<UserA
     
     if (error) {
       console.error('Error saving affiliate:', error);
-      return saveLocalUserAffiliate(affiliate);
+      throw error;
     }
     
     return {
@@ -199,34 +148,20 @@ export const saveUserAffiliate = async (affiliate: UserAffiliate): Promise<UserA
     };
   } catch (error) {
     console.error('Error saving user affiliate:', error);
-    return saveLocalUserAffiliate(affiliate);
+    throw error;
   }
-};
-
-const saveLocalUserAffiliate = (affiliate: UserAffiliate): UserAffiliate => {
-  const localData = getLocalAffiliateData();
-  const userKey = `affiliate_${affiliate.userId}`;
-  
-  const updatedAffiliate = {
-    ...affiliate,
-    updatedAt: new Date().toISOString()
-  };
-  
-  localData[userKey] = updatedAffiliate;
-  saveLocalAffiliateData(localData);
-  
-  return updatedAffiliate;
 };
 
 // Affiliate Referrals Functions
 export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
   try {
     if (!isSupabaseConfigured()) {
-      return getLocalAffiliateReferrals();
+      cleanupAffiliateLocalStorage();
+      return [];
     }
     
     const userId = await getCurrentUserId();
-    if (!userId) return getLocalAffiliateReferrals();
+    if (!userId) return [];
     
     console.log('Fetching affiliate referrals for user:', userId);
     
@@ -239,8 +174,8 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.warn('Error fetching affiliate referrals:', error);
-      return getLocalAffiliateReferrals();
+      console.error('Error fetching affiliate referrals:', error);
+      return [];
     }
     
     console.log('Fetched affiliate referrals:', data?.length || 0, 'records');
@@ -261,21 +196,16 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
     })) || [];
   } catch (error) {
     console.error('Error fetching affiliate referrals:', error);
-    return getLocalAffiliateReferrals();
+    return [];
   }
-};
-
-const getLocalAffiliateReferrals = (): AffiliateReferral[] => {
-  const localReferrals = getLocalReferralsData();
-  const userId = 'demo-user';
-  return localReferrals.filter(referral => referral.affiliateUserId === userId);
 };
 
 // Admin Functions
 export const getAdminAffiliateReferrals = async (): Promise<AdminAffiliateReferral[]> => {
   try {
     if (!isSupabaseConfigured()) {
-      return getLocalAdminReferrals();
+      cleanupAffiliateLocalStorage();
+      return [];
     }
     
     console.log('Fetching admin affiliate referrals');
@@ -286,8 +216,8 @@ export const getAdminAffiliateReferrals = async (): Promise<AdminAffiliateReferr
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.warn('Error fetching admin affiliate referrals:', error);
-      return getLocalAdminReferrals();
+      console.error('Error fetching admin affiliate referrals:', error);
+      return [];
     }
     
     console.log('Fetched admin affiliate referrals:', data?.length || 0, 'records');
@@ -309,41 +239,14 @@ export const getAdminAffiliateReferrals = async (): Promise<AdminAffiliateReferr
     })) || [];
   } catch (error) {
     console.error('Error fetching admin affiliate referrals:', error);
-    return getLocalAdminReferrals();
+    return [];
   }
-};
-
-const getLocalAdminReferrals = (): AdminAffiliateReferral[] => {
-  const localReferrals = getLocalReferralsData();
-  const localAffiliates = getLocalAffiliateData();
-  
-  return localReferrals.map(referral => {
-    const affiliateKey = `affiliate_${referral.affiliateUserId}`;
-    const affiliate = localAffiliates[affiliateKey];
-    
-    return {
-      id: referral.id,
-      createdAt: referral.createdAt,
-      commissionAmount: referral.commissionAmount,
-      commissionStatus: referral.commissionStatus,
-      paidAt: referral.paidAt,
-      subscriptionId: referral.subscriptionId,
-      affiliateCode: affiliate?.affiliateCode || 'UNKNOWN',
-      affiliateName: 'Usuário Afiliado',
-      affiliateEmail: 'afiliado@exemplo.com',
-      referredName: 'Usuário Indicado',
-      referredEmail: referral.referredEmail || 'indicado@exemplo.com',
-      priceId: referral.subscriptionId ? 'price_demo' : undefined,
-      subscriptionStatus: referral.subscriptionStatus
-    };
-  });
 };
 
 export const updateReferralStatus = async (referralId: string, status: 'pending' | 'paid' | 'cancelled'): Promise<void> => {
   try {
     if (!isSupabaseConfigured()) {
-      updateLocalReferralStatus(referralId, status);
-      return;
+      throw new Error('Supabase not configured');
     }
     
     const updateData: any = {
@@ -362,27 +265,11 @@ export const updateReferralStatus = async (referralId: string, status: 'pending'
     
     if (error) {
       console.error('Error updating referral status:', error);
-      updateLocalReferralStatus(referralId, status);
+      throw error;
     }
   } catch (error) {
     console.error('Error updating referral status:', error);
-    updateLocalReferralStatus(referralId, status);
-  }
-};
-
-const updateLocalReferralStatus = (referralId: string, status: 'pending' | 'paid' | 'cancelled'): void => {
-  const localReferrals = getLocalReferralsData();
-  const referralIndex = localReferrals.findIndex(r => r.id === referralId);
-  
-  if (referralIndex !== -1) {
-    localReferrals[referralIndex].commissionStatus = status;
-    localReferrals[referralIndex].updatedAt = new Date().toISOString();
-    
-    if (status === 'paid') {
-      localReferrals[referralIndex].paidAt = new Date().toISOString();
-    }
-    
-    saveLocalReferralsData(localReferrals);
+    throw error;
   }
 };
 
@@ -396,9 +283,9 @@ export const createAffiliateReferral = async (
   
   try {
     if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, using local storage');
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
-      return;
+      console.log('Supabase not configured, skipping referral creation');
+      cleanupAffiliateLocalStorage();
+      throw new Error('Supabase not configured');
     }
     
     // Find affiliate by code
@@ -411,9 +298,8 @@ export const createAffiliateReferral = async (
     
     if (affiliateError || !affiliate) {
       console.error('Affiliate not found:', affiliateCode, affiliateError);
-      // Don't create local referral if affiliate doesn't exist in Supabase
       console.log('Affiliate code not found in Supabase, skipping referral creation');
-      return;
+      throw new Error(`Affiliate code not found: ${affiliateCode}`);
     }
     
     console.log('Found affiliate:', affiliate.user_id);
@@ -452,63 +338,6 @@ export const createAffiliateReferral = async (
   }
 };
 
-const createLocalAffiliateReferral = (
-  affiliateCode: string, 
-  referredUserId: string, 
-  subscriptionId?: string
-): void => {
-  console.log('Creating LOCAL affiliate referral (fallback mode)');
-  
-  // Find affiliate by code in local storage
-  const localAffiliates = getLocalAffiliateData();
-  const affiliateEntry = Object.entries(localAffiliates).find(([_, affiliate]) => 
-    affiliate.affiliateCode === affiliateCode
-  );
-  
-  if (!affiliateEntry) {
-    console.error('Affiliate not found:', affiliateCode);
-    return;
-  }
-  
-  const [_, affiliate] = affiliateEntry;
-  console.log('Found local affiliate:', affiliate.affiliateCode);
-  
-  // Calculate commission
-  const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
-  console.log('Local commission amount:', commissionAmount);
-  
-  // Create referral record in local storage
-  const localReferrals = getLocalReferralsData();
-  const newReferral: AffiliateReferral = {
-    id: `referral_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    affiliateUserId: affiliate.userId,
-    referredUserId,
-    subscriptionId,
-    commissionAmount,
-    commissionStatus: 'pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    referredEmail: 'usuario@exemplo.com',
-    planName: subscriptionId ? 'Plano Pago' : 'Período de Teste'
-  };
-  
-  localReferrals.push(newReferral);
-  saveLocalReferralsData(localReferrals);
-  console.log('Saved local referral:', newReferral.id);
-  
-  // Update affiliate stats
-  affiliate.totalReferrals += 1;
-  affiliate.totalEarnings += commissionAmount;
-  affiliate.totalPending += commissionAmount;
-  affiliate.updatedAt = new Date().toISOString();
-  
-  const updatedAffiliates = { ...localAffiliates };
-  const userKey = `affiliate_${affiliate.userId}`;
-  updatedAffiliates[userKey] = affiliate;
-  saveLocalAffiliateData(updatedAffiliates);
-  console.log('Updated local affiliate stats');
-};
-
 const calculateCommission = (priceId: string): number => {
   // 25% commission on monthly subscriptions
   switch (priceId) {
@@ -521,33 +350,6 @@ const calculateCommission = (priceId: string): number => {
     default:
       return 25.00; // Default commission for unknown plans
   }
-};
-
-// Local storage helper functions
-const getLocalAffiliateData = () => {
-  try {
-    const data = localStorage.getItem('affiliate_data');
-    return data ? JSON.parse(data) : {};
-  } catch {
-    return {};
-  }
-};
-
-const saveLocalAffiliateData = (data: any) => {
-  localStorage.setItem('affiliate_data', JSON.stringify(data));
-};
-
-const getLocalReferralsData = (): AffiliateReferral[] => {
-  try {
-    const data = localStorage.getItem('referrals_data');
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveLocalReferralsData = (data: AffiliateReferral[]) => {
-  localStorage.setItem('referrals_data', JSON.stringify(data));
 };
 
 // Function to get affiliate code from URL and store in session

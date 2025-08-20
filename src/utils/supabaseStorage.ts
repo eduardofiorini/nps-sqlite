@@ -28,11 +28,51 @@ const getCurrentUserId = async () => {
   }
 };
 
+// Clean up unnecessary localStorage data
+export const cleanupLocalStorage = () => {
+  const keysToRemove = [
+    'affiliate_data',
+    'app_config',
+    'campaigns',
+    'contacts',
+    'forms_',
+    'groups',
+    'language',
+    'nps_responses',
+    'nps_user_data',
+    'pending_affiliate_code',
+    'referrals_data',
+    'responses',
+    'situations',
+    'sources',
+    'subscription'
+  ];
+  
+  // Remove specific keys
+  keysToRemove.forEach(key => {
+    localStorage.removeItem(key);
+  });
+  
+  // Remove keys that start with certain prefixes
+  const prefixesToRemove = ['forms_', 'trial_start_date_'];
+  Object.keys(localStorage).forEach(key => {
+    prefixesToRemove.forEach(prefix => {
+      if (key.startsWith(prefix)) {
+        localStorage.removeItem(key);
+      }
+    });
+  });
+  
+  console.log('Cleaned up unnecessary localStorage data');
+};
+
 // Sources
 export const getSources = async (): Promise<Source[]> => {
   try {
     if (!isSupabaseConfigured()) {
-      return getDemoSources();
+      // Clean up localStorage and return demo data
+      cleanupLocalStorage();
+      return [];
     }
     
     const { data, error } = await supabase
@@ -42,44 +82,20 @@ export const getSources = async (): Promise<Source[]> => {
     
     if (error) {
       console.warn('Error fetching sources:', error);
-      return getDemoSources();
+      return [];
     }
     return data || [];
   } catch (error) {
     console.error('Error fetching sources:', error);
-    return getDemoSources();
+    return [];
   }
 };
-
-// Demo data functions
-const getDemoSources = (): Source[] => [
-  { id: '1', name: 'Website', description: 'Website feedback', color: '#3B82F6', user_id: 'demo' },
-  { id: '2', name: 'Email', description: 'Email campaigns', color: '#10B981', user_id: 'demo' },
-  { id: '3', name: 'SMS', description: 'SMS surveys', color: '#8B5CF6', user_id: 'demo' }
-];
-
-const getDemoSituations = (): Situation[] => [
-  { id: '1', name: 'New Purchase', description: 'After a new purchase', color: '#10B981', user_id: 'demo' },
-  { id: '2', name: 'Support Interaction', description: 'After customer support', color: '#3B82F6', user_id: 'demo' },
-  { id: '3', name: 'Renewal', description: 'After subscription renewal', color: '#8B5CF6', user_id: 'demo' }
-];
-
-const getDemoGroups = (): Group[] => [
-  { id: '1', name: 'Premium Customers', description: 'High-value customers', user_id: 'demo' },
-  { id: '2', name: 'New Users', description: 'Users who joined in the last 30 days', user_id: 'demo' },
-  { id: '3', name: 'Enterprise', description: 'Enterprise customers', user_id: 'demo' }
-];
 
 export const saveSource = async (source: Omit<Source, 'id'> & { id?: string }): Promise<Source> => {
   const userId = await getCurrentUserId();
   
   if (!userId || !isSupabaseConfigured()) {
-    // Return the source with a generated ID for demo mode
-    return {
-      ...source,
-      id: source.id || `demo-${Date.now()}`,
-      user_id: 'demo'
-    };
+    throw new Error('Supabase not configured or user not authenticated');
   }
   
   if (source.id) {
@@ -105,6 +121,10 @@ export const saveSource = async (source: Omit<Source, 'id'> & { id?: string }): 
 };
 
 export const deleteSource = async (id: string): Promise<boolean> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const { error } = await supabase
     .from('sources')
     .delete()
@@ -117,7 +137,8 @@ export const deleteSource = async (id: string): Promise<boolean> => {
 export const getSituations = async (): Promise<Situation[]> => {
   try {
     if (!isSupabaseConfigured()) {
-      return getDemoSituations();
+      cleanupLocalStorage();
+      return [];
     }
     
     const { data, error } = await supabase
@@ -127,12 +148,12 @@ export const getSituations = async (): Promise<Situation[]> => {
     
     if (error) {
       console.warn('Error fetching situations:', error);
-      return getDemoSituations();
+      return [];
     }
     return data || [];
   } catch (error) {
     console.error('Error fetching situations:', error);
-    return getDemoSituations();
+    return [];
   }
 };
 
@@ -140,11 +161,7 @@ export const saveSituation = async (situation: Omit<Situation, 'id'> & { id?: st
   const userId = await getCurrentUserId();
   
   if (!userId || !isSupabaseConfigured()) {
-    return {
-      ...situation,
-      id: situation.id || `demo-${Date.now()}`,
-      user_id: 'demo'
-    };
+    throw new Error('Supabase not configured or user not authenticated');
   }
   
   if (situation.id) {
@@ -170,6 +187,10 @@ export const saveSituation = async (situation: Omit<Situation, 'id'> & { id?: st
 };
 
 export const deleteSituation = async (id: string): Promise<boolean> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const { error } = await supabase
     .from('situations')
     .delete()
@@ -182,7 +203,8 @@ export const deleteSituation = async (id: string): Promise<boolean> => {
 export const getGroups = async (): Promise<Group[]> => {
   try {
     if (!isSupabaseConfigured()) {
-      return getDemoGroups();
+      cleanupLocalStorage();
+      return [];
     }
     
     const { data, error } = await supabase
@@ -192,12 +214,12 @@ export const getGroups = async (): Promise<Group[]> => {
     
     if (error) {
       console.warn('Error fetching groups:', error);
-      return getDemoGroups();
+      return [];
     }
     return data || [];
   } catch (error) {
     console.error('Error fetching groups:', error);
-    return getDemoGroups();
+    return [];
   }
 };
 
@@ -205,11 +227,7 @@ export const saveGroup = async (group: Omit<Group, 'id'> & { id?: string }): Pro
   const userId = await getCurrentUserId();
   
   if (!userId || !isSupabaseConfigured()) {
-    return {
-      ...group,
-      id: group.id || `demo-${Date.now()}`,
-      user_id: 'demo'
-    };
+    throw new Error('Supabase not configured or user not authenticated');
   }
   
   if (group.id) {
@@ -235,6 +253,10 @@ export const saveGroup = async (group: Omit<Group, 'id'> & { id?: string }): Pro
 };
 
 export const deleteGroup = async (id: string): Promise<boolean> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const { error } = await supabase
     .from('groups')
     .delete()
@@ -247,8 +269,9 @@ export const deleteGroup = async (id: string): Promise<boolean> => {
 export const getCampaigns = async (): Promise<Campaign[]> => {
   try {
     if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, returning demo campaigns');
-      return getDemoCampaigns();
+      console.log('Supabase not configured, cleaning localStorage');
+      cleanupLocalStorage();
+      return [];
     }
     
     const userId = await getCurrentUserId();
@@ -265,7 +288,7 @@ export const getCampaigns = async (): Promise<Campaign[]> => {
     
     if (error) {
       console.warn('Error fetching campaigns from Supabase:', error);
-      return getDemoCampaigns();
+      return [];
     }
     
     return data?.map(campaign => ({
@@ -281,47 +304,15 @@ export const getCampaigns = async (): Promise<Campaign[]> => {
     
   } catch (error) {
     console.error('Error fetching campaigns:', error);
-    return getDemoCampaigns();
+    return [];
   }
 };
-
-const getDemoCampaigns = (): Campaign[] => [
-  {
-    id: '1',
-    name: 'Customer Satisfaction Survey',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: null,
-    description: 'Measuring overall customer satisfaction',
-    active: true,
-    defaultSourceId: '1',
-    defaultGroupId: '1',
-    surveyCustomization: {
-      backgroundType: 'color',
-      backgroundColor: '#f8fafc',
-      primaryColor: '#00ac75',
-      textColor: '#1f2937'
-    },
-    automation: {
-      enabled: false,
-      action: 'return_only',
-      successMessage: 'Obrigado pelo seu feedback!',
-      errorMessage: 'Ocorreu um erro. Tente novamente.'
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
 
 export const saveCampaign = async (campaign: Campaign): Promise<Campaign> => {
   const userId = await getCurrentUserId();
   
   if (!userId || !isSupabaseConfigured()) {
-    return {
-      ...campaign,
-      id: campaign.id || `demo-${Date.now()}`,
-      createdAt: campaign.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    throw new Error('Supabase not configured or user not authenticated');
   }
   
   const campaignData = {
@@ -368,6 +359,10 @@ export const saveCampaign = async (campaign: Campaign): Promise<Campaign> => {
 };
 
 export const deleteCampaign = async (id: string): Promise<boolean> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const { error } = await supabase
     .from('campaigns')
     .delete()
@@ -380,27 +375,8 @@ export const deleteCampaign = async (id: string): Promise<boolean> => {
 export const getCampaignForm = async (campaignId: string): Promise<CampaignForm | null> => {
   try {
     if (!isSupabaseConfigured()) {
-      // Return demo form for development
-      return {
-        id: 'demo-form',
-        campaignId,
-        fields: [
-          {
-            id: 'nps-field',
-            type: 'nps',
-            label: 'O quanto você recomendaria nosso serviço para um amigo ou colega?',
-            required: true,
-            order: 0,
-          },
-          {
-            id: 'feedback-field',
-            type: 'text',
-            label: 'Por favor, compartilhe seu feedback',
-            required: false,
-            order: 1,
-          }
-        ]
-      };
+      cleanupLocalStorage();
+      return null;
     }
     
     const { data, error } = await supabase
@@ -442,32 +418,16 @@ export const getCampaignForm = async (campaignId: string): Promise<CampaignForm 
     };
   } catch (error) {
     console.error('Error fetching campaign form:', error);
-    // Return a default form in case of error
-    return {
-      id: 'default-form',
-      campaignId,
-      fields: [
-        {
-          id: 'nps-field',
-          type: 'nps',
-          label: 'O quanto você recomendaria nosso serviço para um amigo ou colega?',
-          required: true,
-          order: 0,
-        },
-        {
-          id: 'feedback-field',
-          type: 'text',
-          label: 'Por favor, compartilhe seu feedback',
-          required: false,
-          order: 1,
-        }
-      ]
-    };
+    return null;
   }
 };
 
 export const saveCampaignForm = async (form: CampaignForm): Promise<CampaignForm> => {
   const userId = await getCurrentUserId();
+  
+  if (!userId || !isSupabaseConfigured()) {
+    throw new Error('Supabase not configured or user not authenticated');
+  }
   
   const formData = {
     campaign_id: form.campaignId,
@@ -495,9 +455,9 @@ export const getResponses = async (campaignId?: string): Promise<NpsResponse[]> 
   try {
     // Check if Supabase is configured
     if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, returning demo responses');
-      // Return demo data for development
-      return getDemoResponses(campaignId);
+      console.log('Supabase not configured, cleaning localStorage');
+      cleanupLocalStorage();
+      return [];
     }
 
     try {
@@ -514,7 +474,7 @@ export const getResponses = async (campaignId?: string): Promise<NpsResponse[]> 
       
       if (error) {
         console.warn('Supabase query error:', error);
-        return getDemoResponses(campaignId);
+        return [];
       }
       
       return data?.map(response => ({
@@ -528,46 +488,19 @@ export const getResponses = async (campaignId?: string): Promise<NpsResponse[]> 
       })) || [];
     } catch (fetchError) {
       console.warn('Fetch error in getResponses:', fetchError);
-      return getDemoResponses(campaignId);
+      return [];
     }
   } catch (error) {
     console.error('Error fetching responses:', error);
-    // Return empty array for demo mode
-    return getDemoResponses(campaignId);
+    return [];
   }
-};
-
-// Helper function to generate demo responses
-const getDemoResponses = (campaignId?: string): NpsResponse[] => {
-  if (!campaignId) return [];
-  
-  // Generate some random demo responses for the specified campaign
-  const demoResponses: NpsResponse[] = [];
-  const now = new Date();
-  
-  // Generate 5 random responses
-  for (let i = 0; i < 5; i++) {
-    const score = Math.floor(Math.random() * 11); // 0-10
-    const date = new Date(now);
-    date.setDate(date.getDate() - i); // Spread out over the last few days
-    
-    demoResponses.push({
-      id: `demo-${campaignId}-${i}`,
-      campaignId: campaignId,
-      score: score,
-      feedback: score >= 9 ? "Great service!" : score <= 6 ? "Needs improvement" : "It was okay",
-      sourceId: "1", // Default source ID
-      situationId: "1", // Default situation ID
-      groupId: "1", // Default group ID
-      formResponses: {},
-      createdAt: date.toISOString()
-    });
-  }
-  
-  return demoResponses;
 };
 
 export const saveResponse = async (response: NpsResponse): Promise<NpsResponse> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const responseData = {
     id: response.id,
     campaign_id: response.campaignId,
@@ -595,6 +528,11 @@ export const saveResponse = async (response: NpsResponse): Promise<NpsResponse> 
 
 // Contacts
 export const getContacts = async (): Promise<Contact[]> => {
+  if (!isSupabaseConfigured()) {
+    cleanupLocalStorage();
+    return [];
+  }
+  
   const { data, error } = await supabase
     .from('contacts')
     .select('*')
@@ -612,6 +550,10 @@ export const getContacts = async (): Promise<Contact[]> => {
 
 export const saveContact = async (contact: Contact): Promise<Contact> => {
   const userId = await getCurrentUserId();
+  
+  if (!userId || !isSupabaseConfigured()) {
+    throw new Error('Supabase not configured or user not authenticated');
+  }
   
   const contactData = {
     name: contact.name,
@@ -657,6 +599,10 @@ export const saveContact = async (contact: Contact): Promise<Contact> => {
 };
 
 export const deleteContact = async (id: string): Promise<boolean> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const { error } = await supabase
     .from('contacts')
     .delete()
@@ -666,6 +612,10 @@ export const deleteContact = async (id: string): Promise<boolean> => {
 };
 
 export const searchContacts = async (query: string): Promise<Contact[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+  
   const { data, error } = await supabase
     .from('contacts')
     .select('*')
@@ -683,6 +633,10 @@ export const searchContacts = async (query: string): Promise<Contact[]> => {
 };
 
 export const getContactsByGroup = async (groupId: string): Promise<Contact[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+  
   const { data, error } = await supabase
     .from('contacts')
     .select('*')
@@ -701,7 +655,13 @@ export const getContactsByGroup = async (groupId: string): Promise<Contact[]> =>
 
 // User Profile
 export const getUserProfile = async (): Promise<UserProfile | null> => {
+  if (!isSupabaseConfigured()) {
+    cleanupLocalStorage();
+    return null;
+  }
+  
   const userId = await getCurrentUserId();
+  if (!userId) return null;
   
   const { data, error } = await supabase
     .from('user_profiles')
@@ -773,7 +733,12 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
 };
 
 export const saveUserProfile = async (profile: UserProfile): Promise<UserProfile> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const userId = await getCurrentUserId();
+  if (!userId) throw new Error('User not authenticated');
   
   const profileData = {
     name: profile.name,
@@ -802,10 +767,9 @@ export const saveUserProfile = async (profile: UserProfile): Promise<UserProfile
 
 // App Config
 export const getAppConfig = async (): Promise<AppConfig> => {
-  const userId = await getCurrentUserId();
-  
-  if (!userId || !isSupabaseConfigured()) {
-    // Return default config when user is not authenticated
+  if (!isSupabaseConfigured()) {
+    cleanupLocalStorage();
+    // Return default config when Supabase is not configured
     return {
       themeColor: '#00ac75',
       language: 'pt-BR',
@@ -847,6 +811,12 @@ export const getAppConfig = async (): Promise<AppConfig> => {
         },
       },
     };
+  }
+  
+  const userId = await getCurrentUserId();
+  
+  if (!userId) {
+    throw new Error('User not authenticated');
   }
   
   const { data, error } = await supabase
@@ -931,11 +901,14 @@ export const getAppConfig = async (): Promise<AppConfig> => {
 };
 
 export const saveAppConfig = async (config: AppConfig): Promise<AppConfig> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase not configured');
+  }
+  
   const userId = await getCurrentUserId();
   
-  if (!userId || !isSupabaseConfigured()) {
-    // Return the config as-is for demo mode
-    return config;
+  if (!userId) {
+    throw new Error('User not authenticated');
   }
   
   const configData = {
