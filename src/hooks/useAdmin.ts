@@ -20,6 +20,9 @@ export interface AdminUser {
   created_at: string;
   updated_at: string;
   trial_start_date?: string;
+  is_deactivated?: boolean;
+  deactivated_at?: string;
+  deactivated_by?: string;
 }
 
 export interface AdminSubscription {
@@ -93,7 +96,10 @@ export const useAdmin = () => {
     }
 
     try {
-      const { data, error } = await supabase.rpc('get_admin_users');
+      const { data, error } = await supabase
+        .from('admin_user_profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching admin users:', error);
@@ -104,6 +110,72 @@ export const useAdmin = () => {
     } catch (error) {
       console.error('Error fetching admin users:', error);
       return [];
+    }
+  };
+
+  const deactivateUser = async (userId: string): Promise<boolean> => {
+    if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('deactivate_user', {
+        target_user_id: userId
+      });
+
+      if (error) {
+        console.error('Error deactivating user:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error deactivating user:', error);
+      throw error;
+    }
+  };
+
+  const reactivateUser = async (userId: string): Promise<boolean> => {
+    if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('reactivate_user', {
+        target_user_id: userId
+      });
+
+      if (error) {
+        console.error('Error reactivating user:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error reactivating user:', error);
+      throw error;
+    }
+  };
+
+  const deleteUserAccount = async (userId: string): Promise<boolean> => {
+    if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('delete_user_account_admin', {
+        target_user_id: userId
+      });
+
+      if (error) {
+        console.error('Error deleting user account:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error deleting user account:', error);
+      throw error;
     }
   };
 
@@ -132,6 +204,9 @@ export const useAdmin = () => {
     permissions,
     loading,
     getAdminUsers,
-    getAdminSubscriptions
+    getAdminSubscriptions,
+    deactivateUser,
+    reactivateUser,
+    deleteUserAccount
   };
 };
