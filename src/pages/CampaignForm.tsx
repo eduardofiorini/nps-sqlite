@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Campaign, CampaignForm as CampaignFormType, SurveyCustomization, CampaignAutomation } from '../types';
-import { getCampaigns, getCampaignForm, saveCampaign } from '../utils/localStorage';
+import { getCampaigns, getCampaignForm, saveCampaign } from '../utils/supabaseStorage';
 import FormBuilder from '../components/dashboard/FormBuilder';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';

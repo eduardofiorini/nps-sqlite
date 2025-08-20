@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { NpsResponse, Campaign, CampaignForm } from '../types';
-import { getResponses, getCampaigns, getSources, getSituations, getGroups, getCampaignForm } from '../utils/localStorage';
+import { getResponses, getCampaigns, getSources, getSituations, getGroups, getCampaignForm } from '../utils/supabaseStorage';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';

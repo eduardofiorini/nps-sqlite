@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { getCampaigns, getContacts } from '../utils/localStorage';
+import { getCampaigns, getContacts } from '../utils/supabaseStorage';
 import { Campaign } from '../types';
 import { ArrowLeft, User, Mail, Phone, Building, Briefcase } from 'lucide-react';
 
