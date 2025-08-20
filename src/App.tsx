@@ -35,20 +35,6 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminAffiliate from './pages/admin/AdminAffiliate';
 
-// Clean up localStorage on app start
-React.useEffect(() => {
-  const cleanupOnStart = async () => {
-    try {
-      const { cleanupLocalStorage } = await import('./utils/supabaseStorage');
-      cleanupLocalStorage();
-    } catch (error) {
-      console.error('Error cleaning localStorage:', error);
-    }
-  };
-  
-  cleanupOnStart();
-}, []);
-
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -86,6 +72,20 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 function App() {
+  // Clean up localStorage on app start
+  useEffect(() => {
+    const cleanupOnStart = async () => {
+      try {
+        const { cleanupLocalStorage } = await import('./utils/supabaseStorage');
+        cleanupLocalStorage();
+      } catch (error) {
+        console.error('Error cleaning localStorage:', error);
+      }
+    };
+    
+    cleanupOnStart();
+  }, []);
+
   return (
     <Router>
       <ThemeProvider>
