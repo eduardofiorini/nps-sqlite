@@ -111,6 +111,8 @@ export const useTrial = () => {
         setTrialInfo({
           isTrialActive: false,
           isTrialExpired: true,
+        }
+        )
         // Demo mode - no trial restrictions
         setTrialInfo({
           isTrialActive: false,
