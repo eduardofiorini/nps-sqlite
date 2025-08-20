@@ -120,6 +120,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Check for pending affiliate referral after login/signup
         const pendingRefCode = sessionStorage.getItem('pending_affiliate_code');
+        console.log('Checking for pending affiliate code:', pendingRefCode);
+        
         if (pendingRefCode) {
           console.log('Processing pending affiliate referral for code:', pendingRefCode, 'user:', session.user.id);
           try {
@@ -127,8 +129,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await createAffiliateReferral(pendingRefCode, session.user.id);
             sessionStorage.removeItem('pending_affiliate_code');
             console.log('Processed pending affiliate referral for code:', pendingRefCode);
+            
+            // Only remove if successful
+            sessionStorage.removeItem('pending_affiliate_code');
+            localStorage.removeItem('pending_affiliate_code');
+            console.log('Cleared affiliate code from storage');
           } catch (error) {
             console.error('Error processing pending affiliate referral:', error);
+            // Keep the code in storage for retry on next login
+            console.log('Keeping affiliate code for retry:', pendingRefCode);
           }
         }
         

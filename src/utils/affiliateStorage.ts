@@ -411,8 +411,8 @@ export const createAffiliateReferral = async (
     
     if (affiliateError || !affiliate) {
       console.error('Affiliate not found:', affiliateCode, affiliateError);
-      // Create local referral for demo purposes
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
+      // Don't create local referral if affiliate doesn't exist in Supabase
+      console.log('Affiliate code not found in Supabase, skipping referral creation');
       return;
     }
     
@@ -437,8 +437,7 @@ export const createAffiliateReferral = async (
     
     if (referralError) {
       console.error('Error creating referral:', referralError);
-      // Fallback to local storage
-      createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
+      throw new Error(`Failed to create referral in Supabase: ${referralError.message}`);
     } else {
       console.log('Successfully created affiliate referral:', newReferral);
       
@@ -448,8 +447,8 @@ export const createAffiliateReferral = async (
     }
   } catch (error) {
     console.error('Error creating affiliate referral:', error);
-    // Fallback to local storage
-    createLocalAffiliateReferral(affiliateCode, referredUserId, subscriptionId);
+    // Re-throw the error to be handled by the caller
+    throw error;
   }
 };
 
@@ -458,6 +457,8 @@ const createLocalAffiliateReferral = (
   referredUserId: string, 
   subscriptionId?: string
 ): void => {
+  console.log('Creating LOCAL affiliate referral (fallback mode)');
+  
   // Find affiliate by code in local storage
   const localAffiliates = getLocalAffiliateData();
   const affiliateEntry = Object.entries(localAffiliates).find(([_, affiliate]) => 
@@ -470,9 +471,11 @@ const createLocalAffiliateReferral = (
   }
   
   const [_, affiliate] = affiliateEntry;
+  console.log('Found local affiliate:', affiliate.affiliateCode);
   
   // Calculate commission
   const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
+  console.log('Local commission amount:', commissionAmount);
   
   // Create referral record in local storage
   const localReferrals = getLocalReferralsData();
@@ -491,6 +494,7 @@ const createLocalAffiliateReferral = (
   
   localReferrals.push(newReferral);
   saveLocalReferralsData(localReferrals);
+  console.log('Saved local referral:', newReferral.id);
   
   // Update affiliate stats
   affiliate.totalReferrals += 1;
@@ -502,6 +506,7 @@ const createLocalAffiliateReferral = (
   const userKey = `affiliate_${affiliate.userId}`;
   updatedAffiliates[userKey] = affiliate;
   saveLocalAffiliateData(updatedAffiliates);
+  console.log('Updated local affiliate stats');
 };
 
 const calculateCommission = (priceId: string): number => {
