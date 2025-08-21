@@ -148,6 +148,9 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const loadConfig = async () => {
     if (authLoading) {
       return; // Wait for auth to complete
+    }
+    
+    if (!user) {
         console.log('User not authenticated, using default config');
         setConfig({
           themeColor: '#00ac75',
@@ -190,11 +193,8 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             },
           },
         });
+        setLoading(false);
         return;
-    
-    if (!user) {
-      setLoading(false);
-      return;
     }
 
     try {
