@@ -89,13 +89,26 @@ Deno.serve(async (req) => {
     }
 
     // Fetch admin user data using service role
-    const { data: users, error: usersError } = await supabase
-      .from('admin_user_profiles')
-      .select('*')
+    // First get all user profiles with auth user data
+    const { data: profiles, error: profilesError } = await supabase
+      .from('user_profiles')
+      .select(`
+        id,
+        user_id,
+        name,
+        phone,
+        company,
+        position,
+        avatar,
+        preferences,
+        created_at,
+        updated_at,
+        trial_start_date
+      `)
       .order('created_at', { ascending: false });
 
-    if (usersError) {
-      console.error('Error fetching admin users:', usersError);
+    if (profilesError) {
+      console.error('Error fetching user profiles:', profilesError);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to fetch users' }),
         {
@@ -105,10 +118,36 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Get auth user data for emails
+    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+    
+    if (authError) {
+      console.error('Error fetching auth users:', authError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to fetch user authentication data' }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        }
+      );
+    }
+
+    // Combine profile and auth data
+    const users = profiles?.map(profile => {
+      const authUser = authUsers.users.find(u => u.id === profile.user_id);
+      return {
+        ...profile,
+        email: authUser?.email || '',
+        is_deactivated: authUser?.user_metadata?.is_deactivated || false,
+        deactivated_at: authUser?.user_metadata?.deactivated_at || null,
+        deactivated_by: authUser?.user_metadata?.deactivated_by || null
+      };
+    }) || [];
+
     return new Response(
       JSON.stringify({
         success: true,
-        data: users || []
+        data: users
       }),
       {
         status: 200,
