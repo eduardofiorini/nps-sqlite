@@ -127,21 +127,34 @@ export const useAdmin = () => {
   };
 
   const deactivateUser = async (userId: string): Promise<boolean> => {
-    if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
-      return false;
-    }
-
     try {
-      const { data, error } = await supabase.rpc('deactivate_user', {
-        target_user_id: userId
-      });
-
-      if (error) {
-        console.error('Error deactivating user:', error);
-        throw error;
+      if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
+        throw new Error('Access denied or Supabase not configured');
       }
 
-      return data;
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deactivate-user-admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to deactivate user');
+      }
+
+      return true;
     } catch (error) {
       console.error('Error deactivating user:', error);
       throw error;
@@ -149,21 +162,34 @@ export const useAdmin = () => {
   };
 
   const reactivateUser = async (userId: string): Promise<boolean> => {
-    if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
-      return false;
-    }
-
     try {
-      const { data, error } = await supabase.rpc('reactivate_user', {
-        target_user_id: userId
-      });
-
-      if (error) {
-        console.error('Error reactivating user:', error);
-        throw error;
+      if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
+        throw new Error('Access denied or Supabase not configured');
       }
 
-      return data;
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reactivate-user-admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to reactivate user');
+      }
+
+      return true;
     } catch (error) {
       console.error('Error reactivating user:', error);
       throw error;
@@ -171,21 +197,34 @@ export const useAdmin = () => {
   };
 
   const deleteUserAccount = async (userId: string): Promise<boolean> => {
-    if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
-      return false;
-    }
-
     try {
-      const { data, error } = await supabase.rpc('delete_user_account_admin', {
-        target_user_id: userId
-      });
-
-      if (error) {
-        console.error('Error deleting user account:', error);
-        throw error;
+      if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
+        throw new Error('Access denied or Supabase not configured');
       }
 
-      return data;
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user-admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete user account');
+      }
+
+      return true;
     } catch (error) {
       console.error('Error deleting user account:', error);
       throw error;
