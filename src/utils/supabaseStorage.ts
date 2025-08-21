@@ -20,10 +20,14 @@ const getCurrentUserId = async () => {
     }
     
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    if (!user) {
+      // This is expected when user is not authenticated (e.g., after logout)
+      console.log('No authenticated user found');
+      return null;
+    }
     return user.id;
   } catch (error) {
-    console.error('Error getting current user:', error);
+    console.log('Error getting current user (expected when not authenticated):', error);
     return null;
   }
 };

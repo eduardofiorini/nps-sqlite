@@ -42,13 +42,23 @@ try {
     // Test the connection by getting the session with error handling
     supabase.auth.getSession().then(({ data, error }) => {
       if (error) {
-        console.warn('Supabase session error, falling back to demo mode:', error.message);
+        // Check if it's an expected invalid session error
+        if (error.message.includes('user_not_found') || error.message.includes('invalid_jwt')) {
+          console.info('Invalid session detected, will be handled by AuthContext:', error.message);
+        } else {
+          console.warn('Supabase session error, falling back to demo mode:', error.message);
+        }
         // Don't throw error, just log warning
       } else {
         console.log('Session check successful:', data.session ? 'Session exists' : 'No session');
       }
     }).catch(error => {
-      console.warn('Supabase connection failed, using demo mode:', error.message);
+      // Check if it's an expected invalid session error
+      if (error.message.includes('user_not_found') || error.message.includes('invalid_jwt')) {
+        console.info('Invalid session detected, will be handled by AuthContext:', error.message);
+      } else {
+        console.warn('Supabase connection failed, using demo mode:', error.message);
+      }
       // Don't throw error, just log warning
     });
   } else {

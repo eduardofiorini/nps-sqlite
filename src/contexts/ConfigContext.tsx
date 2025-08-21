@@ -148,7 +148,49 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const loadConfig = async () => {
     if (authLoading) {
       return; // Wait for auth to complete
-    }
+        console.log('User not authenticated, using default config');
+        setConfig({
+          themeColor: '#00ac75',
+          language: 'pt-BR',
+          company: {
+            name: '',
+            document: '',
+            address: '',
+            email: '',
+            phone: '',
+          },
+          integrations: {
+            smtp: {
+              enabled: false,
+              host: '',
+              port: 587,
+              secure: false,
+              username: '',
+              password: '',
+              fromName: '',
+              fromEmail: '',
+            },
+            zenvia: {
+              email: {
+                enabled: false,
+                apiKey: '',
+                fromEmail: '',
+                fromName: '',
+              },
+              sms: {
+                enabled: false,
+                apiKey: '',
+                from: '',
+              },
+              whatsapp: {
+                enabled: false,
+                apiKey: '',
+                from: '',
+              },
+            },
+          },
+        });
+        return;
     
     if (!user) {
       setLoading(false);
