@@ -165,8 +165,9 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
     
     console.log('Fetching affiliate referrals for user:', userId);
     
+    // Use the admin view to get complete referral data with real user emails
     const { data, error } = await supabase
-      .from('affiliate_referrals')
+      .from('admin_affiliate_referrals')
       .select('*')
       .eq('affiliate_user_id', userId)
       .order('created_at', { ascending: false });
@@ -178,37 +179,20 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
     
     console.log('Fetched affiliate referrals:', data?.length || 0, 'records');
     
-    // Get user profiles for referred users to get real email addresses
-    const referredUserIds = data?.map(r => r.referred_user_id) || [];
-    
-    let userProfiles: any[] = [];
-    if (referredUserIds.length > 0) {
-      const { data: profiles, error: profilesError } = await supabase
-        .from('user_profiles')
-        .select('user_id, name')
-        .in('user_id', referredUserIds);
-      
-      if (!profilesError) {
-        userProfiles = profiles || [];
-      }
-    }
-    
     return data?.map(referral => {
-      const userProfile = userProfiles.find(p => p.user_id === referral.referred_user_id);
-      
       return {
-      id: referral.id,
-      affiliateUserId: referral.affiliate_user_id,
-      referredUserId: referral.referred_user_id,
-      subscriptionId: referral.subscription_id,
-      commissionAmount: referral.commission_amount,
-      commissionStatus: referral.commission_status,
-      paidAt: referral.paid_at,
-      createdAt: referral.created_at,
-      updatedAt: referral.updated_at,
-      referredEmail: `usuario-${referral.referred_user_id.slice(0, 8)}@exemplo.com`,
-      planName: referral.subscription_id ? 'Plano Pago' : 'Período de Teste',
-      subscriptionStatus: referral.subscription_id ? 'active' : undefined
+        id: referral.id,
+        affiliateUserId: referral.affiliate_user_id,
+        referredUserId: referral.referred_user_id,
+        subscriptionId: referral.subscription_id,
+        commissionAmount: referral.commission_amount,
+        commissionStatus: referral.commission_status,
+        paidAt: referral.paid_at,
+        createdAt: referral.created_at,
+        updatedAt: referral.updated_at,
+        referredEmail: referral.referred_email, // Real email from the view
+        planName: referral.subscription_id ? 'Plano Pago' : 'Período de Teste',
+        subscriptionStatus: referral.subscription_status
       };
     }) || [];
   } catch (error) {
