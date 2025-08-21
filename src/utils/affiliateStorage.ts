@@ -178,7 +178,35 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
     
     console.log('Fetched affiliate referrals:', data?.length || 0, 'records');
     
-    return data?.map(referral => ({
+    // Get user profiles for referred users to get real email addresses
+    const referredUserIds = data?.map(r => r.referred_user_id) || [];
+    
+    let userProfiles: any[] = [];
+    if (referredUserIds.length > 0) {
+      const { data: profiles, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('user_id, name')
+        .in('user_id', referredUserIds);
+      
+      if (!profilesError) {
+        userProfiles = profiles || [];
+      }
+    }
+    
+    // Get auth user data for emails
+    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+    const authUsersMap = new Map();
+    if (!authError && authUsers) {
+      authUsers.users.forEach(user => {
+        authUsersMap.set(user.id, user);
+      });
+    }
+    
+    return data?.map(referral => {
+      const userProfile = userProfiles.find(p => p.user_id === referral.referred_user_id);
+      const authUser = authUsersMap.get(referral.referred_user_id);
+      
+      return {
       id: referral.id,
       affiliateUserId: referral.affiliate_user_id,
       referredUserId: referral.referred_user_id,
@@ -188,10 +216,11 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       paidAt: referral.paid_at,
       createdAt: referral.created_at,
       updatedAt: referral.updated_at,
-     referredEmail: `usuario-${referral.referred_user_id.slice(0, 8)}@exemplo.com`,
-     planName: referral.subscription_id ? 'Plano Pago' : 'Período de Teste',
-     subscriptionStatus: referral.subscription_id ? 'active' : undefined
-    })) || [];
+      referredEmail: authUser?.email || `usuario-${referral.referred_user_id.slice(0, 8)}@exemplo.com`,
+      planName: referral.subscription_id ? 'Plano Pago' : 'Período de Teste',
+      subscriptionStatus: referral.subscription_id ? 'active' : undefined
+      };
+    }) || [];
   } catch (error) {
     console.error('Error fetching affiliate referrals:', error);
     return [];
