@@ -67,6 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         )) {
           console.log('Invalid JWT detected, clearing auth state:', sessionError.message);
           await logout();
+          await supabase.auth.setSession({ access_token: null, refresh_token: null });
           setLoading(false);
           return;
         }
