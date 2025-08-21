@@ -123,8 +123,7 @@ export const isSupabaseConfigured = () => {
     // Check for placeholder values
     if (
       supabaseUrl === 'https://localhost:54321' || 
-      supabaseUrl === 'YOUR_SUPABASE_URL' ||
-      (!supabaseUrl.includes('.supabase.co') && !supabaseUrl.includes('localhost'))
+      supabaseUrl === 'YOUR_SUPABASE_URL'
     ) {
       console.warn('Supabase URL appears to be a placeholder');
       return false;

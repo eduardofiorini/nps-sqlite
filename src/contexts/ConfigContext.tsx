@@ -101,7 +101,7 @@ const defaultConfig: AppConfig = {
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
 export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [config, setConfig] = useState<AppConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -146,6 +146,10 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const loadConfig = async () => {
+    if (authLoading) {
+      return; // Wait for auth to complete
+    }
+    
     if (!user) {
       setLoading(false);
       return;
@@ -196,7 +200,7 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     loadConfig();
-  }, [user]);
+  }, [user, authLoading]);
 
   // Apply initial theme color on mount
   useEffect(() => {
