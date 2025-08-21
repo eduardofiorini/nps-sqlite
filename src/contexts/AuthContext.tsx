@@ -50,6 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Only attempt to get session if Supabase is properly configured
     if (!isSupabaseConfigured()) {
       console.log('Supabase not configured, skipping auth session check');
+      setUser(null);
       setLoading(false);
       return;
     }
@@ -57,6 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Get initial session
     const initAuth = async () => {
       try {
+        setLoading(true);
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         // Check for invalid JWT or user not found errors
@@ -66,8 +68,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           sessionError.message.includes('User from sub claim in JWT does not exist')
         )) {
           console.log('Invalid JWT detected, clearing auth state:', sessionError.message);
-          await logout();
-          await supabase.auth.setSession({ access_token: null, refresh_token: null });
+          setUser(null);
+          localStorage.removeItem(USER_STORAGE_KEY);
           setLoading(false);
           return;
         }
@@ -76,16 +78,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (session?.user) {
           // Validate the session by checking if the user actually exists
-          const { data: userData, error: userError } = await supabase.auth.getUser();
-          
-          if (userError || !userData.user) {
-            console.log('Session invalid, user does not exist:', userError?.message || 'No user data');
-            await logout();
-            await supabase.auth.setSession({ access_token: null, refresh_token: null });
-            setLoading(false);
-            return;
-          }
-          
           const processedUser = processSupabaseUser(session.user);
           setUser(processedUser);
           
@@ -100,6 +92,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('Error getting auth session:', error);
+        setUser(null);
+        localStorage.removeItem(USER_STORAGE_KEY);
       } finally {
         setLoading(false);
       }
@@ -141,11 +135,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
         console.log('Updated user in localStorage:', processedUser.email);
       } 
-      else if (_event === 'SIGNED_OUT') {
+      else {
+        setUser(null);
         localStorage.removeItem(USER_STORAGE_KEY);
       }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

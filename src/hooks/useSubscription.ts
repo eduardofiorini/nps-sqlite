@@ -53,6 +53,7 @@ export const useSubscription = () => {
           console.warn('Error fetching subscription:', fetchError);
           // Don't set error for missing data, just set null subscription
           setSubscription(null);
+          setLoading(false);
           return;
         }
 

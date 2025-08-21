@@ -29,6 +29,15 @@ export const useTrial = () => {
 
   useEffect(() => {
     if (!user) {
+      setTrialInfo({
+        isTrialActive: false,
+        isTrialExpired: false,
+        daysRemaining: 0,
+        hoursRemaining: 0,
+        minutesRemaining: 0,
+        trialStartDate: null,
+        trialEndDate: null,
+      });
       setLoading(false);
       return;
     }
@@ -105,14 +114,9 @@ export const useTrial = () => {
             trialEndDate,
           });
         }
+        setLoading(false);
       } catch (error) {
         console.error('Error calculating trial info:', error);
-        // Default to expired trial on error
-        setTrialInfo({
-          isTrialActive: false,
-          isTrialExpired: true,
-        }
-        )
         // Demo mode - no trial restrictions
         setTrialInfo({
           isTrialActive: false,
@@ -124,7 +128,6 @@ export const useTrial = () => {
           trialEndDate: null,
         });
         setLoading(false);
-        return;
       }
     };
 
