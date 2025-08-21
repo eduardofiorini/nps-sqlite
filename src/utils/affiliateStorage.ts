@@ -306,6 +306,12 @@ export const createAffiliateReferral = async (
     
     console.log('Found affiliate:', affiliate.user_id);
     
+    // Prevent self-referral
+    if (affiliate.user_id === referredUserId) {
+      console.log('Self-referral detected, skipping creation');
+      throw new Error('Cannot refer yourself');
+    }
+    
     // Calculate commission
     const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
     console.log('Commission amount:', commissionAmount);
