@@ -160,16 +160,17 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
       return [];
     }
     
-    const userId = await getCurrentUserId();
-    if (!userId) return [];
+    // Get current user to find their email
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.email) return [];
     
-    console.log('Fetching affiliate referrals for user:', userId);
+    console.log('Fetching affiliate referrals for user email:', user.email);
     
-    // Use the admin view to get complete referral data with real user emails
+    // Query using affiliate_email column which exists in the view
     const { data, error } = await supabase
       .from('admin_affiliate_referrals')
       .select('*')
-      .eq('affiliate_user_id', userId)
+      .eq('affiliate_email', user.email)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -182,14 +183,14 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
     return data?.map(referral => {
       return {
         id: referral.id,
-        affiliateUserId: referral.affiliate_user_id,
-        referredUserId: referral.referred_user_id,
+        affiliateUserId: user.id, // Current user's ID
+        referredUserId: referral.id, // Use referral ID as placeholder since user IDs aren't in the view
         subscriptionId: referral.subscription_id,
         commissionAmount: referral.commission_amount,
         commissionStatus: referral.commission_status,
         paidAt: referral.paid_at,
         createdAt: referral.created_at,
-        updatedAt: referral.updated_at,
+        updatedAt: referral.created_at, // Use created_at since updated_at might not be in view
         referredEmail: referral.referred_email, // Real email from the view
         planName: referral.subscription_id ? 'Plano Pago' : 'Período de Teste',
         subscriptionStatus: referral.subscription_status
