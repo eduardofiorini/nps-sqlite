@@ -46,20 +46,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage on component mount
-  useEffect(() => {
-    try {
-      const storedUserData = localStorage.getItem(USER_STORAGE_KEY);
-      if (storedUserData) {
-        const parsedUser = JSON.parse(storedUserData);
-        console.log('Loaded user from localStorage:', parsedUser.email);
-        setUser(parsedUser);
-      }
-    } catch (error) {
-      console.error('Error loading user from localStorage:', error);
-    }
-  }, []);
-
   useEffect(() => {
     // Only attempt to get session if Supabase is properly configured
     if (!isSupabaseConfigured()) {
@@ -95,11 +81,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
           console.log('Saved user to localStorage from session:', processedUser.email);
         } else {
-          // Try to load from localStorage as fallback
-          const storedUserData = localStorage.getItem(USER_STORAGE_KEY);
-          if (!user && storedUserData) {
-            setUser(JSON.parse(storedUserData));
-          }
+          // No active session, clear any stale data
+          setUser(null);
+          localStorage.removeItem(USER_STORAGE_KEY);
+          console.log('No active session, cleared user data');
         }
       } catch (error) {
         console.error('Error getting auth session:', error);
