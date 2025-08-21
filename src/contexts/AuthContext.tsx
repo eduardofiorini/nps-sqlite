@@ -123,7 +123,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('Processing pending affiliate referral for code:', pendingRefCode, 'user:', session.user.id);
           try {
             const { createAffiliateReferral } = await import('../utils/affiliateStorage');
-            await createAffiliateReferral(pendingRefCode, session.user.id);
+            await createAffiliateReferral(pendingRefCode, session.user.id, undefined);
             sessionStorage.removeItem('pending_affiliate_code');
             console.log('Processed pending affiliate referral for code:', pendingRefCode);
             
