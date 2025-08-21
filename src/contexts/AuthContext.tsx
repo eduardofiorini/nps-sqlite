@@ -75,6 +75,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('Initial auth session check:', session?.user?.email || 'No session');
         
         if (session?.user) {
+          // Validate the session by checking if the user actually exists
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          
+          if (userError || !userData.user) {
+            console.log('Session invalid, user does not exist:', userError?.message || 'No user data');
+            await logout();
+            await supabase.auth.setSession({ access_token: null, refresh_token: null });
+            setLoading(false);
+            return;
+          }
+          
           const processedUser = processSupabaseUser(session.user);
           setUser(processedUser);
           
