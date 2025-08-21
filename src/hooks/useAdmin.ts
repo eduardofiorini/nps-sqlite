@@ -96,17 +96,30 @@ export const useAdmin = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('admin_user_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
 
-      if (error) {
-        console.error('Error fetching admin users:', error);
+      if (!token) {
+        console.error('No authentication token found');
         return [];
       }
 
-      return data || [];
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-admin-users`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        console.error('Error fetching admin users:', result.error);
+        return [];
+      }
+
+      return result.data || [];
     } catch (error) {
       console.error('Error fetching admin users:', error);
       return [];
