@@ -87,6 +87,14 @@ export const useTrial = () => {
         const now = new Date();
         const timeRemaining = trialEndDate.getTime() - now.getTime();
 
+        console.log('Trial calculation:', {
+          trialStartDate: trialStartDate.toISOString(),
+          trialEndDate: trialEndDate.toISOString(),
+          now: now.toISOString(),
+          timeRemaining,
+          isExpired: timeRemaining <= 0,
+          hasActiveSubscription: subscription?.status === 'active'
+        });
         if (timeRemaining <= 0) {
           // Trial expired
           setTrialInfo({
@@ -117,15 +125,17 @@ export const useTrial = () => {
         setLoading(false);
       } catch (error) {
         console.error('Error calculating trial info:', error);
-        // Demo mode - no trial restrictions
+        // On error, assume trial is expired to be safe
         setTrialInfo({
           isTrialActive: false,
-          isTrialExpired: false,
+          isTrialExpired: true,
           daysRemaining: 0,
           hoursRemaining: 0,
           minutesRemaining: 0,
           trialStartDate: null,
-          trialEndDate: null,
+          // For testing, set trial start to 8 days ago to simulate expired trial
+          trialStartDate = new Date();
+          trialStartDate.setDate(trialStartDate.getDate() - 8);
         });
         setLoading(false);
       }
