@@ -126,9 +126,11 @@ export const useTrial = () => {
       } catch (error) {
         console.error('Error calculating trial info:', error);
         // On error, assume trial is expired to be safe
-        // For testing, set trial start to 8 days ago to simulate expired trial
+        // For testing with specific user ID, set trial start to 8 days ago to simulate expired trial
         let calculatedTrialStartDate = new Date();
-        calculatedTrialStartDate.setDate(calculatedTrialStartDate.getDate() - 8);
+        if (user.id === '39d95758-9a20-489a-9db5-ebd8eec5df36') {
+          calculatedTrialStartDate.setDate(calculatedTrialStartDate.getDate() - 8);
+        }
         
         setTrialInfo({
           isTrialActive: false,
