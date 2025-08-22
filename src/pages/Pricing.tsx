@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfig } from '../contexts/ConfigContext';
 import { useSubscription } from '../hooks/useSubscription';
+import { useTrial } from '../hooks/useTrial';
 import { supabase } from '../lib/supabase';
 import { stripeProducts } from '../stripe-config';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
@@ -33,6 +34,7 @@ const Pricing: React.FC = () => {
   const { user } = useAuth();
   const { themeColor } = useConfig();
   const { subscription, refreshSubscription } = useSubscription();
+  const { trialInfo } = useTrial();
   const navigate = useNavigate();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -175,6 +177,23 @@ const Pricing: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {/* Trial Expired Banner */}
+        {trialInfo.isTrialExpired && !subscription?.status && (
+          <div className="mb-8 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+            <div className="flex items-center">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">
+                  Período de Teste Expirado
+                </h3>
+                <p className="text-red-700 dark:text-red-300">
+                  Seu teste gratuito de 7 dias expirou. Escolha um plano para continuar usando a plataforma.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -182,16 +201,21 @@ const Pricing: React.FC = () => {
           className="text-center mb-12"
         >
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Planos e Preços
+            {trialInfo.isTrialExpired ? 'Escolha Seu Plano' : 'Planos e Preços'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-6">
-            Escolha o plano ideal para sua empresa
+            {trialInfo.isTrialExpired 
+              ? 'Continue aproveitando todos os recursos da plataforma'
+              : 'Escolha o plano ideal para sua empresa'
+            }
           </p>
           
-          <div className="inline-flex items-center px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
-            <Crown size={16} className="mr-2" />
-            7 dias grátis • Sem cartão de crédito
-          </div>
+          {!trialInfo.isTrialExpired && (
+            <div className="inline-flex items-center px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
+              <Crown size={16} className="mr-2" />
+              7 dias grátis • Sem cartão de crédito
+            </div>
+          )}
         </motion.div>
 
         {/* Current Subscription Info */}
