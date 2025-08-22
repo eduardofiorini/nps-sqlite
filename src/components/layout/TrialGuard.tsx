@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTrial } from '../../hooks/useTrial';
 import { useSubscription } from '../../hooks/useSubscription';
 import TrialExpired from '../../pages/TrialExpired';
@@ -9,6 +10,7 @@ interface TrialGuardProps {
 }
 
 const TrialGuard: React.FC<TrialGuardProps> = ({ children }) => {
+  const { user } = useAuth();
   const { trialInfo, loading: trialLoading } = useTrial();
   const { subscription, loading: subscriptionLoading } = useSubscription();
   const location = useLocation();
