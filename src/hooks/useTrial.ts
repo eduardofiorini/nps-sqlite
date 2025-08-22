@@ -59,24 +59,35 @@ export const useTrial = () => {
           return;
         }
 
-        let trialStartDate;
-        if (isSupabaseConfigured()) {
-          // Use localStorage for trial tracking to avoid RLS issues
-          const storedTrialStart = localStorage.getItem(`trial_start_date_${user.id}`);
-          if (storedTrialStart) {
-            trialStartDate = new Date(storedTrialStart);
+        let trialStartDate: Date;
+        const trialStorageKey = `trial_start_date_${user.id}`;
+        
+        // For testing with specific user ID, force expired trial
+        if (user.id === '39d95758-9a20-489a-9db5-ebd8eec5df36') {
+          console.log('🧪 Testing mode: Forcing expired trial for user', user.id);
+          
+          // Check if we already have a stored expired trial date
+          const storedExpiredTrial = localStorage.getItem(`${trialStorageKey}_expired`);
+          if (storedExpiredTrial) {
+            trialStartDate = new Date(storedExpiredTrial);
+            console.log('📅 Using stored expired trial date:', trialStartDate);
           } else {
+            // Set trial to 8 days ago and store it permanently
             trialStartDate = new Date();
-            localStorage.setItem(`trial_start_date_${user.id}`, trialStartDate.toISOString());
+            trialStartDate.setDate(trialStartDate.getDate() - 8);
+            localStorage.setItem(`${trialStorageKey}_expired`, trialStartDate.toISOString());
+            console.log('📅 Created new expired trial date:', trialStartDate);
           }
         } else {
-          // Demo mode - use localStorage
-          const storedTrialStart = localStorage.getItem(`trial_start_date_${user.id}`);
+          // Normal trial logic for other users
+          const storedTrialStart = localStorage.getItem(trialStorageKey);
           if (storedTrialStart) {
             trialStartDate = new Date(storedTrialStart);
+            console.log('📅 Using existing trial start date:', trialStartDate);
           } else {
             trialStartDate = new Date();
-            localStorage.setItem(`trial_start_date_${user.id}`, trialStartDate.toISOString());
+            localStorage.setItem(trialStorageKey, trialStartDate.toISOString());
+            console.log('📅 Created new trial start date:', trialStartDate);
           }
         }
 
@@ -87,16 +98,20 @@ export const useTrial = () => {
         const now = new Date();
         const timeRemaining = trialEndDate.getTime() - now.getTime();
 
-        console.log('Trial calculation:', {
+        console.log('🔍 Trial calculation:', {
+          userId: user.id,
           trialStartDate: trialStartDate.toISOString(),
           trialEndDate: trialEndDate.toISOString(),
           now: now.toISOString(),
           timeRemaining,
+          timeRemainingDays: timeRemaining / (1000 * 60 * 60 * 24),
           isExpired: timeRemaining <= 0,
           hasActiveSubscription: subscription?.status === 'active'
         });
+        
         if (timeRemaining <= 0) {
           // Trial expired
+          console.log('❌ Trial EXPIRED - setting expired state');
           setTrialInfo({
             isTrialActive: false,
             isTrialExpired: true,
@@ -108,6 +123,7 @@ export const useTrial = () => {
           });
         } else {
           // Trial still active
+          console.log('✅ Trial ACTIVE - calculating remaining time');
           const daysRemaining = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
           const hoursRemaining = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const minutesRemaining = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
@@ -125,12 +141,7 @@ export const useTrial = () => {
         setLoading(false);
       } catch (error) {
         console.error('Error calculating trial info:', error);
-        // On error, assume trial is expired to be safe
-        // For testing with specific user ID, set trial start to 8 days ago to simulate expired trial
-        let calculatedTrialStartDate = new Date();
-        if (user.id === '39d95758-9a20-489a-9db5-ebd8eec5df36') {
-          calculatedTrialStartDate.setDate(calculatedTrialStartDate.getDate() - 8);
-        }
+        console.log('💥 Error in trial calculation, setting expired state');
         
         setTrialInfo({
           isTrialActive: false,
@@ -138,7 +149,7 @@ export const useTrial = () => {
           daysRemaining: 0,
           hoursRemaining: 0,
           minutesRemaining: 0,
-          trialStartDate: calculatedTrialStartDate,
+          trialStartDate: new Date(),
           trialEndDate: null,
         });
         setLoading(false);
