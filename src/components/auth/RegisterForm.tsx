@@ -395,7 +395,7 @@ const RegisterForm: React.FC = () => {
                   className="h-12 text-base font-medium bg-[#00ac75] hover:bg-[#009966] focus:ring-[#00ac75]"
                   icon={<ArrowRight size={18} />}
                 >
-                  → Iniciar Teste Gratuito de 7 dias
+                  Cadastrar
                 </Button>
 
                 <div className="text-center">
