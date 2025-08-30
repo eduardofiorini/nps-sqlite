@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { Campaign, CampaignForm, NpsResponse } from '../types';
-import { getCampaigns, getCampaignForm, saveResponse, getSituations, isSupabaseConfigured } from '../utils/supabaseStorage';
+import { getCampaigns, getCampaignForm, saveResponse, getSituations } from '../utils/nodeStorage';
+import { apiClient } from '../lib/api';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -279,35 +280,22 @@ const Survey: React.FC = () => {
         }
       }
 
-      // Use Supabase Edge Function as proxy to avoid CORS issues
-      const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/webhook-proxy`;
-      const proxyHeaders = {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-      };
+      // Direct webhook call (since we're using Node.js backend now)
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...webhookHeaders
+        },
+        body: JSON.stringify(payload)
+      });
 
-      try {
-        const response = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: proxyHeaders,
-          body: JSON.stringify({
-            url: webhookUrl,
-            headers: webhookHeaders,
-            payload: payload
-          })
-        });
-
-        const result = await response.json();
-
-        if (!result.success) {
-          throw new Error(`Webhook falhou: ${result.error || 'Erro desconhecido'}`);
-        }
-
-        console.log('Webhook sent successfully');
-        setAutomationError(''); // Clear any previous errors on success
-      } catch (fetchError) {
-        throw fetchError;
+      if (!response.ok) {
+        throw new Error(`Webhook falhou com status ${response.status}: ${response.statusText}`);
       }
+
+      console.log('Webhook sent successfully');
+      setAutomationError(''); // Clear any previous errors on success
 
     } catch (error) {
       console.error('Webhook error:', error);
