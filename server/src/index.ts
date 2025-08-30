@@ -4,6 +4,16 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { Database } from './config/database';
 
+// Load environment variables from .env file
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
+// Validate required environment variables
+if (!process.env.JWT_SECRET) {
+  console.error('❌ JWT_SECRET is not defined in environment variables');
+  console.error('Please create a server/.env file with JWT_SECRET=your_secret_key');
+  process.exit(1);
+}
+
 // Import routes
 import authRoutes from './routes/auth';
 import campaignRoutes from './routes/campaigns';
@@ -16,9 +26,6 @@ import configRoutes from './routes/config';
 import affiliateRoutes from './routes/affiliate';
 import adminRoutes from './routes/admin';
 import emailRoutes from './routes/email';
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
