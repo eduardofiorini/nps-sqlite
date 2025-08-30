@@ -4,15 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:full": "concurrently \"npm run dev\" \"npm run server:dev\"",
-    "setup": "npm install && cd server && npm install",
-    "server:dev": "cd server && npm run dev",
-    "server:build": "cd server && npm run build",
-    "server:start": "cd server && npm start",
-    "server:migrate": "cd server && npm run migrate",
-    "build": "vite build",
-    "lint": "eslint .",
+    "predev": "npm install && cd server && npm install",
+    "dev": "npm run predev && concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\"",
+    "dev:client": "vite",
+    "server": "cd server && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build:client": "vite build",
+    "build:server": "cd server && npm run start",
+    "build": "npm run build:client && npm run build:server",
     "preview": "vite preview"
   },
   "dependencies": {
