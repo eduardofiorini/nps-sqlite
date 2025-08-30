@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { isSupabaseConfigured } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { getProductByPriceId } from '../stripe-config';
 
 export interface SubscriptionData {
   customerId: string | null;
@@ -36,49 +33,10 @@ export const useSubscription = () => {
         setLoading(true);
         setError(null);
 
-        // Check if Supabase is configured
-        if (!isSupabaseConfigured()) {
-          console.log('Supabase not configured, skipping subscription fetch');
-          setSubscription(null);
-          setLoading(false);
-          return;
-        }
-
-        const { data, error: fetchError } = await supabase
-          .from('stripe_user_subscriptions')
-          .select('*')
-          .maybeSingle();
-
-        if (fetchError) {
-          console.warn('Error fetching subscription:', fetchError);
-          // Don't set error for missing data, just set null subscription
-          setSubscription(null);
-          setLoading(false);
-          return;
-        }
-
-        if (data) {
-          const product = getProductByPriceId(data.price_id);
-          
-          setSubscription({
-            customerId: data.customer_id,
-            subscriptionId: data.subscription_id,
-            status: data.subscription_status,
-            priceId: data.price_id,
-            currentPeriodStart: data.current_period_start,
-            currentPeriodEnd: data.current_period_end,
-            cancelAtPeriodEnd: data.cancel_at_period_end,
-            paymentMethodBrand: data.payment_method_brand,
-            paymentMethodLast4: data.payment_method_last4,
-            planName: product?.name || null,
-            planDescription: product?.description || null,
-          });
-        } else {
-          setSubscription(null);
-        }
+        // For now, return null subscription since we're not implementing Stripe in Node.js backend
+        setSubscription(null);
       } catch (err) {
-        console.warn('Error in fetchSubscription:', err);
-        // In case of network errors or other issues, just set null subscription
+        console.warn('Error fetching subscription:', err);
         setSubscription(null);
         setError(null);
       } finally {
@@ -92,44 +50,10 @@ export const useSubscription = () => {
   const refreshSubscription = async () => {
     if (!user) return;
     
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, skipping subscription refresh');
-      return;
-    }
-    
     setLoading(true);
     try {
-      const { data, error: fetchError } = await supabase
-        .from('stripe_user_subscriptions')
-        .select('*')
-        .maybeSingle();
-
-      if (fetchError) {
-        console.warn('Error refreshing subscription:', fetchError);
-        setSubscription(null);
-        return;
-      }
-
-      if (data) {
-        const product = getProductByPriceId(data.price_id);
-        
-        setSubscription({
-          customerId: data.customer_id,
-          subscriptionId: data.subscription_id,
-          status: data.subscription_status,
-          priceId: data.price_id,
-          currentPeriodStart: data.current_period_start,
-          currentPeriodEnd: data.current_period_end,
-          cancelAtPeriodEnd: data.cancel_at_period_end,
-          paymentMethodBrand: data.payment_method_brand,
-          paymentMethodLast4: data.payment_method_last4,
-          planName: product?.name || null,
-          planDescription: product?.description || null,
-        });
-      } else {
-        setSubscription(null);
-      }
+      // For now, just set null subscription
+      setSubscription(null);
     } catch (err) {
       console.warn('Error refreshing subscription:', err);
       setSubscription(null);

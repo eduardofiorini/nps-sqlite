@@ -199,16 +199,7 @@ const Profile: React.FC = () => {
     }
     
     try {
-      const { supabase } = await import('../lib/supabase');
-      
-      // Update password
-      const { error } = await supabase.auth.updateUser({
-        password: passwordData.newPassword
-      });
-      
-      if (error) {
-        throw error;
-      }
+      await apiClient.changePassword(passwordData.currentPassword, passwordData.newPassword);
       
       // Reset form and show success
       setPasswordData({
@@ -233,69 +224,15 @@ const Profile: React.FC = () => {
   
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== user?.email) {
-      setPasswordError('Email de confirmação não confere');
+      setDeleteError('Email de confirmação não confere');
       return;
     }
     
     setIsDeleting(true);
-    setPasswordError('');
+    setDeleteError('');
     
     try {
-      const { supabase, isSupabaseConfigured } = await import('../lib/supabase');
-      
-      if (!isSupabaseConfigured()) {
-        // Demo mode - just logout
-        console.log('Demo mode: simulating account deletion');
-        await logout();
-        navigate('/login');
-        return;
-      }
-      
-      // Get current session token
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-      
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-      
-      console.log('Starting account deletion process...');
-      
-      // Call edge function to delete all user data
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user-account`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          confirmation_email: user.email
-        }),
-      });
-      
-      const result = await response.json();
-      console.log('Account deletion response:', result);
-      
-      if (!result.success) {
-        if (result.partial_success) {
-          // Some data was deleted but auth user deletion failed
-          console.warn('Partial deletion success:', result.message);
-          setSaveMessage(`Aviso: ${result.message}. Entre em contato com o suporte.`);
-          
-          // Still logout the user since their data was deleted
-          setTimeout(async () => {
-            await logout();
-            navigate('/login');
-          }, 3000);
-          
-          return;
-        } else {
-          throw new Error(result.error || 'Falha ao excluir conta');
-        }
-      }
-      
-      console.log('Account deletion completed successfully');
+      await apiClient.deleteAccount(user.email);
       
       // Log out and redirect to login page
       await logout();
@@ -303,11 +240,11 @@ const Profile: React.FC = () => {
       
     } catch (error) {
       console.error('Error deleting account:', error);
-      setPasswordError(`Erro ao excluir conta: ${error.message}`);
+      setDeleteError(`Erro ao excluir conta: ${error.message}`);
       
       // Clear error after 5 seconds
       setTimeout(() => {
-        setPasswordError('');
+        setDeleteError('');
       }, 5000);
     } finally {
       setIsDeleting(false);
@@ -316,84 +253,43 @@ const Profile: React.FC = () => {
   
   const handleDataExport = async () => {
     try {
-      const { supabase } = await import('../lib/supabase');
-      
-      // Get user data
-      const { data: userData, error: userError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-        
-      if (userError) throw userError;
-      
-      // Get campaigns
-      const { data: campaigns, error: campaignsError } = await supabase
-        .from('campaigns')
-        .select('*')
-        .eq('user_id', user?.id);
-        
-      if (campaignsError) throw campaignsError;
-      
-      // Get contacts
-      const { data: contacts, error: contactsError } = await supabase
-        .from('contacts')
-        .select('*')
-        .eq('user_id', user?.id);
-        
-      if (contactsError) throw contactsError;
-      
-      // Get groups
-      const { data: groups, error: groupsError } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('user_id', user?.id);
-        
-      if (groupsError) throw groupsError;
-      
-      // Get sources
-      const { data: sources, error: sourcesError } = await supabase
-        .from('sources')
-        .select('*')
-        .eq('user_id', user?.id);
-        
-      if (sourcesError) throw sourcesError;
-      
-      // Get situations
-      const { data: situations, error: situationsError } = await supabase
-        .from('situations')
-        .select('*')
-        .eq('user_id', user?.id);
-        
-      if (situationsError) throw situationsError;
-      
-      // Get app config
-      const { data: appConfig, error: appConfigError } = await supabase
-        .from('app_configs')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-        
-      if (appConfigError && appConfigError.code !== 'PGRST116') throw appConfigError;
+      // Get all user data from Node.js backend
+      const [
+        userProfile,
+        campaigns,
+        contacts,
+        groups,
+        sources,
+        situations,
+        appConfig
+      ] = await Promise.all([
+        getUserProfile(),
+        apiClient.getCampaigns(),
+        apiClient.getContacts(),
+        apiClient.getEntities('groups'),
+        apiClient.getEntities('sources'),
+        apiClient.getEntities('situations'),
+        apiClient.getConfig()
+      ]);
       
       // Compile all data
       const exportData = {
         user: {
           id: user?.id,
           email: user?.email,
-          name: userData?.name,
-          phone: userData?.phone,
-          company: userData?.company,
-          position: userData?.position,
-          preferences: userData?.preferences,
-          created_at: userData?.created_at
+          name: userProfile?.name,
+          phone: userProfile?.phone,
+          company: userProfile?.company,
+          position: userProfile?.position,
+          preferences: userProfile?.preferences,
+          created_at: userProfile?.createdAt
         },
-        campaigns,
-        contacts,
-        groups,
-        sources,
-        situations,
-        app_config: appConfig
+        campaigns: campaigns.data || [],
+        contacts: contacts.data || [],
+        groups: groups.data || [],
+        sources: sources.data || [],
+        situations: situations.data || [],
+        app_config: appConfig.data || null
       };
       
       // Create and download file

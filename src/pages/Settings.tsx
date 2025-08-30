@@ -9,8 +9,8 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import Input from '../components/ui/Input';
 import { AppConfig } from '../types';
-import { getSources, getSituations, getGroups, getAppConfig } from '../utils/supabaseStorage';
-import { supabase } from '../lib/supabase';
+import { getSources, getSituations, getGroups, getAppConfig } from '../utils/nodeStorage';
+import { apiClient } from '../lib/api';
 import { Save, Globe, Moon, Sun, BarChart, Users, Tag, Building, FileText, Phone, Mail, MapPin, Hash, Server, MessageSquare, Smartphone, Shield, Eye, EyeOff, CheckCircle, AlertTriangle, Zap, Info } from 'lucide-react';
 
 const Settings: React.FC = () => {
@@ -93,7 +93,6 @@ const Settings: React.FC = () => {
     
     try {
       if (service === 'SMTP') {
-        // Get the current SMTP configuration
         const smtpConfig = serviceConfig || formData.integrations?.smtp;
         
         if (!smtpConfig) {
@@ -104,32 +103,11 @@ const Settings: React.FC = () => {
           throw new Error('SMTP configuration is incomplete. Please fill in all fields.');
         }
         
-        // Call the Supabase Edge Function to send a test email
-        const { data: authData } = await supabase.auth.getSession();
-        const token = authData.session?.access_token;
-        
-        if (!token) {
-          throw new Error('Authentication token is missing. Please log in again.');
-        }
-        
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-test-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ smtpConfig })
-        });
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to send test email');
-        }
+        const result = await apiClient.sendTestEmail(smtpConfig);
         
         setTestEmailResult({
           success: true,
-          message: `Email de teste enviado com sucesso para ${authData.session?.user?.email}`
+          message: result.message || 'Email de teste enviado com sucesso'
         });
         
         setShowTestEmailModal(true);
@@ -147,35 +125,16 @@ const Settings: React.FC = () => {
           throw new Error('ZenVia Email configuration is incomplete. Please fill in all fields.');
         }
         
-        // Call the Supabase Edge Function to send a test email via ZenVia
-        const { data: authData } = await supabase.auth.getSession();
-        const token = authData.session?.access_token;
-        
-        if (!token) {
-          throw new Error('Authentication token is missing. Please log in again.');
-        }
-        
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zenvia-test`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ 
-            serviceType: 'email',
-            config: emailConfig
-          })
-        });
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to send test email via ZenVia');
-        }
+        // For now, just simulate success since ZenVia is not implemented in Node.js backend yet
+        const result = {
+          success: true,
+          message: 'ZenVia Email teste simulado com sucesso (não implementado no backend Node.js ainda)',
+          details: { service: 'email' }
+        };
         
         setZenviaTestResult({
           success: true,
-          message: result.message || `Email de teste enviado com sucesso para ${authData.session?.user?.email}`,
+          message: result.message,
           details: result.details,
           service: 'email'
         });
@@ -198,45 +157,16 @@ const Settings: React.FC = () => {
           throw new Error(`${service} configuration is incomplete. Please fill in all fields.`);
         }
         
-        // Get user profile to check if phone number is set
-        const { data: userProfile } = await supabase
-          .from('user_profiles')
-          .select('phone')
-          .single();
-          
-        if (!userProfile?.phone) {
-          throw new Error(`Seu perfil não tem um número de telefone configurado. Por favor, atualize seu perfil com um número de telefone válido para testar o serviço de ${serviceType === 'sms' ? 'SMS' : 'WhatsApp'}.`);
-        }
-        
-        // Call the Supabase Edge Function
-        const { data: authData } = await supabase.auth.getSession();
-        const token = authData.session?.access_token;
-        
-        if (!token) {
-          throw new Error('Authentication token is missing. Please log in again.');
-        }
-        
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zenvia-test`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ 
-            serviceType: serviceType,
-            config: currentServiceConfig
-          })
-        });
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-          throw new Error(result.error || `Failed to send test ${serviceType}`);
-        }
+        // For now, just simulate success since ZenVia is not implemented in Node.js backend yet
+        const result = {
+          success: true,
+          message: `${serviceType === 'sms' ? 'SMS' : 'WhatsApp'} teste simulado com sucesso (não implementado no backend Node.js ainda)`,
+          details: { service: serviceType }
+        };
         
         setZenviaTestResult({
           success: true,
-          message: result.message || `${serviceType === 'sms' ? 'SMS' : 'WhatsApp'} de teste enviado com sucesso para ${userProfile.phone}`,
+          message: result.message,
           details: result.details,
           service: serviceType
         });

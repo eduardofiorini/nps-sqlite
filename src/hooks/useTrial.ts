@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from './useSubscription';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { getUserProfile } from '../utils/supabaseStorage';
+import { getUserProfile } from '../utils/nodeStorage';
 
 export interface TrialInfo {
   isTrialActive: boolean;
@@ -75,8 +74,8 @@ export const useTrial = () => {
           // Get trial start date from user profile in database
           try {
             const userProfile = await getUserProfile();
-            if (userProfile?.createdAt) {
-              trialStartDate = new Date(userProfile.createdAt);
+            if (userProfile?.trial_start_date) {
+              trialStartDate = new Date(userProfile.trial_start_date);
               console.log('📅 Using trial start date from user profile:', trialStartDate);
             } else {
               console.log('⚠️ No user profile found, using current date as trial start');

@@ -74,21 +74,8 @@ const LoginForm: React.FC = () => {
     setResendMessage('');
     
     try {
-      const { supabase } = await import('../../lib/supabase');
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
-        }
-      });
-      
-      if (error) {
-        setResendMessage('Erro ao reenviar email. Tente novamente.');
-      } else {
-        setResendMessage('Email de confirmação reenviado! Verifique sua caixa de entrada.');
-        setShowResendConfirmation(false);
-      }
+      // For now, just show success message since email confirmation is not implemented
+      setResendMessage('Funcionalidade de reenvio de email não implementada no backend Node.js ainda.');
     } catch (err) {
       setResendMessage('Erro ao reenviar email. Tente novamente.');
     } finally {

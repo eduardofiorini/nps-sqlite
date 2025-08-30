@@ -1,98 +1,21 @@
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import type { UserAffiliate, AffiliateReferral, AdminAffiliateReferral } from '../types';
-
-// Helper function to get current user ID
-const getCurrentUserId = async () => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    return user.id;
-  } catch (error) {
-    console.error('Error getting current user:', error);
-    return null;
-  }
-};
 
 // User Affiliate Functions
 export const getUserAffiliate = async (): Promise<UserAffiliate | null> => {
   try {
-    if (!isSupabaseConfigured()) {
-      cleanupAffiliateLocalStorage();
-      return null;
-    }
-    
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-    
-    console.log('Fetching user affiliate for user:', userId);
-    
-    const { data, error } = await supabase
-      .from('user_affiliates')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (error) {
-      console.error('Error fetching user affiliate:', error);
-      return null;
-    }
-    
-    if (!data) {
-      console.log('No affiliate record found, creating new one');
-      // Create new affiliate record
-      const newAffiliate = {
-        user_id: userId,
-        affiliate_code: generateAffiliateCode(),
-        bank_account: {
-          type: '',
-          bank: '',
-          agency: '',
-          account: '',
-          pixKey: '',
-          pixType: ''
-        }
-      };
-      
-      const { data: created, error: createError } = await supabase
-        .from('user_affiliates')
-        .insert(newAffiliate)
-        .select()
-        .single();
-      
-      if (createError) {
-        console.error('Error creating affiliate:', createError);
-        return null;
-      }
-      
-      console.log('Created new affiliate record:', created);
-      
-      return {
-        id: created.id,
-        userId: created.user_id,
-        affiliateCode: created.affiliate_code,
-        bankAccount: created.bank_account,
-        totalReferrals: created.total_referrals,
-        totalEarnings: created.total_earnings,
-        totalReceived: created.total_received,
-        totalPending: created.total_pending,
-        createdAt: created.created_at,
-        updatedAt: created.updated_at
-      };
-    }
-    
-    console.log('Found existing affiliate record:', data);
-    
+    const result = await apiClient.getAffiliate();
     return {
-      id: data.id,
-      userId: data.user_id,
-      affiliateCode: data.affiliate_code,
-      bankAccount: data.bank_account,
-      totalReferrals: data.total_referrals,
-      totalEarnings: data.total_earnings,
-      totalReceived: data.total_received,
-      totalPending: data.total_pending,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
+      ...result.data,
+      userId: result.data.user_id,
+      affiliateCode: result.data.affiliate_code,
+      bankAccount: result.data.bank_account,
+      totalReferrals: result.data.total_referrals,
+      totalEarnings: result.data.total_earnings,
+      totalReceived: result.data.total_received,
+      totalPending: result.data.total_pending,
+      createdAt: result.data.created_at,
+      updatedAt: result.data.updated_at
     };
   } catch (error) {
     console.error('Error fetching user affiliate:', error);
@@ -123,28 +46,13 @@ const generateAffiliateCode = (): string => {
 
 export const saveUserAffiliate = async (affiliate: UserAffiliate): Promise<UserAffiliate> => {
   try {
-    if (!isSupabaseConfigured()) {
-      throw new Error('Supabase not configured');
-    }
-    
-    const { data, error } = await supabase
-      .from('user_affiliates')
-      .update({
-        bank_account: affiliate.bankAccount,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', affiliate.userId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error saving affiliate:', error);
-      throw error;
-    }
-    
+    const result = await apiClient.updateAffiliate({
+      bank_account: affiliate.bankAccount
+    });
+
     return {
       ...affiliate,
-      updatedAt: data.updated_at
+      updatedAt: result.data.updated_at
     };
   } catch (error) {
     console.error('Error saving user affiliate:', error);
@@ -155,47 +63,20 @@ export const saveUserAffiliate = async (affiliate: UserAffiliate): Promise<UserA
 // Affiliate Referrals Functions
 export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
   try {
-    if (!isSupabaseConfigured()) {
-      cleanupAffiliateLocalStorage();
-      return [];
-    }
-    
-    // Get current user to find their email
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user?.email) return [];
-    
-    console.log('Fetching affiliate referrals for user email:', user.email);
-    
-    // Query using affiliate_email column which exists in the view
-    const { data, error } = await supabase
-      .from('admin_affiliate_referrals')
-      .select('*')
-      .eq('affiliate_email', user.email)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching affiliate referrals:', error);
-      return [];
-    }
-    
-    console.log('Fetched affiliate referrals:', data?.length || 0, 'records');
-    
-    return data?.map(referral => {
-      return {
-        id: referral.id,
-        affiliateUserId: user.id, // Current user's ID
-        referredUserId: referral.id, // Use referral ID as placeholder since user IDs aren't in the view
-        subscriptionId: referral.subscription_id,
-        commissionAmount: referral.commission_amount,
-        commissionStatus: referral.commission_status,
-        paidAt: referral.paid_at,
-        createdAt: referral.created_at,
-        updatedAt: referral.created_at, // Use created_at since updated_at might not be in view
-        referredEmail: referral.referred_email, // Real email from the view
-        planName: referral.subscription_id ? 'Plano Pago' : 'Período de Teste',
-        subscriptionStatus: referral.subscription_status
-      };
-    }) || [];
+    const result = await apiClient.getAffiliateReferrals();
+    return result.data?.map((referral: any) => ({
+      ...referral,
+      affiliateUserId: referral.affiliate_user_id,
+      referredUserId: referral.referred_user_id,
+      subscriptionId: referral.subscription_id,
+      commissionAmount: referral.commission_amount,
+      commissionStatus: referral.commission_status,
+      paidAt: referral.paid_at,
+      createdAt: referral.created_at,
+      updatedAt: referral.updated_at,
+      referredEmail: referral.referred_email,
+      planName: referral.subscription_id ? 'Plano Pago' : 'Período de Teste'
+    })) || [];
   } catch (error) {
     console.error('Error fetching affiliate referrals:', error);
     return [];
@@ -205,40 +86,8 @@ export const getAffiliateReferrals = async (): Promise<AffiliateReferral[]> => {
 // Admin Functions
 export const getAdminAffiliateReferrals = async (): Promise<AdminAffiliateReferral[]> => {
   try {
-    if (!isSupabaseConfigured()) {
-      cleanupAffiliateLocalStorage();
-      return [];
-    }
-    
-    console.log('Fetching admin affiliate referrals');
-    
-    const { data, error } = await supabase
-      .from('admin_affiliate_referrals')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching admin affiliate referrals:', error);
-      return [];
-    }
-    
-    console.log('Fetched admin affiliate referrals:', data?.length || 0, 'records');
-    
-    return data?.map(referral => ({
-      id: referral.id,
-      createdAt: referral.created_at,
-      commissionAmount: referral.commission_amount,
-      commissionStatus: referral.commission_status,
-      paidAt: referral.paid_at,
-      subscriptionId: referral.subscription_id,
-      affiliateCode: referral.affiliate_code,
-      affiliateName: referral.affiliate_name,
-      affiliateEmail: referral.affiliate_email,
-      referredName: referral.referred_name,
-      referredEmail: referral.referred_email,
-      priceId: referral.price_id,
-      subscriptionStatus: referral.subscription_status
-    })) || [];
+    const result = await apiClient.getAdminAffiliateReferrals();
+    return result.data || [];
   } catch (error) {
     console.error('Error fetching admin affiliate referrals:', error);
     return [];
@@ -247,28 +96,7 @@ export const getAdminAffiliateReferrals = async (): Promise<AdminAffiliateReferr
 
 export const updateReferralStatus = async (referralId: string, status: 'pending' | 'paid' | 'cancelled'): Promise<void> => {
   try {
-    if (!isSupabaseConfigured()) {
-      throw new Error('Supabase not configured');
-    }
-    
-    const updateData: any = {
-      commission_status: status,
-      updated_at: new Date().toISOString()
-    };
-    
-    if (status === 'paid') {
-      updateData.paid_at = new Date().toISOString();
-    }
-    
-    const { error } = await supabase
-      .from('affiliate_referrals')
-      .update(updateData)
-      .eq('id', referralId);
-    
-    if (error) {
-      console.error('Error updating referral status:', error);
-      throw error;
-    }
+    await apiClient.updateReferralStatus(referralId, status);
   } catch (error) {
     console.error('Error updating referral status:', error);
     throw error;
@@ -281,67 +109,15 @@ export const createAffiliateReferral = async (
   referredUserId: string, 
   subscriptionId?: string
 ): Promise<void> => {
-  console.log('Creating affiliate referral:', { affiliateCode, referredUserId, subscriptionId });
-  
   try {
-    if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, skipping referral creation');
-      cleanupAffiliateLocalStorage();
-      throw new Error('Supabase not configured');
-    }
-    
-    // Find affiliate by code
-    console.log('Looking for affiliate with code:', affiliateCode);
-    const { data: affiliate, error: affiliateError } = await supabase
-      .from('user_affiliates')
-      .select('user_id')
-      .eq('affiliate_code', affiliateCode)
-      .maybeSingle();
-    
-    if (affiliateError || !affiliate) {
-      console.error('Affiliate not found:', affiliateCode, affiliateError);
-      console.log('Affiliate code not found in Supabase, skipping referral creation');
-      throw new Error(`Affiliate code not found: ${affiliateCode}`);
-    }
-    
-    console.log('Found affiliate:', affiliate.user_id);
-    
-    // Ensure we don't create a self-referral
-    if (affiliate.user_id === referredUserId) {
-      console.log('Self-referral detected, skipping creation');
-      throw new Error('Cannot create self-referral');
-    }
-    
-    // Calculate commission
     const commissionAmount = subscriptionId ? calculateCommission(subscriptionId) : 25.00;
-    console.log('Commission amount:', commissionAmount);
+    await apiClient.createAffiliateReferral(affiliateCode, referredUserId, subscriptionId, commissionAmount);
     
-    // Create referral record
-    const { data: newReferral, error: referralError } = await supabase
-      .from('affiliate_referrals')
-      .insert({
-        affiliate_user_id: affiliate.user_id,
-        referred_user_id: referredUserId,
-        subscription_id: subscriptionId,
-        commission_amount: commissionAmount,
-        commission_status: 'pending'
-      })
-      .select()
-      .single();
-    
-    if (referralError) {
-      console.error('Error creating referral:', referralError);
-      throw new Error(`Failed to create referral in Supabase: ${referralError.message}`);
-    } else {
-      console.log('Successfully created affiliate referral:', newReferral);
-      
-      // Clear the stored affiliate code after successful creation
-      sessionStorage.removeItem('pending_affiliate_code');
-      localStorage.removeItem('pending_affiliate_code');
-    }
+    // Clear the stored affiliate code after successful creation
+    sessionStorage.removeItem('pending_affiliate_code');
+    localStorage.removeItem('pending_affiliate_code');
   } catch (error) {
     console.error('Error creating affiliate referral:', error);
-    // Re-throw the error to be handled by the caller
     throw error;
   }
 };

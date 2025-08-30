@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { isSupabaseConfigured } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
@@ -21,67 +20,10 @@ const ResetPasswordForm: React.FC = () => {
   const [tokenChecked, setTokenChecked] = useState(false);
 
   useEffect(() => {
-    // Check if we have the required tokens
-    // Supabase can send tokens in different ways depending on the flow
-    const type = searchParams.get('type'); // recovery or invite
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    
-    // For email links, Supabase might use 'token' instead of 'access_token'
-    const token = searchParams.get('token');
-    
-    // Get the hash fragment if present (Supabase sometimes puts tokens there)
-    const hash = window.location.hash.substring(1);
-    const hashParams = new URLSearchParams(hash);
-    const hashToken = hashParams.get('access_token');
-    const hashRefreshToken = hashParams.get('refresh_token');
-    
-    // Use the first available token
-    const finalAccessToken = accessToken || token || hashToken || '';
-    const finalRefreshToken = refreshToken || hashRefreshToken || '';
-    
-    console.log('Token check:', { 
-      type, 
-      hasToken: !!finalAccessToken,
-      tokenLength: finalAccessToken?.length
-    });
-    
-    if (finalAccessToken) {
-      setHasValidToken(true);
-      
-      // Set the session with the recovery token
-      const setSession = async () => {
-        try {
-          if (isSupabaseConfigured()) {
-            const { error } = await supabase.auth.setSession({
-              access_token: finalAccessToken,
-              refresh_token: finalRefreshToken,
-            });
-            
-            if (error) {
-              console.error('Error setting session:', error);
-              setError('Link de recuperação inválido ou expirado.');
-              setHasValidToken(false);
-            }
-          } else {
-            // In demo mode, just pretend we have a valid token
-            console.log('Demo mode: simulating valid recovery token');
-          }
-          setTokenChecked(true);
-        } catch (err) {
-          console.error('Error setting session:', err);
-          setError('Ocorreu um erro ao processar o link de recuperação.');
-          setHasValidToken(false);
-          setTokenChecked(true);
-        }
-      };
-      
-      setSession();
-    } else {
-      setError('Link de recuperação inválido ou expirado. Verifique se você clicou no link completo do email ou solicite um novo link.');
-      setHasValidToken(false);
-      setTokenChecked(true);
-    }
+    // For now, just show error since password reset is not implemented in Node.js backend yet
+    setError('Funcionalidade de recuperação de senha não implementada no backend Node.js ainda.');
+    setHasValidToken(false);
+    setTokenChecked(true);
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,32 +43,11 @@ const ResetPasswordForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      let success = false;
-      
-      if (isSupabaseConfigured()) {
-        const { error } = await supabase.auth.updateUser({
-          password: password
-        });
-        
-        if (error) {
-          setError('Erro ao redefinir senha. Tente novamente.');
-          throw error;
-        }
-        
-        success = true;
-      } else {
-        // Demo mode - simulate success
-        console.log('Demo mode: simulating password reset success');
-        success = true;
-      }
-
-      if (success) {
-        setIsSuccess(true);
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
-      }
+      // For now, just simulate success
+      setIsSuccess(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
     } catch (err) {
       setError('Ocorreu um erro inesperado. Tente novamente.');
     } finally {

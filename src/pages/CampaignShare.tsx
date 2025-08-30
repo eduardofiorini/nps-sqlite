@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Campaign, Contact, Group } from '../types';
-import { getCampaigns, getContacts, getGroups, getAppConfig } from '../utils/supabaseStorage';
-import { supabase } from '../lib/supabase';
+import { getCampaigns, getContacts, getGroups, getAppConfig } from '../utils/nodeStorage';
+import { apiClient } from '../lib/api';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -149,33 +149,13 @@ Equipe ${foundCampaign.name}`);
     setSendResults(null);
 
     try {
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-campaign-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          campaignId: id,
-          contactIds: selectedContacts,
-          subject: emailSubject,
-          message: emailMessage,
-          includeLink
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Falha ao enviar emails');
-      }
+      const result = await apiClient.sendCampaignEmails(
+        id!,
+        selectedContacts,
+        emailSubject,
+        emailMessage,
+        includeLink
+      );
 
       setSendResults(result);
       setShowResults(true);

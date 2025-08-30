@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 
 export interface AdminPermissions {
   view_users: boolean;
@@ -54,26 +54,18 @@ export const useAdmin = () => {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      if (!user || !isSupabaseConfigured()) {
+      if (!user) {
         setIsAdmin(false);
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
-          .from('user_admin')
-          .select('permissions')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.warn('Error checking admin status:', error);
-          setIsAdmin(false);
-          setPermissions({ view_users: false, view_subscriptions: false });
-        } else if (data) {
+        // Check admin status through API
+        const result = await apiClient.getCurrentUser();
+        if (result.success && result.user.role === 'admin') {
           setIsAdmin(true);
-          setPermissions(data.permissions || { view_users: false, view_subscriptions: false });
+          setPermissions({ view_users: true, view_subscriptions: true });
         } else {
           setIsAdmin(false);
           setPermissions({ view_users: false, view_subscriptions: false });
@@ -91,34 +83,12 @@ export const useAdmin = () => {
   }, [user]);
 
   const getAdminUsers = async (): Promise<AdminUser[]> => {
-    if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
+    if (!isAdmin || !permissions.view_users) {
       return [];
     }
 
     try {
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-
-      if (!token) {
-        console.error('No authentication token found');
-        return [];
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-admin-users`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        console.error('Error fetching admin users:', result.error);
-        return [];
-      }
-
+      const result = await apiClient.getAdminUsers();
       return result.data || [];
     } catch (error) {
       console.error('Error fetching admin users:', error);
@@ -128,32 +98,11 @@ export const useAdmin = () => {
 
   const deactivateUser = async (userId: string): Promise<boolean> => {
     try {
-      if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
-        throw new Error('Access denied or Supabase not configured');
+      if (!isAdmin || !permissions.view_users) {
+        throw new Error('Access denied');
       }
 
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deactivate-user-admin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to deactivate user');
-      }
-
+      await apiClient.deactivateUser(userId);
       return true;
     } catch (error) {
       console.error('Error deactivating user:', error);
@@ -163,32 +112,11 @@ export const useAdmin = () => {
 
   const reactivateUser = async (userId: string): Promise<boolean> => {
     try {
-      if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
-        throw new Error('Access denied or Supabase not configured');
+      if (!isAdmin || !permissions.view_users) {
+        throw new Error('Access denied');
       }
 
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reactivate-user-admin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to reactivate user');
-      }
-
+      await apiClient.reactivateUser(userId);
       return true;
     } catch (error) {
       console.error('Error reactivating user:', error);
@@ -198,32 +126,11 @@ export const useAdmin = () => {
 
   const deleteUserAccount = async (userId: string): Promise<boolean> => {
     try {
-      if (!isAdmin || !permissions.view_users || !isSupabaseConfigured()) {
-        throw new Error('Access denied or Supabase not configured');
+      if (!isAdmin || !permissions.view_users) {
+        throw new Error('Access denied');
       }
 
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user-admin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete user account');
-      }
-
+      await apiClient.deleteUser(userId);
       return true;
     } catch (error) {
       console.error('Error deleting user account:', error);
@@ -232,19 +139,13 @@ export const useAdmin = () => {
   };
 
   const getAdminSubscriptions = async (): Promise<AdminSubscription[]> => {
-    if (!isAdmin || !permissions.view_subscriptions || !isSupabaseConfigured()) {
+    if (!isAdmin || !permissions.view_subscriptions) {
       return [];
     }
 
     try {
-      const { data, error } = await supabase.rpc('get_admin_subscriptions');
-
-      if (error) {
-        console.error('Error fetching admin subscriptions:', error);
-        return [];
-      }
-
-      return data || [];
+      // For now, return empty array since we're not implementing Stripe in the Node.js backend
+      return [];
     } catch (error) {
       console.error('Error fetching admin subscriptions:', error);
       return [];

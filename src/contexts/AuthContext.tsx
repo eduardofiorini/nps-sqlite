@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { apiClient } from '../lib/api';
 import { User } from '../types';
 
 // Key for storing user data in localStorage
@@ -47,52 +46,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Only attempt to get session if Supabase is properly configured
-    if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, skipping auth session check');
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-    
-    // Get initial session
     const initAuth = async () => {
       try {
         setLoading(true);
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        // Check for invalid JWT or user not found errors
-        if (sessionError && (
-          sessionError.message.includes('user_not_found') || 
-          sessionError.message.includes('invalid_jwt') ||
-          sessionError.message.includes('User from sub claim in JWT does not exist')
-        )) {
-          console.log('Invalid JWT detected, clearing auth state:', sessionError.message);
-          setUser(null);
-          localStorage.removeItem(USER_STORAGE_KEY);
-          setLoading(false);
-          return;
-        }
-        
-        console.log('Initial auth session check:', session?.user?.email || 'No session');
-        
-        if (session?.user) {
-          // Validate the session by checking if the user actually exists
-          const processedUser = processSupabaseUser(session.user);
-          setUser(processedUser);
-          
-          // Save to localStorage
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
-          console.log('Saved user to localStorage from session:', processedUser.email);
+        // Check if we have a stored token
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          try {
+            const result = await apiClient.getCurrentUser();
+            if (result.success) {
+              setUser(result.user);
+              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(result.user));
+            } else {
+              // Invalid token, clear it
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem(USER_STORAGE_KEY);
+              setUser(null);
+            }
+          } catch (error) {
+            console.error('Error validating token:', error);
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem(USER_STORAGE_KEY);
+            setUser(null);
+          }
         } else {
-          // No active session, clear any stale data
+          // No token, clear any stale data
           setUser(null);
           localStorage.removeItem(USER_STORAGE_KEY);
-          console.log('No active session, cleared user data');
+          console.log('No auth token, cleared user data');
         }
       } catch (error) {
-        console.error('Error getting auth session:', error);
+        console.error('Error during auth initialization:', error);
         setUser(null);
+        localStorage.removeItem('auth_token');
         localStorage.removeItem(USER_STORAGE_KEY);
       } finally {
         setLoading(false);
@@ -100,259 +87,72 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
     
     initAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('Auth state changed:', _event, session?.user?.email || 'No session');
-      
-      if (session?.user) {
-        const processedUser = processSupabaseUser(session.user);
-        setUser(processedUser);
-        
-        // Check for pending affiliate referral after login/signup
-        const pendingRefCode = sessionStorage.getItem('pending_affiliate_code');
-        console.log('Checking for pending affiliate code:', pendingRefCode);
-        
-        if (pendingRefCode) {
-          console.log('Processing pending affiliate referral for code:', pendingRefCode, 'user:', session.user.id);
-          try {
-            const { createAffiliateReferral } = await import('../utils/affiliateStorage');
-            await createAffiliateReferral(pendingRefCode, session.user.id, undefined);
-            console.log('Processed pending affiliate referral for code:', pendingRefCode);
-            
-            // Only remove if successful
-            sessionStorage.removeItem('pending_affiliate_code');
-            localStorage.removeItem('pending_affiliate_code');
-            console.log('Cleared affiliate code from storage');
-          } catch (error) {
-            console.error('Error processing pending affiliate referral:', error);
-            // Keep the code in storage for retry on next login
-            console.log('Keeping affiliate code for retry:', pendingRefCode);
-          }
-        }
-        
-        // Update localStorage when auth state changes
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
-        console.log('Updated user in localStorage:', processedUser.email);
-      } 
-      else {
-        setUser(null);
-        localStorage.removeItem(USER_STORAGE_KEY);
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
   
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      // Check if Supabase is configured first
-      if (!isSupabaseConfigured()) {
-        // Demo mode - create mock user if credentials provided
-        if (!email || !password) {
-          console.error('Login error: Email and password are required');
-          return { success: false, message: 'Email e senha são obrigatórios' };
-        }
-        
-        // Create a mock user for demo purposes
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: email.split('@')[0] || 'User',
-          role: 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return { success: true };
+      if (!email || !password) {
+        return { success: false, message: 'Email e senha são obrigatórios' };
       }
       
-      // Only attempt Supabase authentication if properly configured
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        // Handle specific error cases
-        if (error.message === 'Email not confirmed') {
-          return { success: false, message: 'Seu e-mail ainda não foi confirmado. Por favor, verifique sua caixa de entrada.' };
-        }
+      const result = await apiClient.login(email, password);
+      
+      if (result.success) {
+        setUser(result.user);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(result.user));
         
-        // Also check for the error code in case the message format changes
-        if (error.message.includes('email_not_confirmed') || error.message.includes('Email not confirmed')) {
-          return { success: false, message: 'Seu e-mail ainda não foi confirmado. Por favor, verifique sua caixa de entrada.' };
-        }
-        
-        // Handle database errors by falling back to demo mode
-        if (error.message === 'Database error granting user' || error.message.includes('unexpected_failure')) {
-          console.warn('Database error detected, falling back to demo mode');
-          if (email && password) {
-            const mockUser: User = {
-              id: '123e4567-e89b-12d3-a456-426614174000',
-              email: email,
-              name: email.split('@')[0] || 'User',
-              role: 'user'
-            };
-            setUser(mockUser);
-            
-            // Store mock user in localStorage
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-            
-            return { success: true };
+        // Check for pending affiliate referral
+        const pendingRefCode = sessionStorage.getItem('pending_affiliate_code');
+        if (pendingRefCode) {
+          try {
+            await apiClient.createAffiliateReferral(pendingRefCode, result.user.id);
+            sessionStorage.removeItem('pending_affiliate_code');
+            localStorage.removeItem('pending_affiliate_code');
+          } catch (error) {
+            console.error('Error processing affiliate referral:', error);
           }
         }
         
-        console.error('Login error:', error.message);
-        
-        if (error.message === 'Invalid login credentials') {
-          return { success: false, message: 'Credenciais inválidas. Verifique seu email e senha.' };
-        }
-        
-        return { success: false, message: error.message };
-      }
-
-      if (data.user) {
-        const processedUser = processSupabaseUser(data.user);
-        setUser(processedUser);
-        
-        // Store user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(processedUser));
-        
         return { success: true };
+      } else {
+        return { success: false, message: result.error || 'Erro no login' };
       }
-
-      return { success: false, message: 'Falha no login. Tente novamente.' };
     } catch (error) {
       console.error('Login error:', error);
-      
-      // Fallback to demo mode if Supabase fails
-      if (!isSupabaseConfigured() && email && password) {
-        console.log('Falling back to demo mode due to network/configuration error');
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: email.split('@')[0] || 'User',
-          role: 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return { success: true };
-      }
-      
       return { success: false, message: 'Erro de conexão. Tente novamente.' };
     }
   };
 
   const register = async (email: string, password: string, name: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      // Check if Supabase is configured first
-      if (!isSupabaseConfigured()) {
-        // Demo mode - create mock user if credentials provided
-        if (!email || !password || !name) {
-          console.error('Registration error: Email and password are required');
-          return { success: false, message: 'Email, senha e nome são obrigatórios' };
-        }
-        
-        // Create a mock user for demo purposes
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: name || email.split('@')[0] || 'User',
-          role: 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return { success: true };
+      if (!email || !password || !name) {
+        return { success: false, message: 'Email, senha e nome são obrigatórios' };
       }
       
-      // Only attempt Supabase registration if properly configured
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/user`,
-          data: {
-            name: name
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Registration error:', error.message);
-        
-        // Handle database errors by falling back to demo mode
-        if (error.message === 'Database error saving new user' || error.message.includes('unexpected_failure')) {
-          console.warn('Database error detected during registration, falling back to demo mode');
-          if (email && password && name) {
-            const mockUser: User = {
-              id: '123e4567-e89b-12d3-a456-426614174000',
-              email: email,
-              name: name,
-              role: 'user'
-            };
-            setUser(mockUser);
-            
-            // Store mock user in localStorage
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-            
-            return { success: true, message: 'Conta criada com sucesso (modo demo)' };
-          }
-        }
-        
-        return { success: false, message: error.message };
+      const result = await apiClient.register(email, password, name);
+      
+      if (result.success) {
+        return { success: true, message: 'Conta criada com sucesso' };
+      } else {
+        return { success: false, message: result.error || 'Erro no registro' };
       }
-
-      if (data.user) {
-        // Don't set user session after registration - let them login manually
-        console.log('User registered successfully, redirecting to login');
-        
-        return { success: true };
-      }
-
-      return { success: false, message: 'Falha no registro. Tente novamente.' };
     } catch (error) {
       console.error('Registration error:', error);
-      
-      // If Supabase is not configured, fall back to demo mode
-      if (!isSupabaseConfigured() && email && password) {
-        const mockUser: User = {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          email: email,
-          name: name,
-          role: 'user'
-        };
-        setUser(mockUser);
-        
-        // Store mock user in localStorage
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
-        
-        return { success: true };
-      }
-      
       return { success: false, message: 'Erro de conexão. Tente novamente.' };
     }
   };
   
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      apiClient.logout();
       setUser(null);
       
-      // Clear only essential auth data from localStorage
+      // Clear auth data from localStorage
+      localStorage.removeItem('auth_token');
       localStorage.removeItem(USER_STORAGE_KEY);
-      localStorage.removeItem('nps_supabase_auth');
       
-      // Clean up all other unnecessary data
-      const { cleanupLocalStorage } = await import('../utils/supabaseStorage');
+      // Clean up other data
+      const { cleanupLocalStorage } = await import('../utils/nodeStorage');
       cleanupLocalStorage();
     } catch (error) {
       console.error('Logout error:', error);
