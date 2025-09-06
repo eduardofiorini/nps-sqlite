@@ -4,14 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "predev": "npm install && cd server && npm install",
-    "dev": "npm run predev && concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\"",
+    "setup": "npm install && cd backend && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:client\" --names \"BACKEND,CLIENT\" --prefix-colors \"blue,green\"",
     "dev:client": "vite",
-    "server": "cd server && npm run dev",
-    "dev:server": "cd server && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "migrate": "cd backend && npm run migrate",
+    "seed": "cd backend && npm run seed",
     "build:client": "vite build",
-    "build:server": "cd server && npm run start",
-    "build": "npm run build:client && npm run build:server",
+    "build:backend": "cd backend && npm run start",
+    "build": "npm run build:client && npm run build:backend",
     "preview": "vite preview"
   },
   "dependencies": {
